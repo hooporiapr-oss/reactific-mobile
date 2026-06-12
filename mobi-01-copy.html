@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Shot-Clock Challenges | Reaction Gaming</title>
+<link rel="icon" type="image/png" href="bpm-basketball.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--lime:#39FF14;--lime-dark:#2BC10F;--gold:#FFD700;--teal:#00D9A5;--pink:#FF1493;--orange:#FF6B35;--dark:#0a0a0f;--card:#111118;--text:#FFFFFF;--muted:#8892a0;--border:rgba(255,255,255,0.1);--nav-height:50px}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:hidden;overflow-y:auto;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+
+.mini-nav{position:fixed;top:0;left:0;right:0;background:var(--card);border-bottom:1px solid var(--border);padding-top:env(safe-area-inset-top);z-index:1000}
+.nav-row{display:flex;align-items:center;justify-content:space-between;height:50px;padding:0 12px}
+.back-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s}
+.back-btn:active{border-color:var(--lime);color:var(--lime)}
+.nav-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--lime)}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-lang{display:flex;gap:2px}
+.nav-lang-btn{padding:5px 8px;border:1px solid var(--border);background:0;color:var(--muted);border-radius:4px;font-size:0.6rem;font-weight:600;cursor:pointer;min-width:28px;min-height:28px}
+.nav-lang-btn.active{border-color:var(--gold);color:var(--gold)}
+
+.screen{display:none;width:100%;min-height:100dvh;padding-top:calc(var(--nav-height) + env(safe-area-inset-top));padding-bottom:env(safe-area-inset-bottom);overflow-y:auto;overflow-x:hidden}
+.screen.active{display:block}
+
+#screen-demo{background:var(--dark)}
+.demo-container{max-width:420px;margin:0 auto;padding:10px 15px 20px;display:flex;flex-direction:column;align-items:center}
+.demo-header{text-align:center;margin-bottom:8px}
+.demo-badge{display:inline-block;background:rgba(57,255,20,0.15);color:var(--lime);padding:4px 12px;border-radius:15px;font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.demo-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;color:var(--lime);margin-bottom:2px}
+.demo-subtitle{font-size:0.7rem;color:var(--muted)}
+.demo-court-wrap{position:relative;margin:10px 0}
+.demo-label{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:0.7rem;letter-spacing:2px;color:var(--gold);background:rgba(0,0,0,0.85);padding:4px 12px;border-radius:10px;white-space:nowrap;z-index:10;border:1px solid rgba(255,215,0,0.3);transition:all 0.3s}
+.demo-label.phase-watch{color:var(--gold);border-color:rgba(255,215,0,0.4)}
+.demo-label.phase-go{color:var(--lime);border-color:rgba(57,255,20,0.4)}
+.demo-label.phase-success{color:var(--teal);border-color:rgba(0,217,165,0.4)}
+.demo-court{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:6px;background:#1a1a24;border-radius:12px;width:200px;height:200px;position:relative}
+.demo-court::before{content:'';position:absolute;inset:0;background:rgba(10,10,15,0.5);border-radius:9px;pointer-events:none}
+.demo-cell{aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;position:relative;z-index:3;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--muted);transition:all 0.15s}
+.demo-cell.target{background:var(--lime)!important;border-color:var(--lime)!important;box-shadow:0 0 18px rgba(57,255,20,0.7);color:var(--dark)!important;transform:scale(1.08);font-size:1rem}
+.demo-cell.found{background:var(--teal)!important;border-color:var(--teal)!important;box-shadow:0 0 12px rgba(0,217,165,0.5);color:#fff!important}
+.demo-court.joy-pulse{animation:joyPulse 0.5s ease-out}
+@keyframes joyPulse{0%{box-shadow:0 0 0 0 rgba(57,255,20,0.7)}50%{box-shadow:0 0 25px 8px rgba(57,255,20,0.3)}100%{box-shadow:none}}
+.flash-card{background:linear-gradient(135deg,rgba(57,255,20,0.15),rgba(57,255,20,0.05));border:2px solid rgba(57,255,20,0.4);border-radius:14px;padding:10px 16px;margin:8px 0;text-align:center;width:100%;max-width:200px}
+.flash-card-label{font-size:0.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.flash-card-numbers{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:6px;color:var(--lime);text-shadow:0 0 20px rgba(57,255,20,0.6)}
+.htp-section{width:100%;max-width:380px;margin:12px 0}
+.htp-toggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 16px;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(57,255,20,0.05));border:1px solid rgba(255,215,0,0.2);border-radius:10px;cursor:pointer;transition:all 0.3s}
+.htp-toggle:active{transform:scale(0.98);border-color:var(--gold)}
+.htp-toggle-icon{font-size:1.1rem}
+.htp-toggle-text{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--gold)}
+.htp-toggle-arrow{color:var(--gold);font-size:0.75rem;transition:transform 0.3s}
+.htp-toggle.open .htp-toggle-arrow{transform:rotate(180deg)}
+.htp-content{max-height:0;overflow:hidden;transition:max-height 0.5s ease-out}
+.htp-content.open{max-height:2000px}
+.htp-inner{padding:15px 0}
+.htp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:10px}
+.htp-card-title{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--lime);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.htp-step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.htp-step:last-child{margin-bottom:0}
+.htp-step-num{width:22px;height:22px;border-radius:50%;background:var(--lime);color:var(--dark);font-family:'Bebas Neue',sans-serif;font-size:0.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.htp-step-text{font-size:0.75rem;color:var(--text);line-height:1.5}
+.htp-step-text strong{color:var(--gold)}
+.htp-tip{background:rgba(255,215,0,0.08);border-left:3px solid var(--gold);padding:10px 12px;border-radius:0 8px 8px 0;margin-top:12px}
+.htp-tip-title{font-size:0.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.htp-tip-text{font-size:0.7rem;color:var(--muted);line-height:1.4}
+.demo-cta{width:100%;max-width:320px;margin-top:12px}
+.play-now-btn{width:100%;padding:14px 20px;border:none;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:4px;cursor:pointer;background:linear-gradient(135deg,var(--lime),var(--lime-dark));color:var(--dark);box-shadow:0 4px 20px rgba(57,255,20,0.4);transition:all 0.3s;animation:demoPulse 2s ease-in-out infinite}
+.play-now-btn:active{transform:scale(0.98)}
+@keyframes demoPulse{0%,100%{box-shadow:0 4px 20px rgba(57,255,20,0.4)}50%{box-shadow:0 4px 30px rgba(57,255,20,0.7)}}
+.ritnome-promo{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:15px;padding:8px 14px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:20px}
+.ritnome-promo .pulse-dot{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulseDot 1s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+.ritnome-promo-text{font-size:0.55rem;color:var(--muted);letter-spacing:1px}
+.ritnome-promo-text span{font-family:'Bebas Neue',sans-serif;color:var(--gold);font-size:0.7rem;letter-spacing:2px}
+
+#screen-trophy{background:var(--dark)}
+.trophy-container{max-width:420px;margin:0 auto;padding:15px 15px 40px}
+.trophy-header{text-align:center;margin-bottom:20px}
+.trophy-icon{font-size:2.5rem;margin-bottom:5px}
+.trophy-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;color:var(--gold);margin-bottom:4px}
+.trophy-subtitle{font-size:0.75rem;color:var(--muted)}
+.bpm-section{margin-bottom:20px}
+.bpm-section-title{font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:2px;color:var(--text);margin-bottom:10px;text-align:center}
+.bpm-tier{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:15px;margin-bottom:10px;cursor:pointer;transition:all 0.3s}
+.bpm-tier:active{transform:scale(0.98)}
+.bpm-tier.active{border-color:var(--lime);background:rgba(57,255,20,0.06)}
+.bpm-tier-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.bpm-tier-left{display:flex;align-items:center;gap:10px}
+.bpm-tier-icon{font-size:1.3rem}
+.bpm-tier-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;color:var(--text)}
+.bpm-tier-bpm{font-size:0.6rem;color:var(--muted)}
+.bpm-tier-status{font-size:0.7rem;padding:4px 10px;border-radius:10px;font-weight:600;background:rgba(0,217,165,0.15);color:var(--teal)}
+.bpm-tier-progress{display:flex;align-items:center;gap:10px}
+.bpm-gostars{font-size:0.9rem;letter-spacing:1px}
+.bpm-level{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;color:var(--lime)}
+.level-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:20px}
+.level-section-title{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;text-align:center;margin-bottom:10px}
+.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.level-btn{aspect-ratio:1;border:2px solid var(--border);background:transparent;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+.level-btn:active{transform:scale(0.95)}
+.level-btn.active{border-color:var(--lime);color:var(--lime);background:rgba(57,255,20,0.08)}
+.level-info{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.level-info-label{font-size:0.65rem;color:var(--muted)}
+.level-info-value{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;color:var(--lime)}
+.letsgo-btn{width:100%;padding:16px 24px;border:none;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:4px;cursor:pointer;background:linear-gradient(135deg,var(--lime),var(--lime-dark));color:var(--dark);box-shadow:0 4px 20px rgba(57,255,20,0.3);transition:all 0.3s}
+.letsgo-btn:active{transform:scale(0.98)}
+
+#screen-play{background:var(--dark)}
+.play-container{display:flex;flex-direction:column;align-items:center;max-width:420px;margin:0 auto;min-height:calc(100dvh - var(--nav-height) - env(safe-area-inset-top) - 40px)}
+.play-stats{display:flex;justify-content:center;gap:16px;margin-bottom:6px;width:100%}
+.play-stat{text-align:center}
+.play-stat-value{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--lime)}
+.play-stat-label{font-size:0.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.target-display{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;min-height:52px}
+.target-card{background:linear-gradient(135deg,rgba(57,255,20,0.18),rgba(57,255,20,0.06));border:2px solid rgba(57,255,20,0.5);border-radius:10px;padding:6px 14px;text-align:center;transition:all 0.3s}
+.target-card.found{background:linear-gradient(135deg,rgba(0,217,165,0.2),rgba(0,217,165,0.08));border-color:var(--teal);opacity:0.5}
+.target-card-label{font-size:0.45rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px}
+.target-card-num{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--lime);line-height:1;text-shadow:0 0 15px rgba(57,255,20,0.5)}
+.target-card.found .target-card-num{color:var(--teal)}
+.play-message{text-align:center;min-height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.play-message-text{font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:2px;color:var(--text);transition:all 0.2s}
+.play-message-text.watch{color:var(--gold)}
+.play-message-text.go{color:var(--lime)}
+.play-message-text.error{color:var(--pink)}
+
+/* SHOT CLOCK */
+.shot-clock-ring{position:relative;width:100px;height:100px;margin:0 auto 8px}
+.shot-clock-svg{width:100%;height:100%;transform:rotate(-90deg)}
+.shot-clock-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:6}
+.shot-clock-progress{fill:none;stroke:var(--lime);stroke-width:6;stroke-linecap:round;transition:stroke .3s}
+.shot-clock-progress.warn{stroke:var(--orange)}
+.shot-clock-progress.danger{stroke:var(--pink)}
+.shot-clock-progress.flash{animation:clockFlash .2s ease-in-out infinite}
+@keyframes clockFlash{0%,100%{opacity:1}50%{opacity:.3}}
+.shot-clock-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.shot-clock-num{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;line-height:1;transition:color .3s}
+.shot-clock-num.warn{color:var(--orange)}
+.shot-clock-num.danger{color:var(--pink)}
+.shot-clock-num.flash{animation:numFlash .2s ease-in-out infinite}
+@keyframes numFlash{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.05)}}
+.shot-clock-label{font-size:.45rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-top:2px}
+.shot-clock-ring.success{animation:ringSuccess .5s ease-out}
+@keyframes ringSuccess{0%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 20px var(--lime))}100%{filter:drop-shadow(0 0 0 transparent)}}
+.shot-clock-ring.explode{animation:ringExplode .6s ease-out}
+@keyframes ringExplode{0%{transform:scale(1)}30%{transform:scale(1.15)}60%{transform:scale(.95)}100%{transform:scale(1)}}
+.shot-clock-ring.throb{animation:ringThrob .4s ease-in-out infinite}
+@keyframes ringThrob{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+.play-tiers{display:flex;justify-content:center;gap:4px;margin-bottom:6px}
+.play-tier-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+.play-tier-dot.completed{background:var(--lime);box-shadow:0 0 5px var(--lime)}
+.play-tier-dot.current{background:var(--gold);box-shadow:0 0 6px var(--gold);transform:scale(1.3)}
+.play-court-wrap{width:100%;max-width:340px;margin:0 auto}
+.play-court{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px;background:var(--card);border:2px solid var(--border);border-radius:16px;aspect-ratio:1;position:relative;transition:border-color 0.15s,box-shadow 0.15s}
+.play-cell{aspect-ratio:1;border-radius:5px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;z-index:1;transition:all 0.1s;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--muted)}
+.play-cell:active{transform:scale(0.93)}
+.play-cell.target-hit{background:var(--teal)!important;border-color:var(--teal)!important;box-shadow:0 0 14px rgba(0,217,165,0.6);color:#fff!important;transform:scale(1.06);animation:correctPulse 0.35s}
+.play-cell.wrong-tap{background:rgba(255,20,147,0.3)!important;border-color:var(--pink)!important;animation:shake 0.35s}
+.play-cell.reveal{background:rgba(57,255,20,0.15)!important;border-color:rgba(57,255,20,0.4)!important;color:var(--lime)!important}
+.play-court.joy-pulse{animation:joyPulse 0.5s ease-out}
+@keyframes correctPulse{50%{transform:scale(1.15)}}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.play-info{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:340px;margin:8px auto 6px;padding:0 4px}
+.play-info-badge{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;color:var(--lime);letter-spacing:1px}
+.play-info-cells{font-family:'Bebas Neue',sans-serif;font-size:0.75rem;color:var(--muted);letter-spacing:1px}
+.play-info-score{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;color:var(--gold)}
+.play-action-btn{width:100%;max-width:340px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--lime),var(--lime-dark));color:var(--dark);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;cursor:pointer;margin-top:auto;box-shadow:0 4px 16px rgba(57,255,20,0.3)}
+.play-action-btn:active{transform:scale(0.97)}
+.play-action-btn:disabled{opacity:0.4;cursor:not-allowed}
+.emoji-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+.burst-emoji{position:absolute;font-size:1.6rem;animation:emojiBurst 1.2s ease-out forwards}
+@keyframes emojiBurst{0%{opacity:1;transform:translate(-50%,-50%) scale(0.3)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0.8) rotate(var(--rot))}}
+.burst-emoji.big{font-size:2.2rem}
+.burst-emoji.party{font-size:1.8rem;animation-duration:2s}
+.coach-message{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,var(--lime),var(--lime-dark));color:var(--dark);padding:10px 20px;border-radius:14px;font-weight:700;font-size:0.9rem;opacity:0;transition:all 0.3s;z-index:100}
+.coach-message.show{transform:translateX(-50%) translateY(0);opacity:1}
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px}
+.overlay.show{display:flex}
+.overlay-card{background:var(--card);border:2px solid var(--lime);border-radius:14px;padding:25px;text-align:center;max-width:300px;width:100%}
+.overlay-emoji{font-size:2.8rem;margin-bottom:10px}
+.overlay-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--lime);margin-bottom:8px}
+.overlay-message{color:var(--muted);margin-bottom:15px;font-size:0.85rem;line-height:1.4}
+.overlay-btn{min-height:46px;padding:14px 28px;border:none;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;cursor:pointer;margin:5px;background:linear-gradient(135deg,var(--lime),var(--lime-dark));color:var(--dark)}
+.overlay-btn:active{transform:scale(0.95)}
+@media(max-height:650px){.demo-court{width:190px;height:190px}.play-court-wrap{max-width:300px}.target-card-num{font-size:1.5rem}.shot-clock-ring{width:80px;height:80px}.shot-clock-num{font-size:1.4rem}}
+@media(max-height:550px){.demo-court{width:170px;height:170px}.play-court-wrap{max-width:260px}.play-stat-value{font-size:1.3rem}.shot-clock-ring{width:66px;height:66px}.shot-clock-num{font-size:1.2rem}}
+@media(max-width:360px){.play-court-wrap{max-width:280px}.play-court{gap:3px;padding:6px}.demo-court{width:180px;height:180px}}
+</style>
+</head>
+<body>
+<nav class="mini-nav"><div class="nav-row">
+<a href="https://reactific.mobi" class="back-btn" id="backBtn">← Back</a>
+<div class="nav-title">Practice</div>
+<div class="nav-right"><div class="nav-lang">
+<button class="nav-lang-btn" id="langEN">EN</button>
+<button class="nav-lang-btn active" id="langES">ES</button>
+</div></div></div></nav>
+
+<div class="screen active" id="screen-demo"><div class="demo-container">
+<div class="demo-header">
+<div class="demo-badge" id="demoBadge">Reaction Gaming</div>
+<h1 class="demo-title">Shot-Clock Challenges</h1>
+<p class="demo-subtitle" id="demoSubtitle">Visual Search · Memory · Reaction</p>
+</div>
+<div class="flash-card" id="demoFlashCard">
+<div class="flash-card-label" id="demoFlashLabel">FIND THESE NUMBERS</div>
+<div class="flash-card-numbers" id="demoFlashNums">—</div>
+</div>
+<div class="demo-court-wrap">
+<div class="demo-label" id="demoLabel">👀 MEMORIZE...</div>
+<div class="demo-court" id="demoCourt"></div>
+</div>
+<div class="htp-section">
+<div class="htp-toggle" id="htpToggle">
+<span class="htp-toggle-icon">📖</span>
+<span class="htp-toggle-text" id="htpToggleText">HOW TO PRACTICE</span>
+<span class="htp-toggle-arrow">▼</span>
+</div>
+<div class="htp-content" id="htpContent"><div class="htp-inner">
+<div class="htp-card">
+<div class="htp-card-title">🎯 <span id="objectiveTitle">OBJECTIVE</span></div>
+<div class="htp-step"><div class="htp-step-num">1</div><div class="htp-step-text" id="step1"><strong>See the numbers</strong> flash on screen — memorize them</div></div>
+<div class="htp-step"><div class="htp-step-num">2</div><div class="htp-step-text" id="step2"><strong>All 25 grid cells</strong> show random numbers 1–25</div></div>
+<div class="htp-step"><div class="htp-step-num">3</div><div class="htp-step-text" id="step3"><strong>Find and tap</strong> all the target numbers before time runs out!</div></div>
+</div>
+<div class="htp-card">
+<div class="htp-card-title">⭐ <span id="progressionTitle">PROGRESSION</span></div>
+<div class="htp-step"><div class="htp-step-num">→</div><div class="htp-step-text" id="prog1">Complete <strong>3 rounds</strong> to earn a GoStar</div></div>
+<div class="htp-step"><div class="htp-step-num">→</div><div class="htp-step-text" id="prog2">Level 1 = find <strong>1 number</strong>, Level 2 = find <strong>2</strong>, and so on</div></div>
+<div class="htp-step"><div class="htp-step-num">→</div><div class="htp-step-text" id="prog3">Wrong tap = <strong>round fails</strong> — accuracy matters!</div></div>
+</div>
+<div class="htp-card">
+<div class="htp-card-title">⚡ <span id="speedsTitle">BPM SPEEDS</span></div>
+<div class="htp-step"><div class="htp-step-num">🏋️</div><div class="htp-step-text" id="speed1"><strong>:05 Clock (60 BPM)</strong> — 5 seconds to find them</div></div>
+<div class="htp-step"><div class="htp-step-num">🎯</div><div class="htp-step-text" id="speed2"><strong>:03 Clock (90 BPM)</strong> — 3 seconds, stay sharp</div></div>
+<div class="htp-step"><div class="htp-step-num">⚡</div><div class="htp-step-text" id="speed3"><strong>:02 Clock (120 BPM)</strong> — 2 seconds, pure reaction!</div></div>
+<div class="htp-tip">
+<div class="htp-tip-title">💡 <span id="tipTitle">TIP</span></div>
+<div class="htp-tip-text" id="tipText">Scan the whole grid fast — train your eyes to find multiple targets at once!</div>
+</div></div></div></div>
+</div>
+<div class="demo-cta"><button class="play-now-btn" id="playNowBtn">▶ PRACTICE NOW</button></div>
+<div class="ritnome-promo"><div class="pulse-dot"></div>
+<div class="ritnome-promo-text"><span id="poweredBy">Powered by</span> <span>Gostar Digital™</span></div>
+</div></div></div>
+
+<div class="screen" id="screen-trophy"><div class="trophy-container">
+<div class="trophy-header">
+<div class="trophy-icon">🔍</div>
+<h1 class="trophy-title" id="trophyTitle">Shot-Clock Challenges</h1>
+<p class="trophy-subtitle" id="trophySubtitle">Reactific Progress</p>
+</div>
+<div class="bpm-section">
+<div class="bpm-section-title" id="selectSpeedTitle">SELECT SHOT-CLOCK SPEED</div>
+<div class="bpm-tier active" id="tierSlow" data-speed="slow">
+<div class="bpm-tier-header"><div class="bpm-tier-left"><span class="bpm-tier-icon">🏋️</span><div class="bpm-tier-info"><div class="bpm-tier-name">:05 CLOCK</div><div class="bpm-tier-bpm">60 BPM</div></div></div>
+<span class="bpm-tier-status" id="tierSlowStatus">✓ FREE</span></div>
+<div class="bpm-tier-progress"><span class="bpm-gostars" id="starsSlow">⭐☆☆☆☆☆☆☆☆☆</span><span class="bpm-level" id="levelSlowDisplay">L1</span></div>
+</div>
+<div class="bpm-tier" id="tierMed" data-speed="med">
+<div class="bpm-tier-header"><div class="bpm-tier-left"><span class="bpm-tier-icon">🎯</span><div class="bpm-tier-info"><div class="bpm-tier-name">:03 CLOCK</div><div class="bpm-tier-bpm">90 BPM</div></div></div>
+<span class="bpm-tier-status" id="tierMedStatus">✓ FREE</span></div>
+<div class="bpm-tier-progress"><span class="bpm-gostars" id="starsMed">☆☆☆☆☆☆☆☆☆☆</span><span class="bpm-level" id="levelMedDisplay">L1</span></div>
+</div>
+<div class="bpm-tier" id="tierFast" data-speed="fast">
+<div class="bpm-tier-header"><div class="bpm-tier-left"><span class="bpm-tier-icon">⚡</span><div class="bpm-tier-info"><div class="bpm-tier-name">:02 CLOCK</div><div class="bpm-tier-bpm">120 BPM</div></div></div>
+<span class="bpm-tier-status" id="tierFastStatus">✓ FREE</span></div>
+<div class="bpm-tier-progress"><span class="bpm-gostars" id="starsFast">☆☆☆☆☆☆☆☆☆☆</span><span class="bpm-level" id="levelFastDisplay">L1</span></div>
+</div></div>
+<div class="level-section">
+<div class="level-section-title" id="selectLevelTitle">SELECT LEVEL</div>
+<div class="level-grid" id="levelGrid">
+<button class="level-btn active" data-level="1">1</button><button class="level-btn" data-level="2">2</button><button class="level-btn" data-level="3">3</button><button class="level-btn" data-level="4">4</button><button class="level-btn" data-level="5">5</button>
+<button class="level-btn" data-level="6">6</button><button class="level-btn" data-level="7">7</button><button class="level-btn" data-level="8">8</button><button class="level-btn" data-level="9">9</button><button class="level-btn" data-level="10">10</button>
+</div>
+<div class="level-info"><span class="level-info-label" id="targetsLabel">Numbers to find:</span><span class="level-info-value" id="targetsDisplay">1</span></div>
+</div>
+<button class="letsgo-btn" id="letsGoBtn">LET'S GO!</button>
+</div></div>
+
+<div class="screen" id="screen-play"><div class="play-container">
+<div class="play-stats">
+<div class="play-stat"><div class="play-stat-value" id="playTier">1</div><div class="play-stat-label">GoStars</div></div>
+<div class="play-stat"><div class="play-stat-value" id="playRound">0/3</div><div class="play-stat-label" id="playRoundLabel">Round</div></div>
+<div class="play-stat"><div class="play-stat-value" id="playStreak">0</div><div class="play-stat-label">🔥</div></div>
+<div class="play-stat"><div class="play-stat-value" id="playScore">0</div><div class="play-stat-label" id="playScoreLabel">Score</div></div>
+</div>
+<div class="target-display" id="targetDisplay"></div>
+<div class="play-message"><span class="play-message-text" id="playMessage">TAP TO START!</span></div>
+
+<div class="shot-clock-ring" id="shotClockRing">
+<svg class="shot-clock-svg" viewBox="0 0 100 100">
+<circle class="shot-clock-track" cx="50" cy="50" r="42"/>
+<circle class="shot-clock-progress" id="clockProgress" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="0"/>
+</svg>
+<div class="shot-clock-center">
+<div class="shot-clock-num" id="clockNum">5.0</div>
+<div class="shot-clock-label">SHOT CLOCK</div>
+</div>
+</div>
+
+<div class="play-tiers" id="playTierDots"></div>
+<div class="play-court-wrap"><div class="play-court" id="playCourt"></div></div>
+<div class="play-info">
+<div class="play-info-badge" id="playBadge">L1 PRACTICE</div>
+<div class="play-info-cells" id="playCells">FIND: 1</div>
+<div class="play-info-score" id="playTotal">0</div>
+</div>
+<button class="play-action-btn" id="playActionBtn">LET'S GO</button>
+</div></div>
+
+<div class="overlay" id="tierupOverlay"><div class="overlay-card">
+<div class="overlay-emoji">⭐</div>
+<h2 class="overlay-title" id="tierupTitle">GOSTAR EARNED!</h2>
+<p class="overlay-message" id="tierupMessage"></p>
+<button class="overlay-btn" id="tierupBtn">LET'S GO!</button>
+</div></div>
+
+<div class="emoji-container" id="emojiContainer"></div>
+<div class="coach-message" id="coachMessage"></div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var $$=function(sel){return document.querySelectorAll(sel)};
+var currentScreen='demo',currentLang='en';
+var translations={
+en:{demoBadge:'Reaction Gaming',demoSubtitle:'Visual Search · Memory · Reaction',demoFlashLabel:'FIND THESE NUMBERS',htpToggle:'HOW TO PRACTICE',objectiveTitle:'OBJECTIVE',step1:'<strong>See the numbers</strong> flash on screen — memorize them',step2:'<strong>All 25 grid cells</strong> show random numbers 1–25',step3:'<strong>Find and tap</strong> all the target numbers before time runs out!',progressionTitle:'PROGRESSION',prog1:'Complete <strong>3 rounds</strong> to earn a GoStar',prog2:'Level 1 = find <strong>1 number</strong>, Level 2 = find <strong>2</strong>, and so on',prog3:'Wrong tap = <strong>round fails</strong> — accuracy matters!',speedsTitle:'BPM SPEEDS',speed1:'<strong>:05 Clock (60 BPM)</strong> — 5 seconds to find them',speed2:'<strong>:03 Clock (90 BPM)</strong> — 3 seconds, stay sharp',speed3:'<strong>:02 Clock (120 BPM)</strong> — 2 seconds, pure reaction!',tipTitle:'TIP',tipText:'Scan the whole grid fast — train your eyes to find multiple targets at once!',playNow:'▶ PRACTICE NOW',poweredBy:'Powered by',trophyTitle:'SHOT-CLOCK CHALLENGES',trophySubtitle:'Reactific Progress',selectSpeed:'SELECT SHOT-CLOCK SPEED',tierFree:'✓ FREE',selectLevel:'SELECT LEVEL',targetsLabel:'Numbers to find:',letsGo:"LET'S GO!",roundLabel:'Round',scoreLabel:'Score',tapLetsGo:"TAP LET'S GO!",memorizeMsg:'MEMORIZE!',findMsg:'FIND THEM!',timeoutMsg:'TOO SLOW!',wrongMsg:'WRONG TAP!',tierupTitle:'GOSTAR EARNED!',tierupMsg:'You earned GoStar {tier}!',tierupLevelMsg:' Now Level {level} — find {targets} numbers!',masterMsg:'🏆 10 GOSTARS — MASTER! 🏆'},
+es:{demoBadge:'Reaction Gaming',demoSubtitle:'Búsqueda Visual · Memoria · Reacción',demoFlashLabel:'ENCUENTRA ESTOS NÚMEROS',htpToggle:'CÓMO PRACTICAR',objectiveTitle:'OBJETIVO',step1:'<strong>Ve los números</strong> destellar en pantalla — memorízalos',step2:'<strong>Las 25 celdas</strong> muestran números al azar del 1 al 25',step3:'<strong>Encuentra y toca</strong> todos los números objetivo antes de que se acabe el tiempo',progressionTitle:'PROGRESIÓN',prog1:'Completa <strong>3 rondas</strong> para ganar un GoStar',prog2:'Nivel 1 = encuentra <strong>1 número</strong>, Nivel 2 = encuentra <strong>2</strong>, y así',prog3:'¿Toque incorrecto? = <strong>ronda fallida</strong> — ¡la precisión importa!',speedsTitle:'VELOCIDADES',speed1:'<strong>Entrenamiento (60 BPM)</strong> — 5 segundos para encontrarlos',speed2:'<strong>Tempo (90 BPM)</strong> — 3 segundos, mantente alerta',speed3:'<strong>Elite (120 BPM)</strong> — 2 segundos, ¡pura reacción!',tipTitle:'CONSEJO',tipText:'Escanea toda la cuadrícula rápido — ¡entrena tus ojos para encontrar múltiples objetivos a la vez!',playNow:'▶ PRACTICA AHORA',poweredBy:'Impulsado por',trophyTitle:'REACTIFIC',trophySubtitle:'Progreso de Reactific',selectSpeed:'SELECCIONA VELOCIDAD',tierFree:'✓ GRATIS',selectLevel:'SELECCIONA NIVEL',targetsLabel:'Números a encontrar:',letsGo:"¡PA'LANTE!",roundLabel:'Ronda',scoreLabel:'Puntos',tapLetsGo:"¡TOCA PA'LANTE!",memorizeMsg:'¡MEMORIZA!',findMsg:'¡ENCUÉNTRALOS!',timeoutMsg:'¡MUY LENTO!',wrongMsg:'¡INCORRECTO!',tierupTitle:'¡GOSTAR GANADO!',tierupMsg:'¡Ganaste GoStar {tier}!',tierupLevelMsg:' Ahora Nivel {level} — encuentra {targets} números',masterMsg:'🏆 10 GOSTARS — ¡MAESTRO! 🏆'}
+};
+function t(key){return translations[currentLang][key]||translations.en[key]||key}
+function updateUILanguage(){
+$('demoBadge').textContent=t('demoBadge');$('demoSubtitle').textContent=t('demoSubtitle');$('demoFlashLabel').textContent=t('demoFlashLabel');$('htpToggleText').textContent=t('htpToggle');$('objectiveTitle').textContent=t('objectiveTitle');$('step1').innerHTML=t('step1');$('step2').innerHTML=t('step2');$('step3').innerHTML=t('step3');$('progressionTitle').textContent=t('progressionTitle');$('prog1').innerHTML=t('prog1');$('prog2').innerHTML=t('prog2');$('prog3').innerHTML=t('prog3');$('speedsTitle').textContent=t('speedsTitle');$('speed1').innerHTML=t('speed1');$('speed2').innerHTML=t('speed2');$('speed3').innerHTML=t('speed3');$('tipTitle').textContent=t('tipTitle');$('tipText').textContent=t('tipText');$('playNowBtn').textContent=t('playNow');$('poweredBy').textContent=t('poweredBy');$('trophyTitle').textContent=t('trophyTitle');$('trophySubtitle').textContent=t('trophySubtitle');$('selectSpeedTitle').textContent=t('selectSpeed');$('tierSlowStatus').textContent=t('tierFree');$('tierMedStatus').textContent=t('tierFree');$('tierFastStatus').textContent=t('tierFree');$('selectLevelTitle').textContent=t('selectLevel');$('targetsLabel').textContent=t('targetsLabel');$('letsGoBtn').textContent=t('letsGo');$('playRoundLabel').textContent=t('roundLabel');$('playScoreLabel').textContent=t('scoreLabel');$('playActionBtn').textContent=t('letsGo');$('tierupTitle').textContent=t('tierupTitle');$('tierupBtn').textContent=t('letsGo');
+$('langEN').classList.toggle('active',currentLang==='en');$('langES').classList.toggle('active',currentLang==='es');
+}
+function setLang(l){currentLang=l;localStorage.setItem('lc-lang',l);updateUILanguage()}
+$('langEN').onclick=function(){setLang('en')};$('langES').onclick=function(){setLang('es')};
+var savedLang=localStorage.getItem('lc-lang');if(savedLang)currentLang=savedLang;
+function showScreen(name){$('screen-demo').classList.remove('active');$('screen-trophy').classList.remove('active');$('screen-play').classList.remove('active');currentScreen=name;document.querySelector('.nav-lang').style.display=name==='play'?'none':'flex';$('screen-'+name).classList.add('active')}
+
+var demoCells=[],demoEpoch=0,demoTimeouts=[];
+function initDemoCourt(){var dc=$('demoCourt');dc.innerHTML='';demoCells=[];var nums=shuffleNums();for(var i=0;i<25;i++){var c=document.createElement('div');c.className='demo-cell';c.textContent=nums[i];dc.appendChild(c);demoCells.push(c)}}
+function shuffleNums(){var a=[];for(var i=1;i<=25;i++)a.push(i);for(var j=a.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var tmp=a[j];a[j]=a[k];a[k]=tmp}return a}
+function setDT(fn,d){var id=setTimeout(function(){demoTimeouts.splice(demoTimeouts.indexOf(id),1);fn()},d);demoTimeouts.push(id)}
+function clearDT(){demoTimeouts.forEach(clearTimeout);demoTimeouts=[]}
+function runDemo(epoch){if(epoch!==demoEpoch||currentScreen!=='demo')return;var nums=shuffleNums();demoCells.forEach(function(c,i){c.className='demo-cell';c.textContent=nums[i]});var count=Math.random()<0.5?1:2;var targets=nums.slice(0,count);$('demoFlashNums').textContent=targets.join('  ');$('demoLabel').textContent='👀 '+t('memorizeMsg');$('demoLabel').className='demo-label phase-watch';setDT(function(){if(epoch!==demoEpoch)return;$('demoLabel').textContent='🔍 '+t('findMsg');$('demoLabel').className='demo-label phase-go';$('demoFlashNums').textContent='?';targets.forEach(function(num,ti){setDT(function(){if(epoch!==demoEpoch)return;demoCells.forEach(function(c){if(parseInt(c.textContent)===num)c.classList.add('target')})},ti*400)});setDT(function(){if(epoch!==demoEpoch)return;demoCells.forEach(function(c){if(c.classList.contains('target')){c.classList.remove('target');c.classList.add('found')}});$('demoLabel').textContent='✅ FOUND!';$('demoLabel').className='demo-label phase-success';$('demoFlashNums').textContent=targets.join('  ')},targets.length*400+200);setDT(function(){if(epoch!==demoEpoch)return;var n2=shuffleNums();demoCells.forEach(function(c,i){c.className='demo-cell';c.textContent=n2[i]});$('demoFlashNums').textContent='—';$('demoLabel').textContent='👀 '+t('memorizeMsg');$('demoLabel').className='demo-label phase-watch';runDemo(epoch)},targets.length*400+1800)},2000)}
+function startDemo(){demoEpoch++;clearDT();initDemoCourt();runDemo(demoEpoch)}
+function stopDemo(){demoEpoch++;clearDT()}
+var htpToggle=$('htpToggle'),htpContent=$('htpContent');
+htpToggle.onclick=function(){htpToggle.classList.toggle('open');htpContent.classList.toggle('open')};
+$('playNowBtn').onclick=function(){stopDemo();showScreen('trophy')};
+
+var gameState={speed:'slow',level:1,tier:1,roundsCompleted:0,score:0,streak:0};
+var ROUNDS_PER_TIER=3,TOTAL_TIERS=10;
+function getTargetCount(level){return level}
+var SPEED_TIME={slow:5000,med:3000,fast:2000};
+function getSpeedKey(speed,key){return'lc-hunt-'+speed+'-'+key}
+function loadSpeedState(speed){return{level:parseInt(localStorage.getItem(getSpeedKey(speed,'level')))||1,tier:parseInt(localStorage.getItem(getSpeedKey(speed,'tier')))||1,roundsCompleted:parseInt(localStorage.getItem(getSpeedKey(speed,'rounds')))||0,score:parseInt(localStorage.getItem(getSpeedKey(speed,'score')))||0,streak:parseInt(localStorage.getItem(getSpeedKey(speed,'streak')))||0}}
+function saveSpeedState(){localStorage.setItem(getSpeedKey(gameState.speed,'level'),gameState.level);localStorage.setItem(getSpeedKey(gameState.speed,'tier'),gameState.tier);localStorage.setItem(getSpeedKey(gameState.speed,'rounds'),gameState.roundsCompleted);localStorage.setItem(getSpeedKey(gameState.speed,'score'),gameState.score);localStorage.setItem(getSpeedKey(gameState.speed,'streak'),gameState.streak);if(typeof syncCognitiveScore==='function')syncCognitiveScore(gameState.speed,gameState.level,gameState.score,gameState.streak,gameState.tier)}
+function renderStars(tier){var s='';for(var i=0;i<10;i++)s+=i<tier?'⭐':'☆';return s}
+function updateTrophyUI(){var sd=loadSpeedState('slow'),md=loadSpeedState('med'),fd=loadSpeedState('fast');$('starsSlow').textContent=renderStars(sd.tier);$('levelSlowDisplay').textContent='L'+sd.level;$('starsMed').textContent=renderStars(md.tier);$('levelMedDisplay').textContent='L'+md.level;$('starsFast').textContent=renderStars(fd.tier);$('levelFastDisplay').textContent='L'+fd.level;$$('.bpm-tier').forEach(function(t){t.classList.remove('active')});$('tier'+(gameState.speed==='slow'?'Slow':gameState.speed==='med'?'Med':'Fast')).classList.add('active');$$('.level-btn').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.level)===gameState.level)});$('targetsDisplay').textContent=getTargetCount(gameState.level)}
+$$('.bpm-tier').forEach(function(tier){tier.onclick=function(){gameState.speed=tier.dataset.speed;var d=loadSpeedState(gameState.speed);gameState.level=d.level;gameState.tier=d.tier;gameState.roundsCompleted=d.roundsCompleted;gameState.score=d.score;gameState.streak=d.streak;updateTrophyUI()}});
+$$('.level-btn').forEach(function(btn){btn.onclick=function(){gameState.level=parseInt(btn.dataset.level);gameState.tier=1;gameState.roundsCompleted=0;saveSpeedState();updateTrophyUI()}});
+$('letsGoBtn').onclick=function(){showScreen('play');initGame()};
+
+var playCells=[],playTimeouts=[],isPlaying=false,canTap=false;
+var targetNums=[],foundNums=[],timerInterval=null,timeLeft=0;
+var audioCtx=null;
+var LAUGH_EMOJIS=['😂','😆','🤣','😄','😁','🥳','😊','🏀'];
+var PARTY_EMOJIS=['🥳','🎉','😂','🤣','✨','💫','🏀','🏆'];
+function setPT(fn,d){var id=setTimeout(function(){playTimeouts.splice(playTimeouts.indexOf(id),1);fn()},d);playTimeouts.push(id);return id}
+function clearPT(){playTimeouts.forEach(clearTimeout);playTimeouts=[]}
+function clearTimer(){if(timerInterval)clearInterval(timerInterval);timerInterval=null}
+function initPlayCourt(){var pc=$('playCourt');pc.innerHTML='';playCells=[];var nums=shuffleNums();for(var i=0;i<25;i++){var c=document.createElement('div');c.className='play-cell';c.dataset.index=i;c.dataset.num=nums[i];c.textContent=nums[i];c.onclick=function(){handleTap(this)};pc.appendChild(c);playCells.push(c)}}
+function reshuffleGrid(){var nums=shuffleNums();playCells.forEach(function(c,i){c.dataset.num=nums[i];c.textContent=nums[i]})}
+function renderTargetDisplay(){var d=$('targetDisplay');d.innerHTML='';targetNums.forEach(function(n){var card=document.createElement('div');card.className='target-card'+(foundNums.indexOf(n)!==-1?' found':'');card.id='tc-'+n;card.innerHTML='<div class="target-card-label">'+t('findMsg').replace('!','')+'</div><div class="target-card-num">'+n+'</div>';d.appendChild(card)})}
+function renderPlayTierDots(){var c=$('playTierDots');c.innerHTML='';for(var i=1;i<=TOTAL_TIERS;i++){var d=document.createElement('div');d.className='play-tier-dot'+(i<gameState.tier?' completed':'')+(i===gameState.tier?' current':'');c.appendChild(d)}}
+function updatePlayUI(){$('playTier').textContent=gameState.tier;$('playRound').textContent=gameState.roundsCompleted+'/'+ROUNDS_PER_TIER;$('playStreak').textContent=gameState.streak;$('playScore').textContent=gameState.score;$('playTotal').textContent=gameState.score;var spName=gameState.speed==='slow'?':05 CLOCK':gameState.speed==='med'?':03 CLOCK':':02 CLOCK';$('playBadge').textContent='L'+gameState.level+' '+spName;$('playCells').textContent='FIND: '+getTargetCount(gameState.level);renderPlayTierDots()}
+
+function resetClock(){var rP=$('clockProgress');var rN=$('clockNum');var rR=$('shotClockRing');rP.style.strokeDashoffset='0';rP.className='shot-clock-progress';rN.className='shot-clock-num';rN.textContent=(SPEED_TIME[gameState.speed]/1000).toFixed(1);rR.className='shot-clock-ring'}
+
+function initGame(){initPlayCourt();var d=loadSpeedState(gameState.speed);gameState.level=d.level;gameState.tier=d.tier;gameState.roundsCompleted=d.roundsCompleted;gameState.score=d.score;gameState.streak=d.streak;isPlaying=false;canTap=false;targetNums=[];foundNums=[];$('targetDisplay').innerHTML='';resetClock();updatePlayUI();$('playMessage').textContent=t('tapLetsGo');$('playMessage').className='play-message-text';$('playActionBtn').disabled=false}
+
+function playTone(freq,dur){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}try{if(audioCtx.state==='suspended')audioCtx.resume();var osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type='sine';osc.frequency.value=freq;osc.connect(gain);gain.connect(audioCtx.destination);gain.gain.setValueAtTime(0.25,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+dur);osc.start();osc.stop(audioCtx.currentTime+dur+0.05)}catch(e){}}
+function playFlash(){playTone(880,0.12)}
+function playHit(){playTone(740,0.08)}
+function playSuccess(){[523,659,784].forEach(function(f,i){setTimeout(function(){playTone(f,0.12)},i*80)})}
+function playError(){playTone(180,0.3)}
+
+function getCourtCenter(){var r=$('playCourt').getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}}
+function createBurstEmoji(emoji,x,y,type){var el=document.createElement('div');el.className='burst-emoji'+(type?' '+type:'');el.textContent=emoji;var angle=Math.random()*Math.PI*2,dist=50+Math.random()*80;el.style.cssText='left:'+x+'px;top:'+y+'px;--tx:'+Math.cos(angle)*dist+'px;--ty:'+Math.sin(angle)*dist+'px;--rot:'+(Math.random()-0.5)*720+'deg';$('emojiContainer').appendChild(el);setTimeout(function(){if(el.parentNode)el.remove()},2000)}
+function laughCelebration(intensity){var center=getCourtCenter(),count=intensity==='party'?8:intensity==='big'?5:3;var emojis=intensity==='party'?PARTY_EMOJIS:LAUGH_EMOJIS,type=intensity==='party'?'party':intensity==='big'?'big':'';for(var i=0;i<count;i++){(function(idx){setTimeout(function(){createBurstEmoji(emojis[Math.floor(Math.random()*emojis.length)],center.x+(Math.random()-0.5)*20,center.y+(Math.random()-0.5)*20,type)},idx*35)})(i)}$('playCourt').classList.add('joy-pulse');setTimeout(function(){$('playCourt').classList.remove('joy-pulse')},500)}
+function showCoach(msg){$('coachMessage').textContent=msg;$('coachMessage').classList.add('show');setTimeout(function(){$('coachMessage').classList.remove('show')},2000)}
+
+function startTimer(){
+  var total=SPEED_TIME[gameState.speed];timeLeft=total;
+  var circ=263.89;
+  var prog=$('clockProgress');var num=$('clockNum');var ring=$('shotClockRing');
+  prog.style.strokeDashoffset='0';prog.className='shot-clock-progress';num.className='shot-clock-num';ring.className='shot-clock-ring';
+  num.textContent=(total/1000).toFixed(1);
+  clearTimer();
+  var tickRate=800,lastTick=Date.now();
+  timerInterval=setInterval(function(){
+    timeLeft-=50;var pct=Math.max(0,timeLeft/total);
+    prog.style.strokeDashoffset=circ*(1-pct);
+    num.textContent=Math.max(0,timeLeft/1000).toFixed(1);
+    if(pct<0.1){prog.className='shot-clock-progress flash';num.className='shot-clock-num flash';ring.className='shot-clock-ring throb';tickRate=100}
+    else if(pct<0.25){prog.className='shot-clock-progress danger';num.className='shot-clock-num danger';ring.className='shot-clock-ring throb';tickRate=200}
+    else if(pct<0.5){prog.className='shot-clock-progress warn';num.className='shot-clock-num warn';ring.className='shot-clock-ring';tickRate=400}
+    var now=Date.now();if(now-lastTick>=tickRate&&timeLeft>0){playTone(pct<0.25?220:pct<0.5?330:440,0.03);lastTick=now}
+    if(timeLeft<=0){clearTimer();ring.className='shot-clock-ring explode';prog.className='shot-clock-progress danger';num.className='shot-clock-num danger';num.textContent='0.0';playTone(120,0.4);if(canTap){canTap=false;roundFail('timeout')}}
+  },50);
+}
+function clockSuccess(){var prog=$('clockProgress');var num=$('clockNum');var ring=$('shotClockRing');prog.style.strokeDashoffset='0';prog.className='shot-clock-progress';num.className='shot-clock-num';ring.className='shot-clock-ring success';num.textContent=(timeLeft/1000).toFixed(1)}
+
+function startRound(){if(isPlaying)return;clearPT();clearTimer();isPlaying=true;canTap=false;foundNums=[];$('playActionBtn').disabled=true;reshuffleGrid();playCells.forEach(function(c){c.className='play-cell'});var count=getTargetCount(gameState.level);var all=[];for(var i=1;i<=25;i++)all.push(i);for(var j=all.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var tmp=all[j];all[j]=all[k];all[k]=tmp}targetNums=all.slice(0,count);renderTargetDisplay();$('playMessage').textContent=t('memorizeMsg');$('playMessage').className='play-message-text watch';playFlash();setPT(function(){if(!isPlaying)return;$('playMessage').textContent=t('findMsg');$('playMessage').className='play-message-text go';canTap=true;startTimer()},1200)}
+
+function handleTap(cell){if(!canTap||!isPlaying)return;var num=parseInt(cell.dataset.num);if(foundNums.indexOf(num)!==-1)return;if(targetNums.indexOf(num)!==-1){foundNums.push(num);cell.className='play-cell target-hit';playHit();var tc=$('tc-'+num);if(tc)tc.classList.add('found');if(foundNums.length>=targetNums.length){canTap=false;clearTimer();setPT(function(){roundSuccess()},300)}}else{cell.className='play-cell wrong-tap';playError();canTap=false;clearTimer();setPT(function(){playCells.forEach(function(c){if(targetNums.indexOf(parseInt(c.dataset.num))!==-1&&foundNums.indexOf(parseInt(c.dataset.num))===-1)c.className='play-cell reveal'});setPT(function(){roundFail('wrong')},1500)},300)}}
+
+function roundSuccess(){isPlaying=false;clockSuccess();var timeBonus=Math.floor(timeLeft/100);var pts=getTargetCount(gameState.level)*50*(gameState.speed==='fast'?3:gameState.speed==='med'?2:1)+timeBonus;gameState.score+=pts;gameState.streak++;gameState.roundsCompleted++;saveSpeedState();var intensity=gameState.streak>=5?'party':gameState.streak>=3?'big':'medium';var msgs=gameState.streak>=5?['🏆 LEGEND!','🏆 WOW!']:gameState.streak>=3?['🔥 FIRE!','🤣 AMAZING!']:['😄 NICE!','😊 GREAT!'];playSuccess();laughCelebration(intensity);showCoach(msgs[Math.floor(Math.random()*msgs.length)]);updatePlayUI();if(gameState.roundsCompleted>=ROUNDS_PER_TIER){setPT(function(){gameState.tier<TOTAL_TIERS?tierUp():maxTier()},800)}else{setPT(resetRound,1200)}}
+
+function roundFail(reason){isPlaying=false;gameState.streak=0;saveSpeedState();updatePlayUI();$('playMessage').textContent=reason==='timeout'?t('timeoutMsg'):t('wrongMsg');$('playMessage').className='play-message-text error';setPT(resetRound,2000)}
+
+function tierUp(){gameState.tier++;gameState.roundsCompleted=0;var oldLevel=gameState.level;if(gameState.level<10)gameState.level++;saveSpeedState();laughCelebration('party');var msg=t('tierupMsg').replace('{tier}',gameState.tier);if(gameState.level>oldLevel)msg+=t('tierupLevelMsg').replace('{level}',gameState.level).replace('{targets}',getTargetCount(gameState.level));$('tierupMessage').innerHTML=msg;$('tierupOverlay').classList.add('show');updatePlayUI()}
+function maxTier(){gameState.roundsCompleted=0;if(gameState.level<10)gameState.level=10;saveSpeedState();$('tierupMessage').innerHTML=t('masterMsg');document.querySelector('#tierupOverlay .overlay-emoji').textContent='👑';$('tierupOverlay').classList.add('show');updatePlayUI()}
+$('tierupBtn').onclick=function(){$('tierupOverlay').classList.remove('show');document.querySelector('#tierupOverlay .overlay-emoji').textContent='⭐';resetRound()};
+
+function resetRound(){clearPT();clearTimer();isPlaying=false;canTap=false;targetNums=[];foundNums=[];playCells.forEach(function(c){c.className='play-cell'});$('targetDisplay').innerHTML='';resetClock();$('playMessage').textContent=(gameState.roundsCompleted+1)+'/'+ROUNDS_PER_TIER+' — '+t('tapLetsGo');$('playMessage').className='play-message-text';$('playActionBtn').disabled=false;updatePlayUI()}
+
+$('playActionBtn').onclick=startRound;
+updateUILanguage();initDemoCourt();startDemo();updateTrophyUI();
+})();
+</script>
+<script>window.COGNITIVE_TEST_NAME='numhunt';</script>
+<script src="/cognitive-sync.js"></script>
+</body>
+</html>
