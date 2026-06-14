@@ -1081,28 +1081,44 @@ clearTimers();
 currentTarget=-1;
 
 if(won){
-g.streak++;
-g.perfects++;
 
-var allPerfect=tapResults.length===pattern.length && tapResults.every(function(x){
+g.streak++;
+
+var allPerfect=tapResults.length===pattern.length &&
+tapResults.every(function(x){
 return x==='perfect';
 });
 
 if(allPerfect){
+
+g.perfects++;
+
 flashMessage(t('ap'),'perfect');
+
 showCoach(t('cm'));
+
 }else{
+
+g.perfects=0;
+
 flashMessage(t('li'),'perfect');
+
 showCoach(g.streak>=3?t('cf'):t('cn'));
+
 }
 
 save();
+
 updatePlay();
 
-if(g.perfects>=2){
+if(g.perfects>=3){
+
 setTimeout(levelUp,900);
+
 }else{
+
 setTimeout(finishRound,1100);
+
 }
 
 }else{
