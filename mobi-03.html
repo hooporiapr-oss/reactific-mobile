@@ -567,7 +567,7 @@ html,body{
 
     <div class="bpm-tier" id="tierMed" data-speed="med">
       <div class="tier-row">
-        <div class="tier-left"><div class="tier-icon">🎯</div><div><div class="tier-name">TEMPO</div><div class="tier-bpm">67 BPM</div></div></div>
+        <div class="tier-left"><div class="tier-icon">🎯</div><div><div class="tier-name">TEMPO</div><div class="tier-bpm">60 BPM</div></div></div>
         <div class="tier-status" id="tsM">✓ FREE</div>
       </div>
       <div class="tier-progress"><strong id="lM">LEVEL 1</strong><span id="sM">0 pts</span></div>
@@ -575,7 +575,7 @@ html,body{
 
     <div class="bpm-tier" id="tierFast" data-speed="fast">
       <div class="tier-row">
-        <div class="tier-left"><div class="tier-icon">⚡</div><div><div class="tier-name">ELITE</div><div class="tier-bpm">80 BPM</div></div></div>
+        <div class="tier-left"><div class="tier-icon">⚡</div><div><div class="tier-name">ELITE</div><div class="tier-bpm">70 BPM</div></div></div>
         <div class="tier-status" id="tsF">✓ FREE</div>
       </div>
       <div class="tier-progress"><strong id="lF">LEVEL 1</strong><span id="sF">0 pts</span></div>
@@ -665,8 +665,8 @@ p2:'Higher levels = <strong>more cells</strong> per round',
 p3:'You have <strong>3 lives</strong> per round',
 st:'BPM SPEEDS',
 sp1:'<strong>Training (50 BPM)</strong> — steady reaction rhythm',
-sp2:'<strong>Tempo (67 BPM)</strong> — faster rhythm',
-sp3:'<strong>Elite (80 BPM)</strong> — fast reaction rhythm',
+sp2:'<strong>Tempo (60 BPM)</strong> — game rhythm',
+sp3:'<strong>Elite (70 BPM)</strong> — controlled challenge rhythm',
 pn:'▶ PLAY NOW',pw:'Powered by',trt:'YOUR PROGRESS',trs:'Reaction Control Levels',
 ss:'SELECT BPM SPEED',tf:'✓ FREE',sl:'SELECT LEVEL',cb:'Cells per round:',
 lg:"LET'S GO!",ll:'Level',rl:'Round',scl:'Score',lu:'LEVEL UP:',
@@ -687,8 +687,8 @@ p2:'Niveles más altos = <strong>más celdas</strong> por ronda',
 p3:'Tienes <strong>3 vidas</strong> por ronda',
 st:'VELOCIDADES BPM',
 sp1:'<strong>Entrenamiento (50 BPM)</strong> — ritmo de reacción estable',
-sp2:'<strong>Tempo (67 BPM)</strong> — ritmo más rápido',
-sp3:'<strong>Elite (80 BPM)</strong> — ritmo de reacción rápido',
+sp2:'<strong>Tempo (60 BPM)</strong> — ritmo de juego',
+sp3:'<strong>Elite (70 BPM)</strong> — ritmo de desafío controlado',
 pn:'▶ JUGAR AHORA',pw:'Impulsado por',trt:'TU PROGRESO',trs:'Niveles de Reaction Control',
 ss:'SELECCIONA VELOCIDAD BPM',tf:'✓ GRATIS',sl:'SELECCIONA NIVEL',cb:'Celdas por ronda:',
 lg:"¡PA'LANTE!",ll:'Nivel',rl:'Ronda',scl:'Puntos',lu:'SUBIR:',
@@ -817,8 +817,8 @@ var GOOD_WINDOW=600;
 function cellsPerRound(level){return level+2}
 
 function interval(){
-if(g.speed==='fast')return 750;
-if(g.speed==='med')return 900;
+if(g.speed==='fast')return 850;
+if(g.speed==='med')return 1000;
 return 1200;
 }
 
