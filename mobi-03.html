@@ -1081,15 +1081,18 @@ currentTarget=-1;
 
 if(won){
 g.streak++;
-var allPerfect=tapResults.length===pattern.length && tapResults.every(x=>x==='perfect');
-if(allPerfect){
 g.perfects++;
+
+var allPerfect=tapResults.length===pattern.length && tapResults.every(x=>x==='perfect');
+
+if(allPerfect){
 flashMessage(t('ap'),'perfect');
 showCoach(t('cm'));
 }else{
 flashMessage(t('li'),'perfect');
 showCoach(g.streak>=3?t('cf'):t('cn'));
 }
+
 save();
 updatePlay();
 
@@ -1098,15 +1101,22 @@ setTimeout(levelUp,900);
 }else{
 setTimeout(finishRound,1100);
 }
+
 }else{
+
 g.streak=0;
 g.perfects=0;
+
 save();
+
 updatePlay();
+
 flashMessage(reason||t('ol'),'miss');
+
 showCoach(t('ta'));
+
 setTimeout(finishRound,1300);
-}
+
 }
 
 function levelUp(){
