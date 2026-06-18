@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Game Hub | Reactific™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(0,140,255,.12),transparent 50%),
+             radial-gradient(ellipse at 80% 90%,rgba(155,89,182,.1),transparent 50%),
+             linear-gradient(180deg,#050810,#020508);
+  color:#fff}
+
+.header{background:rgba(0,0,0,.5);border-bottom:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.logo{font-size:1.4rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 20px rgba(0,140,255,.5)}
+.logo span{color:#008cff}
+.header-right{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,140,255,.4);object-fit:cover;background:linear-gradient(135deg,#008cff,#9B59B6);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;flex-shrink:0}
+.uname{font-size:.85rem;font-weight:600;color:#a7adba}
+.signout{padding:6px 14px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#8892a0;border-radius:8px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.signout:hover{border-color:rgba(255,255,255,.3);color:#fff}
+
+.hero{padding:28px 20px 16px;text-align:center}
+.welcome{font-size:1.8rem;font-weight:900;margin-bottom:8px}
+.welcome span{color:#008cff}
+.class-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,140,255,.1);border:1px solid rgba(0,140,255,.3);border-radius:999px;padding:6px 18px;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#008cff}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 16px 24px;max-width:500px;margin:0 auto}
+.stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;text-align:center}
+.stat-v{font-size:1.8rem;font-weight:900;color:#008cff;line-height:1}
+.stat-l{font-size:.58rem;color:#8892a0;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+
+.section{padding:0 16px 20px;max-width:960px;margin:0 auto}
+.sec-title{font-size:.6rem;font-weight:900;letter-spacing:.25em;text-transform:uppercase;padding:0 4px;margin-bottom:10px}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.game-card{background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.07);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;transition:transform .15s,border-color .15s,box-shadow .15s;position:relative;overflow:hidden}
+.game-card::before{content:'';position:absolute;inset:0;background:var(--gc);opacity:.05;transition:opacity .15s}
+.game-card:hover::before{opacity:.12}
+.game-card:hover{transform:translateY(-2px);border-color:var(--gb);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.game-ico{width:48px;height:48px;border-radius:10px;background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;opacity:.85}
+.game-info{flex:1}
+.game-name{font-size:.88rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.game-desc{font-size:.7rem;color:#8892a0;line-height:1.45}
+.game-tag{position:absolute;top:8px;right:8px;font-size:.45rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+
+.divider{height:1px;background:rgba(255,255,255,.06);margin:4px 16px 20px}
+
+.lb-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
+.lb-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{width:26px;font-size:.85rem;font-weight:900;color:#ffd35a;text-align:center;flex-shrink:0}
+.lb-name{flex:1;font-size:.85rem;font-weight:600}
+.lb-score{font-size:.85rem;font-weight:900;color:#008cff}
+.lb-empty{text-align:center;padding:24px;color:#3a4250;font-size:.82rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">REACTIFIC<span>™</span></div>
+  <div class="header-right">
+    <div class="avatar" id="avatarEl">?</div>
+    <span class="uname" id="uname">Player</span>
+    <button class="signout" onclick="signOut()">Sign Out</button>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="welcome">Welcome, <span id="heroName">Player</span></div>
+  <div class="class-badge">🏫 <span id="className">Loading class...</span></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-v" id="sScore">—</div><div class="stat-l">Best Score</div></div>
+  <div class="stat"><div class="stat-v" id="sStreak">—</div><div class="stat-l">Best Streak</div></div>
+  <div class="stat"><div class="stat-v" id="sRank">—</div><div class="stat-l">Class Rank</div></div>
+</div>
+
+<div class="section">
+  <div class="sec-title" style="color:#FF1493">⚡ Reflex Arena</div>
+  <div class="game-grid">
+    <a class="game-card" href="/vr-reaction.html" style="--gc:rgba(155,89,182,.8);--gb:rgba(155,89,182,.25)">
+      <div class="game-ico">⚡</div>
+      <div class="game-info"><div class="game-name">Reaction Control</div><div class="game-desc">Tap the circle before it vanishes. One miss ends your session.</div></div>
+      <div class="game-tag" style="background:#9B59B6">Reflex</div>
+    </a>
+    <a class="game-card" href="/vr-colormatch.html" style="--gc:rgba(255,215,0,.8);--gb:rgba(255,215,0,.2)">
+      <div class="game-ico">🎨</div>
+      <div class="game-info"><div class="game-name">Color Match</div><div class="game-desc">Read the color. Tap the matching circle before they shrink.</div></div>
+      <div class="game-tag" style="background:#b8960a">Decision</div>
+    </a>
+    <a class="game-card" href="/vr-memflash.html" style="--gc:rgba(0,191,255,.8);--gb:rgba(0,191,255,.2)">
+      <div class="game-ico">💡</div>
+      <div class="game-info"><div class="game-name">Memory Flash</div><div class="game-desc">A number flashes briefly. Find it among four shrinking circles.</div></div>
+      <div class="game-tag" style="background:#0080aa">Visual</div>
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="sec-title" style="color:#00D9A5">🧠 Cognitive Court</div>
+  <div class="game-grid">
+    <a class="game-card" href="/vr-pattern.html" style="--gc:rgba(255,107,53,.8);--gb:rgba(255,107,53,.2)">
+      <div class="game-ico">🧩</div>
+      <div class="game-info"><div class="game-name">Pattern Recognition</div><div class="game-desc">Memorize numbered cells. Tap them back in exact order.</div></div>
+      <div class="game-tag" style="background:#cc4400">Memory</div>
+    </a>
+    <a class="game-card" href="/vr-sequence.html" style="--gc:rgba(0,206,209,.8);--gb:rgba(0,206,209,.2)">
+      <div class="game-ico">🔢</div>
+      <div class="game-info"><div class="game-name">Flash Recall</div><div class="game-desc">Multiple cells flash at once. Find every single one.</div></div>
+      <div class="game-tag" style="background:#007b80">Memory</div>
+    </a>
+    <a class="game-card" href="/vr-focus.html" style="--gc:rgba(0,217,165,.8);--gb:rgba(0,217,165,.2)">
+      <div class="game-ico">🎵</div>
+      <div class="game-info"><div class="game-name">Sequence Control</div><div class="game-desc">Watch cells light up one by one. Replay in the exact same order.</div></div>
+      <div class="game-tag" style="background:#007a50">Sequence</div>
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="sec-title" style="color:#ffd35a">🏆 Leaderboard</div>
+  <div class="lb-wrap" id="lb">
+    <div class="lb-empty">Loading scores...</div>
+  </div>
+</div>
+
+<script>
+var API='https://api.reactificgaming.com';
+var token=localStorage.getItem('rct-token');
+var user=JSON.parse(localStorage.getItem('rct-user')||'null');
+
+if(!token||!user){window.location.href='/login.html';throw new Error('Not logged in')}
+
+// Set UI
+var name=(user&&user.username)||'Player';
+document.getElementById('uname').textContent=name;
+document.getElementById('heroName').textContent=name;
+document.getElementById('avatarEl').textContent=name[0].toUpperCase();
+if(user.avatar_url){
+  var img=document.createElement('img');
+  img.src=user.avatar_url;img.style='width:34px;height:34px;border-radius:50%;object-fit:cover';
+  img.onerror=function(){};
+  document.getElementById('avatarEl').innerHTML='';
+  document.getElementById('avatarEl').appendChild(img);
+}
+
+// Class
+if(user.class_id){
+  fetch(API+'/api/classes/mine',{headers:{'Authorization':'Bearer '+token}})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('className').textContent=d.class?d.class.name:'No class';
+    }).catch(()=>{document.getElementById('className').textContent='—'});
+}else{
+  document.getElementById('className').textContent='No class — ask your teacher for a code';
+}
+
+// Stats
+fetch(API+'/api/leaderboard/myrank?speed=slow',{headers:{'Authorization':'Bearer '+token}})
+  .then(r=>r.json()).then(d=>{
+    if(d.score)document.getElementById('sScore').textContent=d.score;
+    if(d.rank)document.getElementById('sRank').textContent='#'+d.rank;
+    if(d.streak)document.getElementById('sStreak').textContent=d.streak;
+  }).catch(()=>{});
+
+// Leaderboard
+fetch(API+'/api/leaderboard/alltime?speed=slow&limit=10')
+  .then(r=>r.json()).then(d=>{
+    var lb=document.getElementById('lb');
+    if(!d.entries||!d.entries.length){lb.innerHTML='<div class="lb-empty">No scores yet — be the first!</div>';return}
+    var medals=['🥇','🥈','🥉'];
+    lb.innerHTML=d.entries.map((e,i)=>
+      '<div class="lb-row"><div class="lb-rank">'+(medals[i]||'#'+(i+1))+'</div>'+
+      '<div class="lb-name">'+e.username+'</div>'+
+      '<div class="lb-score">'+e.score+' pts</div></div>'
+    ).join('');
+  }).catch(()=>{document.getElementById('lb').innerHTML='<div class="lb-empty">Leaderboard unavailable</div>'});
+
+function signOut(){localStorage.removeItem('rct-token');localStorage.removeItem('rct-user');window.location.href='/login.html'}
+</script>
+</body>
+</html>
