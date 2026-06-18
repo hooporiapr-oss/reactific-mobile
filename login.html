@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sign In | Gostar Digital</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;background:#050810;color:#fff;display:flex;align-items:center;justify-content:center}
+.card{
+  width:min(420px,94vw);
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:24px;
+  padding:40px 32px;
+  text-align:center;
+}
+.logo{font-size:2.2rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 30px rgba(0,140,255,.6);margin-bottom:4px}
+.logo span{color:#008cff}
+.tagline{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#a7adba;margin-bottom:32px}
+.google-btn{
+  width:100%;height:52px;border-radius:12px;border:2px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  cursor:pointer;font-size:1rem;font-weight:600;color:#fff;
+  transition:all .2s;margin-bottom:16px;
+}
+.google-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
+.google-icon{width:22px;height:22px}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:#3a4250;font-size:.75rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+.input{
+  width:100%;height:48px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+  color:#fff;font-size:.95rem;padding:0 14px;
+  margin-bottom:12px;outline:none;
+  transition:border-color .2s;
+}
+.input:focus{border-color:#008cff}
+.input::placeholder{color:#4a5568}
+.btn{
+  width:100%;height:48px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,#008cff,#00b7ff);
+  color:#fff;font-size:1rem;font-weight:700;
+  cursor:pointer;margin-bottom:12px;
+  transition:opacity .2s;
+}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.switch{font-size:.82rem;color:#8892a0}
+.switch a{color:#008cff;cursor:pointer;text-decoration:none}
+.switch a:hover{text-decoration:underline}
+.error{color:#FF1493;font-size:.82rem;margin-bottom:12px;min-height:20px}
+.success{color:#00D9A5;font-size:.82rem;margin-bottom:12px}
+
+/* CLASS CODE SCREEN */
+#screen-class{display:none}
+.class-title{font-size:1.4rem;font-weight:900;margin-bottom:8px}
+.class-sub{font-size:.85rem;color:#a7adba;margin-bottom:24px;line-height:1.6}
+.code-input{
+  width:100%;height:60px;border-radius:12px;
+  border:2px solid rgba(0,140,255,.4);
+  background:rgba(0,140,255,.06);
+  color:#fff;font-size:1.8rem;font-weight:900;
+  text-align:center;letter-spacing:.3em;text-transform:uppercase;
+  padding:0 14px;outline:none;
+  transition:border-color .2s;
+}
+.code-input:focus{border-color:#008cff;box-shadow:0 0 20px rgba(0,140,255,.3)}
+.skip-link{font-size:.78rem;color:#4a5568;cursor:pointer;margin-top:12px;display:block}
+.skip-link:hover{color:#a7adba}
+
+/* LOADING */
+.loading{display:none;flex-direction:column;align-items:center;gap:16px;padding:20px 0}
+.spinner{width:40px;height:40px;border:3px solid rgba(0,140,255,.2);border-top-color:#008cff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div style="color:#a7adba;font-size:.85rem">Signing you in...</div>
+  </div>
+
+  <!-- LOGIN / REGISTER -->
+  <div id="screen-auth">
+    <div class="logo">REACTIFIC<span>™</span></div>
+    <div class="tagline">Gostar Digital · Cognitive Training</div>
+
+    <!-- Google Sign In -->
+    <button class="google-btn" id="googleBtn">
+      <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="divider">or</div>
+
+    <div id="error-msg" class="error"></div>
+
+    <!-- Login form -->
+    <div id="form-login">
+      <input class="input" id="login-email" type="email" placeholder="School email">
+      <input class="input" id="login-password" type="password" placeholder="Password">
+      <button class="btn" id="loginBtn">Sign In</button>
+      <div class="switch">No account? <a onclick="showRegister()">Register</a></div>
+    </div>
+
+    <!-- Register form -->
+    <div id="form-register" style="display:none">
+      <input class="input" id="reg-email" type="email" placeholder="School email">
+      <input class="input" id="reg-username" type="text" placeholder="Username (no spaces)">
+      <input class="input" id="reg-password" type="password" placeholder="Password (6+ chars)">
+      <button class="btn" id="registerBtn">Create Account</button>
+      <div class="switch">Have an account? <a onclick="showLogin()">Sign In</a></div>
+    </div>
+  </div>
+
+  <!-- CLASS CODE SCREEN -->
+  <div id="screen-class">
+    <div class="logo">REACTIFIC<span>™</span></div>
+    <div class="tagline" style="margin-bottom:24px">Gostar Digital · Cognitive Training</div>
+    <div class="class-title">Enter Your Class Code</div>
+    <div class="class-sub">Ask your teacher for your 6-letter class code to join your class.</div>
+    <input class="code-input" id="classCode" maxlength="6" placeholder="ABC123">
+    <div id="class-error" class="error" style="margin-top:8px"></div>
+    <button class="btn" style="margin-top:16px" id="joinBtn">Join Class</button>
+    <a class="skip-link" onclick="skipClass()">Skip for now — I'll join later</a>
+  </div>
+
+</div>
+
+<script>
+var API = 'https://api.reactificgaming.com';
+var GOOGLE_CLIENT_ID = '1083594447111-jqqpkrco7ju7jqhmad7gct5u5orpv6b3.apps.googleusercontent.com';
+
+function showLoading(v){document.getElementById('loading').style.display=v?'flex':'none';document.getElementById('screen-auth').style.display=v?'none':'block'}
+function showError(msg){document.getElementById('error-msg').textContent=msg}
+function showLogin(){document.getElementById('form-login').style.display='block';document.getElementById('form-register').style.display='none';showError('')}
+function showRegister(){document.getElementById('form-login').style.display='none';document.getElementById('form-register').style.display='block';showError('')}
+
+// After successful login
+function onLoggedIn(user, token){
+  localStorage.setItem('rct-token', token);
+  localStorage.setItem('rct-user', JSON.stringify(user));
+  if(user.needs_class || !user.class_id){
+    showClassScreen();
+  }else{
+    goToApp();
+  }
+}
+
+function showClassScreen(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('screen-auth').style.display='none';
+  document.getElementById('screen-class').style.display='block';
+}
+
+function goToApp(){
+  // Redirect to main game hub
+  window.location.href = '/hub.html';
+}
+
+function skipClass(){
+  goToApp();
+}
+
+// Google Sign In
+window.onload = function(){
+  if(window.google){
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleResponse
+    });
+  }
+};
+
+document.getElementById('googleBtn').onclick = function(){
+  if(window.google){
+    google.accounts.id.prompt();
+  }else{
+    showError('Google Sign In not available. Please use email/password.');
+  }
+};
+
+async function handleGoogleResponse(response){
+  showLoading(true);
+  try{
+    var res = await fetch(API+'/api/auth/google', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token: response.credential})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Google sign in failed');
+    onLoggedIn(data.user, data.token);
+  }catch(e){
+    showLoading(false);
+    showError(e.message);
+  }
+}
+
+// Email login
+document.getElementById('loginBtn').onclick = async function(){
+  var email = document.getElementById('login-email').value.trim();
+  var password = document.getElementById('login-password').value;
+  if(!email || !password){showError('Email and password required');return}
+  showLoading(true);
+  try{
+    var res = await fetch(API+'/api/auth/login',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Login failed');
+    onLoggedIn(data.user, data.token);
+  }catch(e){showLoading(false);showError(e.message)}
+};
+
+// Register
+document.getElementById('registerBtn').onclick = async function(){
+  var email = document.getElementById('reg-email').value.trim();
+  var username = document.getElementById('reg-username').value.trim();
+  var password = document.getElementById('reg-password').value;
+  if(!email||!username||!password){showError('All fields required');return}
+  showLoading(true);
+  try{
+    var res = await fetch(API+'/api/auth/register',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,username,password})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Registration failed');
+    onLoggedIn(data.user, data.token);
+  }catch(e){showLoading(false);showError(e.message)}
+};
+
+// Join class
+document.getElementById('joinBtn').onclick = async function(){
+  var code = document.getElementById('classCode').value.trim().toUpperCase();
+  if(code.length < 6){document.getElementById('class-error').textContent='Enter your 6-letter class code';return}
+  var token = localStorage.getItem('rct-token');
+  try{
+    var res = await fetch(API+'/api/classes/join',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({code})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Could not join class');
+    // Update stored user
+    var user = JSON.parse(localStorage.getItem('rct-user')||'{}');
+    user.class_id = data.class.id;
+    localStorage.setItem('rct-user', JSON.stringify(user));
+    goToApp();
+  }catch(e){document.getElementById('class-error').textContent=e.message}
+};
+
+// Auto-login if token exists
+(function(){
+  var token = localStorage.getItem('rct-token');
+  if(token){
+    fetch(API+'/api/auth/me',{headers:{'Authorization':'Bearer '+token}})
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.user){
+          if(!data.user.class_id) showClassScreen();
+          else goToApp();
+        }
+      }).catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
