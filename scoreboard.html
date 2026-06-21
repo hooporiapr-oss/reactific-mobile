@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reactific Scoreboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  font-family:'Segoe UI',Arial,sans-serif;color:#fff;
+  background:radial-gradient(ellipse at 20% 10%,rgba(0,140,255,.14),transparent 50%),
+             radial-gradient(ellipse at 80% 90%,rgba(155,89,182,.12),transparent 50%),
+             linear-gradient(180deg,#050810,#020508);
+}
+.wrap{width:100%;height:100%;display:flex;flex-direction:column;padding:28px 40px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-shrink:0}
+.logo{font-size:2.2rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 30px rgba(0,140,255,.6)}
+.logo span{color:#008cff}
+.clock{font-size:1.3rem;font-weight:700;color:#8892a0;letter-spacing:.04em}
+
+.tabs{display:flex;gap:10px;margin-bottom:20px;flex-shrink:0}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 0;border-radius:14px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#a7adba;font-size:1.1rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;transition:all .3s}
+.tab.active{color:#fff;border-color:var(--tc);background:var(--tc-bg);box-shadow:0 0 30px var(--tc-glow)}
+.tab-ico{font-size:1.6rem}
+
+.windowbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-shrink:0}
+.windows{display:flex;gap:8px}
+.win-btn{padding:8px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#8892a0;font-size:.95rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.win-btn.active{color:#fff;border-color:#008cff;background:rgba(0,140,255,.18)}
+.streak-note{font-size:.95rem;color:#ffd35a;font-weight:700;letter-spacing:.04em}
+
+.board{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+.row{display:flex;align-items:center;gap:22px;padding:16px 26px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);transition:all .4s ease;flex-shrink:0}
+.row.r1{background:rgba(255,211,90,.1);border-color:rgba(255,211,90,.35)}
+.row.r2{background:rgba(200,204,212,.07);border-color:rgba(200,204,212,.25)}
+.row.r3{background:rgba(205,138,74,.08);border-color:rgba(205,138,74,.28)}
+.rank{width:64px;text-align:center;font-size:2.1rem;font-weight:900;color:#8892a0;flex-shrink:0}
+.r1 .rank{color:#ffd35a}
+.r2 .rank{color:#c8ccd4}
+.r3 .rank{color:#cd8a4a}
+.medal{font-size:1.8rem}
+.name{flex:1;font-size:1.7rem;font-weight:800}
+.score{font-size:2.1rem;font-weight:900;color:#008cff}
+
+.empty{flex:1;display:flex;align-items:center;justify-content:center;color:#3a4250;font-size:1.6rem;font-weight:700;text-align:center}
+
+.flash{animation:flashPop .8s ease}
+@keyframes flashPop{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.03);box-shadow:0 0 50px rgba(255,211,90,.6)}
+  100%{transform:scale(1)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="logo">REACTIFIC<span>™</span></div>
+    <div class="clock" id="clock">—</div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="windowbar">
+    <div class="windows" id="windows">
+      <button class="win-btn active" data-win="today">Today</button>
+      <button class="win-btn" data-win="week">This Week</button>
+      <button class="win-btn" data-win="alltime">All-Time</button>
+    </div>
+    <div class="streak-note" id="rotateNote">Auto-rotating every 12s</div>
+  </div>
+
+  <div class="board" id="board"><div class="empty">Loading scoreboard…</div></div>
+
+</div>
+
+<script>
+var API='https://api.reactificgaming.com';
+
+var GAMES=[
+  {id:'reaction', name:'Reaction Control', icon:'⚡', color:'#9B59B6'},
+  {id:'numhunt',  name:'Number Hunt',      icon:'🎯', color:'#ff6b00'},
+  {id:'recovery', name:'Echo Recall',      icon:'🌱', color:'#9ACD32'},
+  {id:'pattern',  name:'Pattern Recognition', icon:'🧩', color:'#FF6B35'},
+  {id:'sequence', name:'Flash Recall',     icon:'🔢', color:'#00CED1'},
+  {id:'focus',    name:'Sequence Control', icon:'🎵', color:'#00D9A5'}
+];
+
+var MEDALS=['🥇','🥈','🥉'];
+var currentGameIdx=0;
+var currentWindow='today';
+var ROTATE_MS=12000;
+var REFRESH_MS=8000;
+var rotateTimer=null;
+var lastTopScore={};
+
+function hexToRgba(hex,a){
+  var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+
+var tabsEl=document.getElementById('tabs');
+GAMES.forEach(function(g,i){
+  var btn=document.createElement('div');
+  btn.className='tab'+(i===0?' active':'');
+  btn.style.setProperty('--tc', g.color);
+  btn.style.setProperty('--tc-bg', hexToRgba(g.color,.18));
+  btn.style.setProperty('--tc-glow', hexToRgba(g.color,.35));
+  btn.innerHTML='<span class="tab-ico">'+g.icon+'</span>'+g.name;
+  btn.onclick=function(){ selectGame(i); restartRotation(); };
+  tabsEl.appendChild(btn);
+});
+
+document.querySelectorAll('.win-btn').forEach(function(btn){
+  btn.onclick=function(){
+    currentWindow=btn.dataset.win;
+    document.querySelectorAll('.win-btn').forEach(function(b){b.classList.remove('active')});
+    btn.classList.add('active');
+    loadBoard();
+  };
+});
+
+function selectGame(i){
+  currentGameIdx=i;
+  document.querySelectorAll('.tab').forEach(function(t,ti){t.classList.toggle('active',ti===i)});
+  loadBoard();
+}
+
+function restartRotation(){
+  if(rotateTimer)clearInterval(rotateTimer);
+  rotateTimer=setInterval(function(){
+    selectGame((currentGameIdx+1)%GAMES.length);
+  },ROTATE_MS);
+}
+
+function escapeHtml(s){
+  var d=document.createElement('div');d.textContent=s;return d.innerHTML;
+}
+
+function loadBoard(){
+  var game=GAMES[currentGameIdx];
+  var boardEl=document.getElementById('board');
+  fetch(API+'/api/leaderboard/'+game.id+'?window='+currentWindow+'&limit=8')
+    .then(function(r){return r.json()})
+    .then(function(data){
+      var entries=data.entries||[];
+      if(!entries.length){
+        boardEl.innerHTML='<div class="empty">No scores yet for '+escapeHtml(game.name)+'<br>Be the first to set the bar!</div>';
+        return;
+      }
+      var key=game.id+'-'+currentWindow;
+      var newTop=entries[0]?entries[0].score:0;
+      var isRecord=lastTopScore[key]!==undefined && newTop>lastTopScore[key];
+      lastTopScore[key]=newTop;
+
+      boardEl.innerHTML=entries.map(function(e,i){
+        var rankClass=i===0?'r1':i===1?'r2':i===2?'r3':'';
+        var medal=MEDALS[i]?'<span class="medal">'+MEDALS[i]+'</span>':'';
+        return '<div class="row '+rankClass+(isRecord&&i===0?' flash':'')+'">'+
+          '<div class="rank">'+(i+1)+'</div>'+
+          medal+
+          '<div class="name">'+escapeHtml(e.name)+'</div>'+
+          '<div class="score">'+e.score+' pts</div>'+
+        '</div>';
+      }).join('');
+    })
+    .catch(function(){
+      boardEl.innerHTML='<div class="empty">Couldn\'t reach the scoreboard.<br>Retrying shortly…</div>';
+    });
+}
+
+function updateClock(){
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+updateClock();
+setInterval(updateClock,30000);
+loadBoard();
+setInterval(loadBoard,REFRESH_MS);
+restartRotation();
+</script>
+</body>
+</html>
