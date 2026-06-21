@@ -191,7 +191,7 @@ async function teacherRegister(){
     var res=await fetch(API+'/api/auth/register',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,username,password})
+      body:JSON.stringify({email,username,password,role:'teacher'})
     });
     var data=await res.json();
     if(!res.ok)throw new Error(data.error||'Registration failed');
