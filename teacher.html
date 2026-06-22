@@ -159,11 +159,15 @@ function renderClasses(classes){
   document.getElementById('classes-wrap').innerHTML=classes.map(function(cls){
     return '<div class="class-card" id="cls-'+cls.id+'">'+
       '<div class="class-header">'+
-        '<div class="class-name">'+cls.name+'</div>'+
-        '<div class="class-code-wrap">'+
-          '<div class="class-code">'+cls.code+'</div>'+
-          '<button class="copy-btn" onclick="copyCode(\''+cls.code+'\')">Copy</button>'+
+        '<div class="class-name" id="clsname-'+cls.id+'">'+cls.name+'</div>'+
+        '<div style="display:flex;gap:8px;align-items:center">'+
+          '<button class="copy-btn" onclick="renameClass('+cls.id+')">✏️ Rename</button>'+
+          '<button class="copy-btn" style="color:#ff4d6d;border-color:rgba(255,77,109,.4)" onclick="deleteClass('+cls.id+',\''+cls.name+'\')">🗑 Delete</button>'+
         '</div>'+
+      '</div>'+
+      '<div class="class-code-wrap">'+
+        '<div class="class-code">'+cls.code+'</div>'+
+        '<button class="copy-btn" onclick="copyCode(\''+cls.code+'\')">Copy</button>'+
       '</div>'+
       '<div class="class-meta">'+cls.student_count+' student'+(cls.student_count==1?'':'s')+' · Code: <strong style="color:#fff">'+cls.code+'</strong> · Give this code to your students</div>'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'+
@@ -173,8 +177,43 @@ function renderClasses(classes){
       '<div id="dash-'+cls.id+'"><div style="text-align:center;padding:12px;color:#3a4250;font-size:.8rem">Click Refresh to load scores</div></div>'+
     '</div>';
   }).join('');
-  // Auto-load first class dashboard
   if(classes.length>0)loadDashboard(classes[0].id);
+}
+
+async function deleteClass(classId, className){
+  if(!confirm('Delete class "'+className+'"? This cannot be undone.'))return;
+  try{
+    var res=await fetch(API+'/api/classes/'+classId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error);
+    loadClasses();
+  }catch(e){alert('Error: '+e.message)}
+}
+
+async function renameClass(classId){
+  var current=document.getElementById('clsname-'+classId).textContent;
+  var newName=prompt('New class name:',current);
+  if(!newName||!newName.trim()||newName.trim()===current)return;
+  try{
+    var res=await fetch(API+'/api/classes/'+classId,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({name:newName.trim()})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error);
+    document.getElementById('clsname-'+classId).textContent=newName.trim();
+  }catch(e){alert('Error: '+e.message)}
+}
+
+async function removeStudent(classId, userId, username){
+  if(!confirm('Remove '+username+' from this class?'))return;
+  try{
+    var res=await fetch(API+'/api/classes/'+classId+'/students/'+userId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error);
+    loadDashboard(classId);
+  }catch(e){alert('Error: '+e.message)}
 }
 
 async function loadDashboard(classId){
@@ -197,7 +236,7 @@ function renderStudents(classId, students){
     return;
   }
   el.innerHTML='<table class="students-table">'+
-    '<tr><th>#</th><th>Student</th><th>Best Score</th><th>Level</th><th>Streak</th><th>Last Played</th></tr>'+
+    '<tr><th>#</th><th>Student</th><th>Best Score</th><th>Level</th><th>Streak</th><th>Last Played</th><th></th></tr>'+
     students.map(function(s,i){
       var lastPlayed=s.last_played?new Date(s.last_played).toLocaleDateString():'Never';
       return '<tr>'+
@@ -207,6 +246,7 @@ function renderStudents(classId, students){
         '<td>'+(s.level||'—')+'</td>'+
         '<td>'+(s.streak||'—')+'</td>'+
         '<td style="color:#8892a0">'+lastPlayed+'</td>'+
+        '<td><button class="copy-btn" style="color:#ff4d6d;border-color:rgba(255,77,109,.3);font-size:.6rem" onclick="removeStudent('+classId+',\''+s.id+'\',\''+s.username+'\')">Remove</button></td>'+
         '</tr>';
     }).join('')+
   '</table>';
