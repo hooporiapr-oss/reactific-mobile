@@ -15,42 +15,48 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
 .header{background:rgba(0,0,0,.5);border-bottom:1px solid rgba(255,255,255,.08);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
 .logo{font-size:1.4rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 20px rgba(0,140,255,.5)}
 .logo span{color:#008cff}
-.back-link{display:flex;align-items:center;gap:6px;padding:7px 16px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.3);color:#fff;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:border-color .2s}
-.back-link:hover{border-color:rgba(255,255,255,.35)}
+.back-link{display:flex;align-items:center;gap:6px;padding:7px 16px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.3);color:#fff;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
 
-.hero{padding:24px 20px 6px;text-align:center}
+.hero{padding:20px 20px 6px;text-align:center}
 .hero-title{font-size:1.6rem;font-weight:900;margin-bottom:4px}
 .hero-title span{color:#008cff}
 .hero-sub{font-size:.75rem;color:#8892a0;letter-spacing:.08em}
 
-.tabs{display:flex;gap:8px;overflow-x:auto;padding:18px 16px 4px;max-width:960px;margin:0 auto;scrollbar-width:none}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:16px 16px 4px;max-width:960px;margin:0 auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex-shrink:0;display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#a7adba;font-size:.75rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
 .tab.active{color:#fff;border-color:var(--tc);background:var(--tc-bg)}
 .tab-ico{font-size:1rem}
 
-.windowrow{display:flex;gap:6px;padding:16px 16px 0;max-width:960px;margin:0 auto}
+.windowrow{display:flex;gap:6px;padding:14px 16px 0;max-width:960px;margin:0 auto}
 .win-btn{flex:1;max-width:140px;padding:8px 0;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#8892a0;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s}
 .win-btn.active{color:#fff;border-color:#008cff;background:rgba(0,140,255,.15)}
 
-.section{padding:14px 16px 28px;max-width:960px;margin:0 auto}
+.pb-bar{display:flex;align-items:center;justify-content:space-between;max-width:960px;margin:0 auto;padding:12px 16px 0}
+.pb-label{font-size:.7rem;color:#8892a0;letter-spacing:.06em;text-transform:uppercase}
+.pb-val{font-size:.85rem;font-weight:900;color:#ffd35a}
+
+.boards{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 16px 28px;max-width:960px;margin:0 auto}
+.board-col{}
+.board-title{font-size:.65rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#8892a0;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.board-title .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .lb-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;min-height:80px}
-.lb-row{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.05)}
+.lb-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
 .lb-row:last-child{border-bottom:none}
 .lb-row.you{background:rgba(0,140,255,.1)}
-.lb-rank{width:28px;font-size:.95rem;font-weight:900;color:#8892a0;text-align:center;flex-shrink:0}
+.lb-rank{width:24px;font-size:.88rem;font-weight:900;color:#8892a0;text-align:center;flex-shrink:0}
 .lb-row:nth-child(1) .lb-rank{color:#ffd35a}
 .lb-row:nth-child(2) .lb-rank{color:#c8ccd4}
 .lb-row:nth-child(3) .lb-rank{color:#cd8a4a}
-.lb-name{flex:1;font-size:.88rem;font-weight:600}
+.lb-name{flex:1;font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lb-row.you .lb-name{font-weight:900}
-.lb-score{font-size:.92rem;font-weight:900;color:#008cff}
-.lb-loading{text-align:center;padding:32px;color:#3a4250;font-size:.82rem}
-.lb-empty{text-align:center;padding:32px;color:#3a4250;font-size:.82rem;line-height:1.6}
+.lb-score{font-size:.86rem;font-weight:900;color:#008cff;flex-shrink:0}
+.lb-loading{text-align:center;padding:28px;color:#3a4250;font-size:.78rem}
+.lb-empty{text-align:center;padding:28px;color:#3a4250;font-size:.78rem;line-height:1.6}
 
-.pb-bar{display:flex;align-items:center;justify-content:space-between;max-width:960px;margin:0 auto;padding:0 16px 4px}
-.pb-label{font-size:.7rem;color:#8892a0;letter-spacing:.06em;text-transform:uppercase}
-.pb-val{font-size:.85rem;font-weight:900;color:#ffd35a}
+@media(max-width:520px){
+  .boards{grid-template-columns:1fr;gap:20px}
+}
 </style>
 </head>
 <body>
@@ -62,11 +68,12 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
 
 <div class="hero">
   <div class="hero-title">Leader<span>board</span></div>
-  <div class="hero-sub" id="classLabel">Loading class…</div>
+  <div class="hero-sub" id="classLabel">Loading…</div>
 </div>
 
 <div class="tabs" id="tabs"></div>
-<div class="windowrow" id="windowrow">
+
+<div class="windowrow">
   <button class="win-btn active" data-win="today">Today</button>
   <button class="win-btn" data-win="week">This Week</button>
   <button class="win-btn" data-win="alltime">All-Time</button>
@@ -77,8 +84,15 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
   <span class="pb-val" id="pbVal">—</span>
 </div>
 
-<div class="section">
-  <div class="lb-wrap" id="lbWrap"><div class="lb-loading">Loading leaderboard…</div></div>
+<div class="boards">
+  <div class="board-col">
+    <div class="board-title"><span class="dot" style="background:#008cff"></span>My Grade</div>
+    <div class="lb-wrap" id="lbClass"><div class="lb-loading">Loading…</div></div>
+  </div>
+  <div class="board-col">
+    <div class="board-title"><span class="dot" style="background:#ffd35a"></span>School-Wide</div>
+    <div class="lb-wrap" id="lbSchool"><div class="lb-loading">Loading…</div></div>
+  </div>
 </div>
 
 <script>
@@ -99,9 +113,8 @@ var GAMES=[
 var currentGame='reaction';
 var currentWindow='today';
 
-document.getElementById('classLabel').textContent=user.class_id?'Your class leaderboard':'Join a class to see rankings';
+document.getElementById('classLabel').textContent=user.class_id?'Comparing your grade vs the whole school':'Join a class to see your grade rankings';
 
-// Build tabs
 var tabsEl=document.getElementById('tabs');
 GAMES.forEach(function(g){
   var btn=document.createElement('button');
@@ -113,7 +126,7 @@ GAMES.forEach(function(g){
     currentGame=g.id;
     document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
     btn.classList.add('active');
-    loadLeaderboard();
+    loadBoth();
     loadPersonalBest();
   };
   tabsEl.appendChild(btn);
@@ -124,7 +137,7 @@ document.querySelectorAll('.win-btn').forEach(function(btn){
     currentWindow=btn.dataset.win;
     document.querySelectorAll('.win-btn').forEach(function(b){b.classList.remove('active')});
     btn.classList.add('active');
-    loadLeaderboard();
+    loadBoth();
   };
 });
 
@@ -132,29 +145,44 @@ function escapeHtml(s){
   var d=document.createElement('div');d.textContent=s;return d.innerHTML;
 }
 
-function loadLeaderboard(){
-  var wrap=document.getElementById('lbWrap');
-  wrap.innerHTML='<div class="lb-loading">Loading leaderboard…</div>';
-  fetch(API+'/api/leaderboard/'+currentGame+'?window='+currentWindow+'&limit=20')
+function renderRows(entries, elId){
+  var wrap=document.getElementById(elId);
+  if(!entries||!entries.length){
+    wrap.innerHTML='<div class="lb-empty">No scores yet.<br>Be the first!</div>';
+    return;
+  }
+  wrap.innerHTML=entries.map(function(e){
+    var isYou=user.username&&e.name===user.username;
+    return '<div class="lb-row'+(isYou?' you':'')+'">'+
+      '<div class="lb-rank">'+e.rank+'</div>'+
+      '<div class="lb-name">'+escapeHtml(e.name)+(isYou?' ★':'')+'</div>'+
+      '<div class="lb-score">'+e.score+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function loadBoth(){
+  document.getElementById('lbClass').innerHTML='<div class="lb-loading">Loading…</div>';
+  document.getElementById('lbSchool').innerHTML='<div class="lb-loading">Loading…</div>';
+
+  var base=API+'/api/leaderboard/'+currentGame+'?window='+currentWindow+'&limit=10';
+
+  // Class leaderboard — scoped to student's class if they have one
+  var classUrl=user.class_id?base+'&class_id='+user.class_id:null;
+  if(classUrl){
+    fetch(classUrl)
+      .then(function(r){return r.json()})
+      .then(function(d){renderRows(d.entries,'lbClass')})
+      .catch(function(){document.getElementById('lbClass').innerHTML='<div class="lb-empty">Couldn\'t load.</div>'});
+  }else{
+    document.getElementById('lbClass').innerHTML='<div class="lb-empty">Join a class to see your grade rankings.</div>';
+  }
+
+  // School-wide leaderboard — no class filter
+  fetch(base)
     .then(function(r){return r.json()})
-    .then(function(data){
-      var entries=data.entries||[];
-      if(!entries.length){
-        wrap.innerHTML='<div class="lb-empty">No scores yet for this window.<br>Be the first to play and set the bar!</div>';
-        return;
-      }
-      wrap.innerHTML=entries.map(function(e){
-        var isYou=user.username && e.name===user.username;
-        return '<div class="lb-row'+(isYou?' you':'')+'">'+
-          '<div class="lb-rank">'+e.rank+'</div>'+
-          '<div class="lb-name">'+escapeHtml(e.name)+(isYou?' (you)':'')+'</div>'+
-          '<div class="lb-score">'+e.score+'</div>'+
-        '</div>';
-      }).join('');
-    })
-    .catch(function(){
-      wrap.innerHTML='<div class="lb-empty">Couldn\'t load the leaderboard. Try again shortly.</div>';
-    });
+    .then(function(d){renderRows(d.entries,'lbSchool')})
+    .catch(function(){document.getElementById('lbSchool').innerHTML='<div class="lb-empty">Couldn\'t load.</div>'});
 }
 
 function loadPersonalBest(){
@@ -162,13 +190,11 @@ function loadPersonalBest(){
   pbEl.textContent='—';
   fetch(API+'/api/scores/personal-best/'+currentGame,{headers:{'Authorization':'Bearer '+token}})
     .then(function(r){return r.json()})
-    .then(function(data){
-      pbEl.textContent=data.has_played?(data.score+' pts'):'Not played yet';
-    })
+    .then(function(d){pbEl.textContent=d.has_played?(d.score+' pts'):'Not played yet'})
     .catch(function(){pbEl.textContent='—'});
 }
 
-loadLeaderboard();
+loadBoth();
 loadPersonalBest();
 </script>
 </body>
