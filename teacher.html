@@ -160,8 +160,9 @@ function renderClasses(classes){
     return '<div class="class-card" id="cls-'+cls.id+'">'+
       '<div class="class-header">'+
         '<div class="class-name" id="clsname-'+cls.id+'">'+cls.name+'</div>'+
-        '<div style="display:flex;gap:8px;align-items:center">'+
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
           '<button class="copy-btn" onclick="renameClass('+cls.id+')">✏️ Rename</button>'+
+          '<button class="copy-btn" onclick="setDisplayMode('+cls.id+',\''+(cls.display_mode||'full_name')+'\')">👤 Names</button>'+
           '<button class="copy-btn" style="color:#ff4d6d;border-color:rgba(255,77,109,.4)" onclick="deleteClass('+cls.id+',\''+cls.name+'\')">🗑 Delete</button>'+
         '</div>'+
       '</div>'+
@@ -180,7 +181,23 @@ function renderClasses(classes){
   if(classes.length>0)loadDashboard(classes[0].id);
 }
 
-async function deleteClass(classId, className){
+async function setDisplayMode(classId, current){
+  var modes=['initials','full_name','username'];
+  var labels={'initials':'Initials (John B.)','full_name':'Full Name (John Burgos)','username':'Username (john_burgos_756)'};
+  var next=modes[(modes.indexOf(current)+1)%modes.length];
+  if(!confirm('Change leaderboard name display to:\n\n'+labels[next]+'\n\nConfirm?'))return;
+  try{
+    var res=await fetch(API+'/api/classes/'+classId+'/display-mode',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({display_mode:next})
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error);
+    alert('Updated to: '+labels[next]);
+    loadClasses();
+  }catch(e){alert('Error: '+e.message)}
+}
   if(!confirm('Delete class "'+className+'"? This cannot be undone.'))return;
   try{
     var res=await fetch(API+'/api/classes/'+classId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
