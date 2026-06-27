@@ -112,11 +112,25 @@ var API='https://api.reactificgaming.com';
 var token=localStorage.getItem('rct-token');
 var user=JSON.parse(localStorage.getItem('rct-user')||'null');
 
-if(!token||!user){window.location.href='/login.html';throw new Error('Not logged in')}
+// AUTH CHECK - Fixed to prevent continuous loading
+if(!token||!user){
+  window.location.replace('/login.html');
+} else {
+  document.getElementById('uname').textContent=user.username||'Teacher';
+  init();
+}
 
-document.getElementById('uname').textContent=user.username||'Teacher';
+// Initialize the dashboard after auth check
+function init(){
+  loadClasses();
+  document.getElementById('class-name').addEventListener('keydown',function(e){if(e.key==='Enter')createClass()});
+}
 
-function signOut(){localStorage.removeItem('rct-token');localStorage.removeItem('rct-user');window.location.href='/login.html'}
+function signOut(){
+  localStorage.removeItem('rct-token');
+  localStorage.removeItem('rct-user');
+  window.location.replace('/login.html');
+}
 
 // CREATE CLASS
 async function createClass(){
@@ -156,7 +170,8 @@ async function loadClasses(){
     var data=await res.json();
     renderClasses(data.classes||[]);
   }catch(e){
-    document.getElementById('classes-wrap').innerHTML='<div class="empty-state"><div class="empty-txt">Could not load classes</div></div>';
+    document.getElementById('classes-wrap').innerHTML='<div class="empty-state"><div class="empty-txt">Could not load classes. Check your connection or API endpoint.</div></div>';
+    console.error('Load classes error:',e);
   }
 }
 
@@ -188,7 +203,20 @@ function renderClasses(classes){
       '<div id="dash-'+cls.id+'"><div style="text-align:center;padding:12px;color:#3a4250;font-size:.8rem">Click Refresh to load scores</div></div>'+
     '</div>';
   }).join('');
-  // No auto-load — teacher clicks Refresh on the class they want
+}
+
+// FIXED: deleteClass function was missing entirely
+async function deleteClass(classId, className){
+  if(!confirm('Delete class "'+className+'"? This cannot be undone.'))return;
+  try{
+    var res=await fetch(API+'/api/classes/'+classId,{
+      method:'DELETE',
+      headers:{'Authorization':'Bearer '+token}
+    });
+    var data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Could not delete class');
+    loadClasses();
+  }catch(e){alert('Error: '+e.message)}
 }
 
 async function setDisplayMode(classId, current){
@@ -203,16 +231,8 @@ async function setDisplayMode(classId, current){
       body:JSON.stringify({display_mode:next})
     });
     var data=await res.json();
-    if(!res.ok)throw new Error(data.error);
+    if(!res.ok)throw new Error(data.error||'Could not update display mode');
     alert('Updated to: '+labels[next]);
-    loadClasses();
-  }catch(e){alert('Error: '+e.message)}
-}
-  if(!confirm('Delete class "'+className+'"? This cannot be undone.'))return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-    var data=await res.json();
-    if(!res.ok)throw new Error(data.error);
     loadClasses();
   }catch(e){alert('Error: '+e.message)}
 }
@@ -228,7 +248,7 @@ async function renameClass(classId){
       body:JSON.stringify({name:newName.trim()})
     });
     var data=await res.json();
-    if(!res.ok)throw new Error(data.error);
+    if(!res.ok)throw new Error(data.error||'Could not rename class');
     document.getElementById('clsname-'+classId).textContent=newName.trim();
   }catch(e){alert('Error: '+e.message)}
 }
@@ -236,9 +256,12 @@ async function renameClass(classId){
 async function removeStudent(classId, userId, username){
   if(!confirm('Remove '+username+' from this class?'))return;
   try{
-    var res=await fetch(API+'/api/classes/'+classId+'/students/'+userId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    var res=await fetch(API+'/api/classes/'+classId+'/students/'+userId,{
+      method:'DELETE',
+      headers:{'Authorization':'Bearer '+token}
+    });
     var data=await res.json();
-    if(!res.ok)throw new Error(data.error);
+    if(!res.ok)throw new Error(data.error||'Could not remove student');
     loadDashboard(classId);
   }catch(e){alert('Error: '+e.message)}
 }
@@ -249,10 +272,11 @@ async function loadDashboard(classId){
   try{
     var res=await fetch(API+'/api/classes/'+classId+'/dashboard',{headers:{'Authorization':'Bearer '+token}});
     var data=await res.json();
-    if(!res.ok)throw new Error(data.error);
+    if(!res.ok)throw new Error(data.error||'Could not load dashboard');
     renderStudents(classId, data.students||[]);
   }catch(e){
     el.innerHTML='<div style="text-align:center;padding:12px;color:#FF1493;font-size:.8rem">'+e.message+'</div>';
+    console.error('Dashboard error:',e);
   }
 }
 
@@ -287,10 +311,6 @@ function copyCode(code){
   });
 }
 
-// Enter key on class name
-document.getElementById('class-name').addEventListener('keydown',function(e){if(e.key==='Enter')createClass()});
-
-loadClasses();
 </script>
 </body>
 </html>
