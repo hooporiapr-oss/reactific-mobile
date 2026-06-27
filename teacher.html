@@ -97,6 +97,8 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
 
   <!-- MY CLASSES -->
   <div class="classes-title">MY CLASSES</div>
+  <input type="text" id="classSearch" placeholder="🔍 Search classes..." oninput="filterClasses(this.value)"
+    style="width:100%;max-width:560px;padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:.9rem;margin-bottom:16px;outline:none">
   <div id="classes-wrap">
     <div class="empty-state">
       <div class="spinner"></div> Loading classes...
@@ -140,6 +142,14 @@ async function createClass(){
 }
 
 // LOAD CLASSES
+function filterClasses(query){
+  var q=query.toLowerCase().trim();
+  document.querySelectorAll('.class-card').forEach(function(card){
+    var name=card.querySelector('.class-name');
+    card.style.display=(!q||name.textContent.toLowerCase().includes(q))?'':'none';
+  });
+}
+
 async function loadClasses(){
   try{
     var res=await fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}});
@@ -178,7 +188,7 @@ function renderClasses(classes){
       '<div id="dash-'+cls.id+'"><div style="text-align:center;padding:12px;color:#3a4250;font-size:.8rem">Click Refresh to load scores</div></div>'+
     '</div>';
   }).join('');
-  if(classes.length>0)loadDashboard(classes[0].id);
+  // No auto-load — teacher clicks Refresh on the class they want
 }
 
 async function setDisplayMode(classId, current){
