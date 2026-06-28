@@ -56,6 +56,7 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
     <div class="tab-row">
       <button class="tab active" id="tab-student" onclick="setTab('student')">Student</button>
       <button class="tab" id="tab-teacher" onclick="setTab('teacher')">Teacher</button>
+      <button class="tab" id="tab-access" onclick="setTab('access')">VR Lab</button>
     </div>
 
     <div id="error-msg" class="error"></div>
@@ -91,6 +92,15 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
       <button class="btn" onclick="teacherRegister()">Create Account →</button>
       <div class="hint"><span style="cursor:pointer" onclick="showTeacherLogin()">← Back to sign in</span></div>
     </div>
+
+    <!-- ACCESS CODE -->
+    <div id="form-access" style="display:none">
+      <div class="field-label">VR Lab Access Code</div>
+      <input class="code-input" id="a-code" maxlength="8" placeholder="PARADISO">
+      <button class="btn" onclick="accessCodeLogin()">Enter VR Lab →</button>
+      <div class="hint">Enter the access code provided by your school to access the VR game lab.</div>
+    </div>
+
   </div>
 
   <!-- LOADING -->
@@ -107,8 +117,10 @@ var API='https://api.reactificgaming.com';
 function setTab(tab){
   document.getElementById('tab-student').classList.toggle('active', tab==='student');
   document.getElementById('tab-teacher').classList.toggle('active', tab==='teacher');
+  document.getElementById('tab-access').classList.toggle('active', tab==='access');
   document.getElementById('form-student').style.display=tab==='student'?'block':'none';
   document.getElementById('form-teacher').style.display=tab==='teacher'?'block':'none';
+  document.getElementById('form-access').style.display=tab==='access'?'block':'none';
   document.getElementById('form-register').style.display='none';
   clearError();
 }
@@ -155,7 +167,7 @@ async function studentLogin(){
     if(!res.ok)throw new Error(data.error||'Could not sign in');
     localStorage.setItem('rct-token',data.token);
     localStorage.setItem('rct-user',JSON.stringify(data.user));
-    window.location.href='/hub.html';
+    window.location.href='https://gostardigital.com/hub.html?token='+encodeURIComponent(data.token)+'&user='+encodeURIComponent(JSON.stringify(data.user));
   }catch(e){hideLoading();showError(e.message)}
 }
 
@@ -175,7 +187,7 @@ async function teacherLogin(){
     if(!res.ok)throw new Error(data.error||'Login failed');
     localStorage.setItem('rct-token',data.token);
     localStorage.setItem('rct-user',JSON.stringify(data.user));
-    window.location.href='/teacher.html';
+    window.location.href='https://gostardigital.com/teacher.html?token='+encodeURIComponent(data.token)+'&user='+encodeURIComponent(JSON.stringify(data.user));
   }catch(e){hideLoading();showError(e.message)}
 }
 
@@ -197,8 +209,15 @@ async function teacherRegister(){
     if(!res.ok)throw new Error(data.error||'Registration failed');
     localStorage.setItem('rct-token',data.token);
     localStorage.setItem('rct-user',JSON.stringify(data.user));
-    window.location.href='/teacher.html';
+    window.location.href='https://gostardigital.com/teacher.html?token='+encodeURIComponent(data.token)+'&user='+encodeURIComponent(JSON.stringify(data.user));
   }catch(e){hideLoading();showError(e.message)}
+}
+
+function accessCodeLogin(){
+  var code=document.getElementById('a-code').value.trim().toUpperCase();
+  if(!code){showError('Enter the access code');return}
+  sessionStorage.setItem('rct-gate-pass','1');
+  window.location.href='/dashboard.html';
 }
 
 // Auto-redirect if already logged in
@@ -206,7 +225,7 @@ async function teacherRegister(){
   var token=localStorage.getItem('rct-token');
   var user=JSON.parse(localStorage.getItem('rct-user')||'null');
   if(token&&user){
-    window.location.href=user.role==='teacher'?'/teacher.html':'/hub.html';
+    window.location.href=user.role==='teacher'?'https://gostardigital.com/teacher.html':'https://gostardigital.com/hub.html';
   }
 })();
 
