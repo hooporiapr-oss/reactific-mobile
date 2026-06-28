@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VR Flash Recall | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  background:radial-gradient(ellipse at center,#001818 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;
+  padding:20px 16px 24px;
+  box-sizing:border-box;
+}
+.vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(0,206,209,1);margin-bottom:8px}
+.vrr-logo span{color:#00CED1}
+.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#00CED1;margin-bottom:8px;text-align:center}
+.vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#00CED1,#40E0D0);color:#000;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(0,206,209,.7);margin-bottom:14px}
+.big-btn:hover{transform:scale(1.03)}
+.speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(0,206,209,.4);background:rgba(0,206,209,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.speed-btn.active{border-color:#00CED1;background:rgba(0,206,209,.22);box-shadow:0 0 30px rgba(0,206,209,.6);color:#00CED1}
+.speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #screen-intro{padding:16px 12px 20px}
+  .vrr-logo{font-size:1.8rem}
+  .vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .speed-row{gap:5px}
+  .speed-btn{height:50px;font-size:.78rem}
+  .speed-btn small{font-size:.5rem}
+  .big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(0,206,209,.15),transparent 30%),linear-gradient(180deg,#001818,#000a0a);
+}
+.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:6px 10px 4px;flex-shrink:0}
+.top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(0,206,209,.3)}
+.top-label{font-size:.5rem;color:#00CED1;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.info-box{border-color:#ffd35a;background:rgba(255,215,0,.06)!important}
+.info-box .top-label{color:#ffd35a}
+.info-box .top-val{color:#00CED1;font-size:1rem}
+.clockbar{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.clockbar-fill{height:100%;background:linear-gradient(90deg,#00CED1,#40E0D0);transition:width .1s linear}
+.msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.msg-bar.watch{color:#ffd35a}.msg-bar.go{color:#00CED1}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}
+.stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.star{font-size:1rem;opacity:.2;transition:all .3s}
+.star.earned{opacity:1;filter:drop-shadow(0 0 6px #00CED1);transform:scale(1.2)}
+.court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
+.court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(0,206,209,.25);border-radius:14px;padding:6px;background:rgba(0,15,15,.85);box-shadow:0 0 60px rgba(0,206,209,.3),inset 0 0 40px rgba(0,206,209,.04),0 20px 60px rgba(0,0,0,.8)}
+.cell{border-radius:8px;background:rgba(0,206,209,.08);border:2px solid rgba(0,206,209,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.cell:hover{background:rgba(0,206,209,.2);border-color:#00CED1;transform:scale(1.05)}
+.cell.lit{background:#00CED1!important;border-color:#40E0D0!important;box-shadow:0 0 30px rgba(0,206,209,1)!important;transform:scale(1.05)}
+.cell.selected{background:rgba(0,206,209,.35)!important;border-color:#00CED1!important;box-shadow:0 0 14px rgba(0,206,209,.6)!important}
+.cell.correct{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
+.cell.wrong{background:rgba(255,20,147,.35)!important;border-color:#FF1493!important;animation:shake .3s}
+.cell.missed{border:3px dashed #00CED1!important;background:rgba(0,206,209,.15)!important}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.bottombar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.bot-btn{height:48px;border:2px solid rgba(0,206,209,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bot-btn span{display:block;color:#00CED1;font-size:.55rem;margin-top:1px}
+.start-btn{border-color:#00CED1;background:linear-gradient(180deg,#40E0D0,#00CED1);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(0,206,209,.7)}
+.start-btn:disabled{opacity:.5}
+
+@media (max-width:768px){
+  .bottombar{grid-template-columns:1fr 1fr 1fr}
+  #fsBtn{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="screen-intro">
+  <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-home.html">← Games</a>
+  <div class="vrr-logo">FLASH <span>RECALL</span></div>
+  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-rule">👀 WATCH THE FLASH — FIND THEM ALL</div>
+  <div class="speed-row">
+    <button class="speed-btn" data-mult="1.4">EASY<small>MORE TIME</small></button>
+    <button class="speed-btn active" data-mult="1.0">TEMPO<small>BALANCED</small></button>
+    <button class="speed-btn" data-mult="0.6">ELITE<small>LESS TIME</small></button>
+  </div>
+  <button class="big-btn" id="startBtn">👀 ENTER THE COURT</button>
+  <div class="intro-info">
+    <strong>WATCH</strong> — multiple cells flash cyan<br>
+    <strong>REMEMBER</strong> — which ones lit up<br>
+    <strong>FIND</strong> — tap them all in any order<br>
+    <strong>2 PERFECT</strong> — level up
+  </div>
+</div>
+
+<div id="screen-game">
+  <div class="topbar">
+    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
+    <div class="top-box info-box"><div class="top-label">Find</div><div class="top-val" id="hFind">5 cells</div></div>
+    <div class="top-box"><div class="top-label">Round</div><div class="top-val" id="hRd">0</div></div>
+    <div class="top-box"><div class="top-label">Level</div><div class="top-val" id="hLv">1</div></div>
+    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Perfect</div><div class="top-val" id="hPf">0/2</div></div>
+  </div>
+  <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
+  <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
+  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Level</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#00CED1"></span></div>
+  <div class="court-area"><div class="court" id="court"></div></div>
+  <div class="bottombar">
+    <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
+    <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn" id="restartBtn" style="display:none;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+    <button class="bot-btn" id="fsBtn">Fullscreen<span>Toggle</span></button>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+var speedMult=1.0;
+var BASE_MS_PER_CELL=300; // ms per cell at Tempo — all cells flash at once so needs good scanning time
+
+function getFlashTime(){return Math.round(BASE_MS_PER_CELL*gcc()*speedMult)}
+
+document.querySelectorAll('[data-mult]').forEach(btn=>{btn.onclick=function(){speedMult=Number(btn.dataset.mult);document.querySelectorAll('[data-mult]').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}});
+
+$('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
+$('menuBtn').onclick=function(){$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];
+function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i=0;i<50;i++){var c=document.createElement('div');c.className='cell';c.dataset.i=i;c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));court.appendChild(c);cells.push(c)}}
+function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
+function resetCells(){cells.forEach((_,i)=>cellSt(i))}
+
+var g={lv:1,sc:0,rd:0,st:0,pf:0};
+function gcc(){return g.lv+4}
+function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.rd;$('hLv').textContent=g.lv;$('hSt').textContent=g.st;$('hPf').textContent=g.pf+'/2';$('hFind').textContent=gcc()+' cells';$('ps1').textContent=g.lv}
+function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+function initGame(){g={lv:1,sc:0,rd:0,st:0,pf:0};updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRound;$('restartBtn').style.display='none'}
+
+// ── SCORE SUBMISSION ──────────────────────────────────
+var API='https://api.reactificgaming.com';
+(function(){
+  var urlToken=new URLSearchParams(window.location.search).get('t');
+  if(urlToken)localStorage.setItem('rct-token',urlToken);
+})();
+
+function submitScore(score,level,mode){
+  var token=localStorage.getItem('rct-token');
+  if(!token)return;
+  fetch(API+'/api/scores/game',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({game_id:'focus',score:score,level:level,mode:mode})
+  }).catch(function(err){
+    console.error('Score submit error:',err);
+  });
+}
+
+// Ensure score is saved when leaving
+window.addEventListener('beforeunload',function(){
+  var token=localStorage.getItem('rct-token');
+  if(token && g && g.sc>0){
+    navigator.sendBeacon(API+'/api/scores/game',
+      JSON.stringify({game_id:'focus',score:g.sc,level:g.lv,mode:'progression'})
+    );
+  }
+});
+
+var phase='idle',targets=[],selected=[],timers=[];
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();phase='showing';g.rd++;selected=[];
+  resetCells();$('actBtn').disabled=true;$('restartBtn').style.display='none';updateHUD();
+  var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,gcc());
+  targets=indices;
+  $('hFind').textContent=gcc()+' cells';
+  msg('WATCH...','watch');
+  var ft=getFlashTime();
+  msg('WATCH... ('+((ft/1000).toFixed(1))+'s)','watch');
+  timers.push(setTimeout(function(){
+    targets.forEach(function(idx){cellSt(idx,'lit')});
+    timers.push(setTimeout(function(){
+      targets.forEach(function(idx){cellSt(idx)});
+      msg('FIND THEM ALL!','go');
+      phase='tapping';
+    },ft));
+  },600));
+}
+
+function handleTap(idx){
+  if(phase!=='tapping')return;
+  var cell=cells[idx];
+  if(cell.classList.contains('selected')){
+    cell.classList.remove('selected');
+    var i=selected.indexOf(idx);if(i>-1)selected.splice(i,1);return;
+  }
+  cell.classList.add('selected');selected.push(idx);
+  if(selected.length>=gcc()){phase='idle';clrT();timers.push(setTimeout(revealResults,300))}
+}
+
+function revealResults(){
+  var correct=0,needed=gcc();
+  selected.forEach(function(i){if(targets.indexOf(i)!==-1){cellSt(i,'correct');correct++}else cellSt(i,'wrong')});
+  targets.forEach(function(i){if(selected.indexOf(i)===-1)cellSt(i,'missed')});
+  if(correct===needed){
+    g.pf++;g.st++;g.sc+=needed*10*g.lv;updateHUD();
+    msg('✅ PERFECT! '+correct+'/'+needed,'perfect');
+    if(g.pf>=2){
+      timers.push(setTimeout(function(){
+        if(g.lv<10){
+          g.lv++;
+          g.pf=0;
+          submitScore(g.sc,g.lv,'progression');  // FIXED: Submit on level up
+        }
+        updateHUD();
+        resetCells();
+        msg('🔥 LEVEL UP! L'+g.lv,'perfect');
+        timers.push(setTimeout(autoNextRound,900))
+      },1200))
+    }else{
+      submitScore(g.sc,g.lv,'progression');  // FIXED: Submit on regular success
+      timers.push(setTimeout(autoNextRound,1000))
+    }
+  }else{
+    g.pf=0;g.st=0;updateHUD();
+    msg('MISSED! '+correct+'/'+needed,'miss');
+    submitScore(g.sc,g.lv,'progression');
+    timers.push(setTimeout(showMissOptions,2000));
+  }
+}
+
+function autoNextRound(){if(phase!=='idle')return;resetCells();$('restartBtn').style.display='none';startRound()}
+
+function showMissOptions(){
+  phase='idle';clrT();resetCells();updateHUD();
+  msg("TRY AGAIN",'miss');
+  $('actBtn').textContent="TRY AGAIN";$('actBtn').onclick=function(){$('restartBtn').style.display='none';startRound()};$('actBtn').disabled=false;
+  $('restartBtn').style.display='';
+}
+
+function restartGame(){
+  clrT();phase='idle';g={lv:1,sc:0,rd:0,st:0,pf:0};resetCells();updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none'
+}
+
+$('actBtn').onclick=startRound;
+buildCourt();
+})();
+</script>
+</body>
+</html>
