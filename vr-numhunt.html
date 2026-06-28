@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VR Number Hunt | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  background:radial-gradient(ellipse at center,#140800 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;padding:20px 16px 24px;box-sizing:border-box;
+}
+.vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(255,107,0,1);margin-bottom:8px}
+.vrr-logo span{color:#ff6b00}
+.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#ff6b00;margin-bottom:8px;text-align:center}
+.vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#ff6b00,#ff9500);color:#fff;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,107,0,.7);margin-bottom:14px}
+.big-btn:hover{transform:scale(1.03)}
+.speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(255,107,0,.4);background:rgba(255,107,0,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.speed-btn.active{border-color:#ff6b00;background:rgba(255,107,0,.22);box-shadow:0 0 30px rgba(255,107,0,.6);color:#ff6b00}
+.speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #screen-intro{padding:16px 12px 20px}
+  .vrr-logo{font-size:1.8rem}
+  .vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .speed-row{gap:5px}
+  .speed-btn{height:50px;font-size:.78rem}
+  .speed-btn small{font-size:.5rem}
+  .big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(255,107,0,.15),transparent 30%),linear-gradient(180deg,#140800,#080300);
+}
+.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:8px;padding:6px 10px 4px;flex-shrink:0}
+.top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(255,107,0,.3)}
+.top-label{font-size:.5rem;color:#ff6b00;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.level-box{border-color:#ffd35a!important}
+.level-box .top-label{color:#ffd35a}
+.level-box .top-val{color:#ffd35a}
+
+.target-bar{
+  flex-shrink:0;padding:4px 10px 2px;
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+}
+.target-label{font-size:.62rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#a7adba;flex-shrink:0}
+.target-num{
+  font-size:2rem;font-weight:900;color:#ffd35a;
+  background:rgba(255,211,90,.1);border:2px solid rgba(255,211,90,.5);
+  border-radius:10px;padding:2px 16px;min-width:60px;text-align:center;transition:all .3s;
+}
+.target-num.found{color:#00D9A5;background:rgba(0,217,165,.1);border-color:rgba(0,217,165,.4);text-decoration:line-through;opacity:.5}
+
+.clockbar{height:8px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.clockbar-fill{height:100%;background:linear-gradient(90deg,#ff6b00,#ff9500);transition:width .05s linear}
+.msg-bar{text-align:center;font-size:1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.msg-bar.watch{color:#ff6b00}.msg-bar.go{color:#ffd35a}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}
+
+.court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
+.court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,107,0,.25);border-radius:14px;padding:6px;background:rgba(15,5,0,.85);box-shadow:0 0 60px rgba(255,107,0,.25),inset 0 0 40px rgba(255,107,0,.04),0 20px 60px rgba(0,0,0,.8)}
+.cell{border-radius:8px;background:rgba(255,107,0,.06);border:2px solid rgba(255,107,0,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;font-size:clamp(.7rem,1.4vw,1.2rem);font-weight:900;color:rgba(255,255,255,.35);touch-action:manipulation}
+.cell.active{background:rgba(255,107,0,.12);border-color:rgba(255,107,0,.5);color:rgba(255,255,255,.8)}
+.cell.active:hover{background:rgba(255,107,0,.28);border-color:#ff6b00;transform:scale(1.06);color:#fff}
+.cell.correct{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.9)!important;color:#000!important;transform:scale(1.08)!important}
+.cell.wrong{background:rgba(255,20,147,.35)!important;border-color:#FF1493!important;animation:shake .3s;color:#fff!important}
+.cell.reveal{border:2px solid #ffd35a!important;background:rgba(255,211,90,.2)!important;color:#ffd35a!important;box-shadow:0 0 14px rgba(255,211,90,.5)!important}
+.cell.inactive{background:rgba(0,0,0,.15);border-color:rgba(255,107,0,.06);color:transparent;cursor:default}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.bottombar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.bot-btn{height:48px;border:2px solid rgba(255,107,0,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bot-btn span{display:block;color:#ff6b00;font-size:.55rem;margin-top:1px}
+.start-btn{border-color:#ff6b00;background:linear-gradient(180deg,#ff9500,#ff6b00);font-size:1.1rem;box-shadow:0 0 18px rgba(255,107,0,.7)}
+.start-btn:disabled{opacity:.5}
+
+@media (max-width:768px){
+  .bottombar{grid-template-columns:1fr 1fr 1fr}
+  #fsBtn{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="screen-intro">
+  <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-home.html">← Games</a>
+  <div class="vrr-logo">NUMBER <span>HUNT</span></div>
+  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-rule">🎯 FIND THE NUMBER — TAP IT FAST</div>
+  <div class="speed-row">
+    <button class="speed-btn active" data-time="5000">SLOW<small>5 SEC</small></button>
+    <button class="speed-btn" data-time="3000">TEMPO<small>3 SEC</small></button>
+    <button class="speed-btn" data-time="1500">ELITE<small>1.5 SEC</small></button>
+  </div>
+  <button class="big-btn" id="startBtn">🎯 ENTER THE COURT</button>
+  <div class="intro-info">
+    <strong>LEVEL 1</strong> — find 1 number · starts with 10 cells · grows to 50<br>
+    <strong>LEVEL 2</strong> — find 2 numbers · starts again at 10 cells<br>
+    <strong>CONTINUOUS</strong> — each round flows automatically<br>
+    <strong>MISS</strong> — stay at your level · try again or restart
+  </div>
+</div>
+
+<div id="screen-game">
+  <div class="topbar">
+    <div class="top-box level-box"><div class="top-label">Level</div><div class="top-val" id="hLevel">1</div></div>
+    <div class="top-box"><div class="top-label">Find</div><div class="top-val" id="hFind">1</div></div>
+    <div class="top-box"><div class="top-label">Cells</div><div class="top-val" id="hCells">10</div></div>
+    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
+    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hBest">0</div></div>
+  </div>
+
+  <div class="target-bar" id="targetBar">
+    <div class="target-label">FIND →</div>
+  </div>
+
+  <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:100%"></div></div>
+  <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
+
+  <div class="court-area"><div class="court" id="court"></div></div>
+
+  <div class="bottombar">
+    <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
+    <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.75rem" id="restartBtn" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+    <button class="bot-btn" id="fsBtn">Fullscreen<span>Toggle</span></button>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+var timeLimit=5000,best=0;
+
+// PROGRESSION:
+// Level = how many numbers to find (1, 2, 3 ... 50)
+// Within each level, cells start at MAX(10, level) and increase by 1 each round up to 50
+// When cells reach 50, level advances and cells reset to MAX(10, next_level)
+var MIN_CELLS=10;
+var MAX_CELLS=50;
+var MAX_LEVEL=50;
+
+// ── SCORE SUBMISSION ──────────────────────────────────
+var API='https://api.reactificgaming.com';
+(function(){
+  var urlToken=new URLSearchParams(window.location.search).get('t');
+  if(urlToken)localStorage.setItem('rct-token',urlToken);
+})();
+
+function submitScore(score,level,mode){
+  var token=localStorage.getItem('rct-token');
+  if(!token)return;
+  fetch(API+'/api/scores/game',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({game_id:'numhunt',score:score,level:level,mode:mode})
+  }).catch(function(err){
+    console.error('Score submit error:',err);
+  });
+}
+
+// Ensure score is saved when leaving
+window.addEventListener('beforeunload',function(){
+  var token=localStorage.getItem('rct-token');
+  if(token && g && g.sc>0){
+    navigator.sendBeacon(API+'/api/scores/game',
+      JSON.stringify({game_id:'numhunt',score:g.sc,level:g.level,mode:'progression'})
+    );
+  }
+});
+
+document.querySelectorAll('[data-time]').forEach(btn=>{
+  btn.onclick=function(){
+    timeLimit=Number(btn.dataset.time);
+    document.querySelectorAll('[data-time]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+});
+
+$('startBtn').onclick=function(){
+  $('screen-intro').style.display='none';
+  $('screen-game').style.display='flex';
+  buildCourt();initGame();
+};
+$('menuBtn').onclick=function(){clrT();resetCourt();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];
+function buildCourt(){
+  var court=$('court');court.innerHTML='';cells=[];
+  for(var i=0;i<50;i++){
+    var c=document.createElement('div');
+    c.className='cell inactive';
+    c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));
+    court.appendChild(c);cells.push(c);
+  }
+}
+
+// Game state
+var g={level:1,cells:10,sc:0,st:0};
+var phase='idle',targets=[],found=[],courtNums=[],timers=[],shrinkRAF=null;
+var tapLocked=false;
+
+function clrT(){timers.forEach(clearTimeout);timers=[];if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}}
+
+function updateHUD(){
+  $('hLevel').textContent=g.level;
+  $('hFind').textContent=g.level;
+  $('hCells').textContent=g.cells;
+  $('hSc').textContent=g.sc;
+  $('hSt').textContent=g.st;
+  $('hBest').textContent=best;
+}
+
+function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
+
+function shuffle(arr){
+  for(var i=arr.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=arr[i];arr[i]=arr[j];arr[j]=t;
+  }
+  return arr;
+}
+
+function resetCourt(){
+  cells.forEach(function(c){c.className='cell inactive';c.textContent=''});
+  $('targetBar').innerHTML='<div class="target-label">FIND →</div>';
+  $('clockFill').style.width='100%';
+}
+
+function initGame(){
+  g={level:1,cells:MIN_CELLS,sc:0,st:0};
+  updateHUD();resetCourt();
+  $('actBtn').textContent="LET'S GO";
+  $('actBtn').onclick=startRound;
+  $('actBtn').disabled=false;
+  msg("TAP LET'S GO!",'watch');
+}
+
+function restartGame(){
+  clrT();phase='idle';
+  initGame();
+}
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();found=[];tapLocked=false;
+  phase='playing';
+  $('actBtn').disabled=true;
+  updateHUD();
+
+  var findCount=g.level;      // how many numbers to find
+  var cellCount=g.cells;      // how many cells are active
+
+  // Build shuffled numbers 1-50
+  var nums=[];for(var i=1;i<=50;i++)nums.push(i);
+  shuffle(nums);
+  courtNums=nums.slice();
+
+  // Pick which cell indices are active
+  var allIdx=[];for(var i=0;i<50;i++)allIdx.push(i);
+  shuffle(allIdx);
+  var activeSet=allIdx.slice(0,cellCount);
+
+  // The target numbers are the numbers inside the active cells
+  // Pick findCount of the active cells as targets
+  var targetCells=activeSet.slice(0,findCount);
+  targets=targetCells.map(function(ci){return courtNums[ci]});
+
+  // Show targets in bar
+  var bar=$('targetBar');
+  bar.innerHTML='<div class="target-label">FIND →</div>';
+  targets.forEach(function(n){
+    var el=document.createElement('div');
+    el.className='target-num';el.textContent=n;el.id='tgt-'+n;
+    bar.appendChild(el);
+  });
+
+  // Render court
+  cells.forEach(function(c,i){
+    if(activeSet.indexOf(i)!==-1){
+      c.className='cell active';
+      c.textContent=courtNums[i];
+    }else{
+      c.className='cell inactive';
+      c.textContent='';
+    }
+  });
+
+  msg('🎯 FIND '+(findCount>1?findCount+' NUMBERS':'IT')+'!','go');
+
+  // Start clock
+  var startMs=performance.now();
+  $('clockFill').style.width='100%';
+  function tick(){
+    var pct=Math.max(0,1-(performance.now()-startMs)/timeLimit);
+    $('clockFill').style.width=(pct*100)+'%';
+    if(pct<=0){onMiss("TIME'S UP!");return}
+    if(phase==='playing')shrinkRAF=requestAnimationFrame(tick);
+  }
+  shrinkRAF=requestAnimationFrame(tick);
+}
+
+function handleTap(idx){
+  if(phase!=='playing')return;
+  if(tapLocked)return;
+  tapLocked=true;
+  setTimeout(function(){tapLocked=false},80);
+
+  var num=courtNums[idx];
+  if(num===undefined||num===null)return;
+  var isTarget=targets.indexOf(num)!==-1;
+  var alreadyFound=found.indexOf(num)!==-1;
+
+  if(isTarget&&!alreadyFound){
+    cells[idx].className='cell correct';
+    found.push(num);
+    var te=$('tgt-'+num);if(te)te.classList.add('found');
+
+    if(found.length>=targets.length){
+      // Round complete
+      clrT();phase='idle';
+      g.sc+=g.level*g.cells;g.st++;
+      if(g.st>best)best=g.st;
+      updateHUD();
+
+      if(g.cells>=MAX_CELLS){
+        // Completed full run of this level (10→50 cells) — advance to next level
+        if(g.level>=MAX_LEVEL){
+          msg('🏆 ULTIMATE HUNTER! ALL LEVELS MASTERED!','perfect');
+          submitScore(g.sc,g.level,'compete');  // FIXED: Submit on ultimate level
+          timers.push(setTimeout(restartGame,3000));
+        }else{
+          var nextLevel=g.level+1;
+          var nextCells=Math.max(MIN_CELLS,nextLevel);
+          msg('🔥 LEVEL '+nextLevel+' UNLOCKED! FIND '+nextLevel+' NUMBERS!','perfect');
+          submitScore(g.sc,nextLevel,'progression');  // FIXED: Submit on level up
+          g.level=nextLevel;
+          g.cells=nextCells;
+          timers.push(setTimeout(startRound,1200));
+        }
+      }else{
+        // Advance cells within same level
+        g.cells=g.cells+1;
+        msg('✅ +'+(g.cells)+' CELLS → KEEP HUNTING!','perfect');
+        submitScore(g.sc,g.level,'progression');  // FIXED: Submit on cell advance
+        timers.push(setTimeout(startRound,700));
+      }
+    }else{
+      msg('✅ '+found.length+'/'+targets.length+' — KEEP GOING!','go');
+    }
+  }else if(!alreadyFound){
+    cells[idx].className='cell wrong';
+    onMiss('WRONG NUMBER!');
+  }
+}
+
+function onMiss(reason){
+  if(phase==='idle')return;
+  clrT();phase='idle';
+  // Reveal unfound targets
+  cells.forEach(function(c,i){
+    if(targets.indexOf(courtNums[i])!==-1&&found.indexOf(courtNums[i])===-1){
+      c.className='cell reveal';
+    }
+  });
+  g.st=0;
+  if(g.sc>0)submitScore(g.sc,g.level,'progression');
+  updateHUD();
+  msg(reason+' — LVL '+g.level+' · '+g.cells+' CELLS — TRY AGAIN','miss');
+  // Stay at current level AND current cell count — just retry same round
+  timers.push(setTimeout(function(){
+    $('actBtn').textContent="TRY AGAIN";
+    $('actBtn').onclick=startRound;
+    $('actBtn').disabled=false;
+  },1800));
+}
+
+$('actBtn').onclick=startRound;
+})();
+</script>
+</body>
+</html>
