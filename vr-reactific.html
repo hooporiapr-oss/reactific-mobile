@@ -326,12 +326,7 @@ var API='https://api.reactificgaming.com';
 })();
 
 function goToGames(){
-  var token=localStorage.getItem('rct-token');
-  if(token){
-    window.location.href='/vr-home.html';
-  }else{
-    window.location.href='/dashboard.html';
-  }
+  window.location.href='/dashboard.html';
 }
 
 function submitScore(score,level,m){
