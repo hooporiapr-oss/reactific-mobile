@@ -3,162 +3,333 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reactific Teacher Dashboard</title>
+  <title>Reactific Login</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #0B1F3A 0%, #1a3a52 100%); color: #333; min-height: 100vh; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,.1); }
-    .header h1 { color: #fff; font-size: 2rem; }
-    .header-info { display: flex; gap: 20px; align-items: center; }
-    #uname { color: #fff; font-size: 1rem; }
-    .btn-signout { padding: 10px 20px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; border-radius: 8px; cursor: pointer; }
-    .btn-signout:hover { background: rgba(255,255,255,.2); }
-    .create-class { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 24px; margin-bottom: 32px; backdrop-filter: blur(10px); }
-    .field-label { color: #8892a0; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
-    .input { width: 100%; max-width: 400px; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08); color: #333; font-size: 1rem; margin-bottom: 16px; }
-    .btn { padding: 12px 32px; background: linear-gradient(135deg, #008CFF 0%, #0066cc 100%); border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0B1F3A 0%, #1a3a52 100%);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 40px;
+      backdrop-filter: blur(10px);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .logo h1 {
+      color: #fff;
+      font-size: 2rem;
+      font-style: italic;
+      margin-bottom: 4px;
+    }
+    .logo p {
+      color: #00a8ff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .tab-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      color: #8892a0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, #008CFF 0%, #0066cc 100%);
+      border-color: #008CFF;
+      color: #fff;
+    }
+    .field-label {
+      color: #8892a0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .input::placeholder { color: #aaa; }
+    .code-input {
+      max-width: 120px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #008CFF 0%, #0066cc 100%);
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,140,255,.3); }
-    .btn:disabled { opacity: 0.6; }
-    .btn-danger { background: rgba(197,48,48,.2); border: 1px solid rgba(197,48,48,.3); color: #ff6b6b; padding: 8px 12px; font-size: 0.85rem; }
-    .error { color: #c53030; font-size: 0.9rem; margin-top: 8px; }
-    .classes-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin: 32px 0 20px 0; }
-    #classSearch { width: 100%; max-width: 560px; padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #fff; font-size: 0.9rem; margin-bottom: 16px; }
-    #classes-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .class-card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px); }
-    .card-header { margin-bottom: 16px; }
-    .class-name { color: #fff; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
-    .card-actions { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .mode-btn, .refresh-btn, .edit-btn, .delete-btn { padding: 8px 12px; background: rgba(0,140,255,.2); border: 1px solid rgba(0,140,255,.3); color: #00a8ff; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
-    .edit-btn { background: rgba(0,150,136,.2); border-color: rgba(0,150,136,.3); color: #00d9c4; }
-    .delete-btn { background: rgba(197,48,48,.2); border-color: rgba(197,48,48,.3); color: #ff6b6b; }
-    .empty-state { text-align: center; padding: 40px; color: #8892a0; }
-    .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,.2); border-top: 3px solid #008CFF; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error {
+      background: rgba(197,48,48,.2);
+      border: 1px solid rgba(197,48,48,.3);
+      color: #ff6b6b;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    .hint {
+      color: #8892a0;
+      font-size: 0.85rem;
+      margin-top: 16px;
+      line-height: 1.4;
+    }
+    .hint a {
+      color: #00a8ff;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(11,31,58,.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 9999;
+    }
+    .loading.show { display: flex; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,.2);
+      border-top: 4px solid #008CFF;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading-txt { color: #fff; font-size: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1>REACTIFIC™</h1>
-    <div class="header-info">
-      <div id="uname">Teacher</div>
-      <button class="btn-signout" onclick="signOut()">Sign Out</button>
-    </div>
+<div class="login-box">
+  <div class="logo">
+    <h1>REACTIFIC<span style="font-size:0.6em">™</span></h1>
+    <p>Virtual Reaction Reality</p>
   </div>
 
-  <div class="create-class">
-    <div class="field-label">Create a New Class</div>
-    <input class="input" id="class-name" placeholder="Grade 6 Science" autocomplete="off">
-    <button class="btn" id="create-btn" onclick="createClass()">Create Class</button>
-    <div class="error" id="create-error"></div>
+  <div class="tab-row">
+    <button class="tab active" id="tab-student" onclick="setTab('student')">Student</button>
+    <button class="tab" id="tab-teacher" onclick="setTab('teacher')">Teacher</button>
+    <button class="tab" id="tab-access" onclick="setTab('access')">VR Lab</button>
   </div>
 
-  <div class="classes-title">MY CLASSES</div>
-  <input type="text" id="classSearch" placeholder="🔍 Search classes..." oninput="filterClasses(this.value)">
-  <div id="classes-wrap">
-    <div class="empty-state"><div class="spinner"></div></div>
+  <div id="error-msg" class="error" style="display:none"></div>
+
+  <!-- STUDENT LOGIN -->
+  <div id="form-student">
+    <div class="field-label">School Email</div>
+    <input class="input" id="s-email" type="email" placeholder="you@school.edu" autocomplete="email">
+    <div class="field-label">Class Code</div>
+    <input class="code-input input" id="s-code" maxlength="6" placeholder="ABC123">
+    <button class="btn" id="s-btn" onclick="studentLogin()">Enter the Court →</button>
+    <div class="hint">Enter your school email and the 6-letter class code from your teacher. First time? Your account is created automatically.</div>
   </div>
+
+  <!-- TEACHER LOGIN -->
+  <div id="form-teacher" style="display:none">
+    <div class="field-label">Email</div>
+    <input class="input" id="t-email" type="email" placeholder="teacher@school.edu" autocomplete="email">
+    <div class="field-label">Password</div>
+    <input class="input" id="t-password" type="password" placeholder="Password">
+    <button class="btn" id="t-btn" onclick="teacherLogin()">Sign In →</button>
+    <div class="hint">First time? <span onclick="showRegister()" style="cursor:pointer;color:#00a8ff">Create a teacher account</span></div>
+  </div>
+
+  <!-- TEACHER REGISTER -->
+  <div id="form-register" style="display:none">
+    <div class="field-label">Email</div>
+    <input class="input" id="r-email" type="email" placeholder="teacher@school.edu" autocomplete="email">
+    <div class="field-label">Your Name</div>
+    <input class="input" id="r-username" type="text" placeholder="John Doe">
+    <div class="field-label">Password</div>
+    <input class="input" id="r-password" type="password" placeholder="6+ characters">
+    <button class="btn" onclick="teacherRegister()">Create Account →</button>
+    <div class="hint"><span onclick="showTeacherLogin()" style="cursor:pointer;color:#00a8ff">← Back to sign in</span></div>
+  </div>
+
+  <!-- ACCESS CODE -->
+  <div id="form-access" style="display:none">
+    <div class="field-label">VR Lab Access Code</div>
+    <input class="input" id="a-code" maxlength="8" placeholder="PARADISO">
+    <button class="btn" onclick="accessCodeLogin()">Enter VR Lab →</button>
+    <div class="hint">Enter the access code provided by your school to access the VR game lab.</div>
+  </div>
+</div>
+
+<div class="loading" id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-txt" id="loading-txt">Signing you in...</div>
 </div>
 
 <script>
 var API='https://api.reactificgaming.com';
-var token=localStorage.getItem('rct-token');
-var user=JSON.parse(localStorage.getItem('rct-user')||'null');
 
-if(!token||!user){
-  window.location.href='/index.html';
-  throw new Error('Not logged in');
+function setTab(tab){
+  document.getElementById('tab-student').classList.toggle('active', tab==='student');
+  document.getElementById('tab-teacher').classList.toggle('active', tab==='teacher');
+  document.getElementById('tab-access').classList.toggle('active', tab==='access');
+  document.getElementById('form-student').style.display=tab==='student'?'block':'none';
+  document.getElementById('form-teacher').style.display=tab==='teacher'?'block':'none';
+  document.getElementById('form-access').style.display=tab==='access'?'block':'none';
+  document.getElementById('form-register').style.display='none';
+  clearError();
 }
 
-document.getElementById('uname').textContent=user.username||'Teacher';
-
-function signOut(){
-  localStorage.removeItem('rct-token');
-  localStorage.removeItem('rct-user');
-  window.location.href='/index.html';
+function showRegister(){
+  document.getElementById('form-teacher').style.display='none';
+  document.getElementById('form-register').style.display='block';
+  clearError();
 }
 
-async function createClass(){
-  var name=document.getElementById('class-name').value.trim();
-  if(!name){document.getElementById('create-error').textContent='Enter a class name';return}
-  var btn=document.getElementById('create-btn');
-  btn.disabled=true;btn.textContent='Creating...';
-  document.getElementById('create-error').textContent='';
+function showTeacherLogin(){
+  document.getElementById('form-register').style.display='none';
+  document.getElementById('form-teacher').style.display='block';
+  clearError();
+}
+
+function clearError(){
+  document.getElementById('error-msg').style.display='none';
+  document.getElementById('error-msg').textContent='';
+}
+
+function showError(msg){
+  document.getElementById('error-msg').textContent=msg;
+  document.getElementById('error-msg').style.display='block';
+}
+
+function showLoading(msg){
+  document.getElementById('loading-txt').textContent=msg;
+  document.getElementById('loading-screen').classList.add('show');
+}
+
+function hideLoading(){
+  document.getElementById('loading-screen').classList.remove('show');
+}
+
+async function studentLogin(){
+  var email=document.getElementById('s-email').value.trim().toLowerCase();
+  var code=document.getElementById('s-code').value.trim().toUpperCase();
+  if(!email||!code){showError('Email and class code required');return}
+  showLoading('Signing in...');
   try{
-    var res=await fetch(API+'/api/classes/create',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name})});
+    var res=await fetch(API+'/api/auth/student-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,code})});
     var data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Error');
-    document.getElementById('class-name').value='';
-    loadClasses();
-  }catch(e){document.getElementById('create-error').textContent=e.message}
-  btn.disabled=false;btn.textContent='Create Class';
+    if(!res.ok)throw new Error(data.error||'Login failed');
+    localStorage.setItem('rct-token',data.token);
+    localStorage.setItem('rct-user',JSON.stringify(data.user));
+    window.location.href='/hub.html';
+  }catch(e){hideLoading();showError(e.message)}
 }
 
-function filterClasses(query){
-  var q=query.toLowerCase().trim();
-  document.querySelectorAll('.class-card').forEach(function(card){
-    var name=card.querySelector('.class-name');
-    card.style.display=(!q||name.textContent.toLowerCase().includes(q))?'':'none';
-  });
-}
-
-async function loadClasses(){
-  var wrap=document.getElementById('classes-wrap');
-  wrap.innerHTML='<div class="empty-state"><div class="spinner"></div></div>';
+async function teacherLogin(){
+  var email=document.getElementById('t-email').value.trim().toLowerCase();
+  var password=document.getElementById('t-password').value;
+  if(!email||!password){showError('Email and password required');return}
+  showLoading('Signing in...');
   try{
-    var res=await fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok){wrap.innerHTML='<div class="empty-state">Could not load</div>';return}
+    var res=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
     var data=await res.json();
-    var classes=data.classes||[];
-    if(!classes.length){wrap.innerHTML='<div class="empty-state">No classes</div>';return}
-    wrap.innerHTML=classes.map(function(cls){return '<div class="class-card"><div class="card-header"><div class="class-name">'+cls.name+'</div><div style="font-size:.7rem;color:#8892a0">'+cls.student_count+' students</div></div><div class="card-actions"><button class="refresh-btn" onclick="loadDashboard('+cls.id+')">Scores</button><button class="edit-btn" onclick="renameClass('+cls.id+')">Edit</button><button class="delete-btn" onclick="deleteClass('+cls.id+')">Delete</button></div><div id="dash-'+cls.id+'"><div style="text-align:center;padding:12px;color:#8892a0;font-size:.8rem">Click Scores</div></div></div>'}).join('');
-  }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>'}
+    if(!res.ok)throw new Error(data.error||'Login failed');
+    localStorage.setItem('rct-token',data.token);
+    localStorage.setItem('rct-user',JSON.stringify(data.user));
+    window.location.href='/teacher.html';
+  }catch(e){hideLoading();showError(e.message)}
 }
 
-async function loadDashboard(classId){
-  var dash=document.getElementById('dash-'+classId);
-  dash.innerHTML='<div style="text-align:center;padding:8px"><div class="spinner"></div></div>';
+async function teacherRegister(){
+  var email=document.getElementById('r-email').value.trim().toLowerCase();
+  var username=document.getElementById('r-username').value.trim();
+  var password=document.getElementById('r-password').value;
+  if(!email||!username||!password){showError('All fields required');return}
+  if(password.length<6){showError('Password must be 6+ characters');return}
+  showLoading('Creating account...');
   try{
-    var res=await fetch(API+'/api/classes/'+classId+'/dashboard',{headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok){dash.innerHTML='<div style="color:#c53030">Error</div>';return}
+    var res=await fetch(API+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,username,password,role:'teacher'})});
     var data=await res.json();
-    var students=data.students||[];
-    if(!students.length){dash.innerHTML='<div style="color:#8892a0">No scores</div>';return}
-    dash.innerHTML='<div style="font-size:.75rem">'+students.map(function(s){return '<div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 0.5fr;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,.08);color:#fff"><div>'+s.username+'</div><div style="text-align:center">'+s.score+'</div><div style="text-align:center">L'+s.level+'</div><div style="text-align:center"><button class="btn-danger" onclick="removeStudent('+classId+',\''+s.id+'\')">✕</button></div></div>'}).join('')+'</div>';
-  }catch(e){dash.innerHTML='<div style="color:#c53030">Error</div>'}
+    if(!res.ok)throw new Error(data.error||'Registration failed');
+    localStorage.setItem('rct-token',data.token);
+    localStorage.setItem('rct-user',JSON.stringify(data.user));
+    window.location.href='/teacher.html';
+  }catch(e){hideLoading();showError(e.message)}
 }
 
-async function renameClass(classId){
-  var newName=prompt('New class name:');
-  if(!newName||!newName.trim())return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name:newName.trim()})});
-    if(!res.ok)throw new Error('Error');
-    loadClasses();
-  }catch(e){alert('Could not rename')}
+function accessCodeLogin(){
+  var code=document.getElementById('a-code').value.trim().toUpperCase();
+  if(!code){showError('Enter the access code');return}
+  sessionStorage.setItem('rct-gate-pass','1');
+  window.location.href='/dashboard.html';
 }
 
-async function deleteClass(classId){
-  if(!confirm('Delete this class?'))return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok)throw new Error('Error');
-    loadClasses();
-  }catch(e){alert('Could not delete')}
-}
+// Auto-redirect if already logged in
+(function(){
+  var token=localStorage.getItem('rct-token');
+  var user=JSON.parse(localStorage.getItem('rct-user')||'null');
+  if(token&&user){
+    window.location.href=user.role==='teacher'?'/teacher.html':'/hub.html';
+  }
+})();
 
-async function removeStudent(classId,userId){
-  if(!confirm('Remove student?'))return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId+'/students/'+userId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok)throw new Error('Error');
-    loadDashboard(classId);
-  }catch(e){alert('Could not remove')}
-}
-
-loadClasses();
+// Enter key support
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    var tab=document.getElementById('tab-student');
+    if(tab&&tab.classList.contains('active')){
+      document.getElementById('s-btn').click();
+    }
+  }
+});
 </script>
 
 </body>
