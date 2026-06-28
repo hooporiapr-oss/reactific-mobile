@@ -6,95 +6,190 @@
 <title>Reactific | VR Sport</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
 
 body{
   display:flex;
   flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
   background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
-  padding:16px;
-  box-sizing:border-box;
-  overflow-y:auto;
-  min-height:100vh;
+  height:100vh;
+  padding:12px;
 }
 
-.container{width:100%;max-width:520px}
+/* HEADER — compact horizontal */
+.header{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto auto;
+  gap:16px;
+  align-items:center;
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:2px solid rgba(155,89,182,.2);
+  flex-shrink:0;
+}
 
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid rgba(155,89,182,.2)}
-
-.logo{font-size:1.8rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8)}
+.logo{
+  font-size:1.4rem;
+  font-weight:900;
+  font-style:italic;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 0 40px rgba(155,89,182,.8);
+  white-space:nowrap;
+}
 .logo span{color:#9B59B6}
 
-.header-info{display:flex;gap:12px;align-items:center}
-.user-name{font-size:.9rem;color:#fff}
-.btn-signout{padding:8px 16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:900;text-transform:uppercase}
+.class-compact{
+  background:rgba(0,150,136,.15);
+  border:1px solid rgba(0,150,136,.2);
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:.7rem;
+}
+.class-compact-name{
+  font-weight:900;
+  color:#00D9A5;
+  white-space:nowrap;
+}
+.class-compact-label{
+  font-size:.55rem;
+  color:#8892a0;
+  text-transform:uppercase;
+}
+
+.stats-compact{
+  display:flex;
+  gap:12px;
+}
+.stat-compact{
+  background:rgba(155,89,182,.1);
+  border:1px solid rgba(155,89,182,.2);
+  border-radius:6px;
+  padding:6px 10px;
+  text-align:center;
+  font-size:.65rem;
+}
+.stat-compact-val{
+  font-weight:900;
+  color:#9B59B6;
+  font-size:.85rem;
+}
+.stat-compact-label{
+  font-size:.55rem;
+  color:#8892a0;
+  text-transform:uppercase;
+}
+
+.btn-signout{
+  padding:6px 12px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:.65rem;
+  font-weight:900;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
 .btn-signout:hover{background:rgba(255,255,255,.15)}
 
-.class-info{background:rgba(0,150,136,.15);border:2px solid rgba(0,150,136,.3);border-radius:14px;padding:16px;margin-bottom:24px}
-.class-label{font-size:.65rem;color:#8892a0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.class-name{font-size:1.3rem;font-weight:900;color:#00D9A5;margin-bottom:12px}
-.class-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat{background:rgba(0,0,0,.4);border:1px solid rgba(0,150,136,.2);border-radius:8px;padding:10px}
-.stat-label{font-size:.6rem;color:#8892a0;text-transform:uppercase;margin-bottom:4px}
-.stat-val{font-size:1.1rem;font-weight:900;color:#00D9A5}
+/* MAIN CONTENT — 3 columns */
+.main{
+  display:grid;
+  grid-template-columns:1fr 2fr 1fr;
+  gap:12px;
+  flex:1;
+  overflow:hidden;
+}
 
-.personal-section{margin-bottom:24px}
-.section-title{font-size:.9rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8892a0;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid rgba(155,89,182,.2)}
-
-.personal-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.ps-box{background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.3);border-radius:10px;padding:12px;text-align:center}
-.ps-label{font-size:.6rem;color:#8892a0;text-transform:uppercase;margin-bottom:4px}
-.ps-val{font-size:1.4rem;font-weight:900;color:#9B59B6}
-
-.flagship-section{
-  background:linear-gradient(135deg,rgba(155,89,182,.2),rgba(0,150,136,.1));
-  border:3px solid #9B59B6;
-  border-radius:16px;
-  padding:24px;
+/* LEFT: Bonus Games */
+.bonus-section{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.bonus-title{
+  font-size:.7rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#8892a0;
+  margin-bottom:4px;
+}
+.bonus-grid{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.bonus-card{
+  background:rgba(155,89,182,.08);
+  border:1px solid rgba(155,89,182,.25);
+  border-radius:8px;
+  padding:10px;
   text-align:center;
-  margin-bottom:24px;
+  cursor:pointer;
+  transition:all .2s;
+  flex-shrink:0;
+}
+.bonus-card:hover{
+  background:rgba(155,89,182,.15);
+  border-color:#9B59B6;
+}
+.bonus-icon{font-size:1.3rem;margin-bottom:4px}
+.bonus-name{font-size:.65rem;font-weight:900;color:#fff;margin-bottom:1px}
+.bonus-desc{font-size:.55rem;color:#8892a0}
+
+/* CENTER: Reactific Sport */
+.flagship-section{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,rgba(155,89,182,.2),rgba(0,150,136,.1));
+  border:2px solid #9B59B6;
+  border-radius:12px;
+  padding:16px;
   box-shadow:0 0 40px rgba(155,89,182,.3);
+  gap:12px;
 }
 
 .flagship-badge{
   display:inline-block;
   background:#9B59B6;
   color:#fff;
-  padding:6px 12px;
+  padding:4px 10px;
   border-radius:999px;
-  font-size:.6rem;
+  font-size:.55rem;
   font-weight:900;
   letter-spacing:.08em;
   text-transform:uppercase;
-  margin-bottom:12px;
 }
 
 .flagship-title{
-  font-size:1.6rem;
+  font-size:1.3rem;
   font-weight:900;
   letter-spacing:.1em;
   text-transform:uppercase;
   color:#fff;
-  margin-bottom:8px;
 }
 
 .flagship-desc{
-  font-size:.85rem;
+  font-size:.7rem;
   color:#8892a0;
-  line-height:1.5;
-  margin-bottom:16px;
+  text-align:center;
+  line-height:1.4;
 }
 
 .play-btn{
   width:100%;
-  padding:14px 20px;
+  padding:12px 20px;
   background:linear-gradient(135deg,#9B59B6,#A873B8);
   border:none;
-  border-radius:14px;
+  border-radius:10px;
   color:#fff;
-  font-size:1rem;
+  font-size:.95rem;
   font-weight:900;
   letter-spacing:.08em;
   text-transform:uppercase;
@@ -102,185 +197,142 @@ body{
   box-shadow:0 0 30px rgba(155,89,182,.6);
   transition:all .2s;
 }
-
 .play-btn:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(155,89,182,1)}
-.play-btn:disabled{opacity:.5;cursor:not-allowed}
 
-.bonus-section{margin-bottom:24px}
-.bonus-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.bonus-card{
-  background:rgba(155,89,182,.08);
-  border:2px solid rgba(155,89,182,.3);
-  border-radius:12px;
-  padding:14px 10px;
-  text-align:center;
-  cursor:pointer;
-  transition:all .2s;
+/* RIGHT: Leaderboard */
+.leaderboard-section{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
-.bonus-card:hover{
-  background:rgba(155,89,182,.15);
-  border-color:#9B59B6;
-  box-shadow:0 0 20px rgba(155,89,182,.3);
-}
-.bonus-icon{font-size:1.6rem;margin-bottom:6px}
-.bonus-name{font-size:.85rem;font-weight:900;color:#fff;margin-bottom:2px}
-.bonus-desc{font-size:.6rem;color:#8892a0}
-
-.leaderboard-section{margin-bottom:24px}
-.leaderboard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.leaderboard-header h3{font-size:.9rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8892a0}
-.lb-filter{font-size:.7rem;color:#8892a0;text-transform:uppercase}
-
-.leaderboard-list{background:rgba(0,0,0,.3);border:1px solid rgba(155,89,182,.2);border-radius:12px;padding:12px;max-height:280px;overflow-y:auto}
-.lb-row{
-  display:grid;
-  grid-template-columns:40px 1fr 80px 60px;
-  gap:10px;
-  align-items:center;
-  padding:8px 0;
-  border-bottom:1px solid rgba(155,89,182,.1);
-  font-size:.8rem;
-}
-.lb-row:last-child{border-bottom:none}
-.lb-rank{font-weight:900;color:#ffd35a;text-align:center}
-.lb-name{color:#fff}
-.lb-score{color:#9B59B6;font-weight:900;text-align:right}
-.lb-tier{color:#8892a0;text-align:center;font-size:.65rem;text-transform:uppercase}
-.lb-loading{text-align:center;padding:20px;color:#8892a0;font-size:.8rem}
-
-.footer-nav{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-bottom:20px;
-}
-.nav-btn{
-  padding:10px;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;
-  color:#fff;
-  font-size:.75rem;
+.leaderboard-header{
+  font-size:.7rem;
   font-weight:900;
   letter-spacing:.08em;
   text-transform:uppercase;
-  cursor:pointer;
-  transition:all .2s;
+  color:#8892a0;
 }
-.nav-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
-
-@media (max-width:480px){
-  body{padding:12px}
-  .logo{font-size:1.4rem}
-  .header{margin-bottom:16px}
-  .class-stats{grid-template-columns:1fr}
-  .personal-stats{grid-template-columns:1fr 1fr}
-  .flagship-title{font-size:1.3rem}
-  .leaderboard-list{max-height:200px}
-  .lb-row{font-size:.7rem}
+.leaderboard-list{
+  background:rgba(0,0,0,.3);
+  border:1px solid rgba(155,89,182,.2);
+  border-radius:8px;
+  padding:8px;
+  overflow-y:auto;
+  flex:1;
 }
+.lb-row{
+  display:grid;
+  grid-template-columns:28px 1fr 50px 35px;
+  gap:6px;
+  align-items:center;
+  padding:5px 0;
+  border-bottom:1px solid rgba(155,89,182,.1);
+  font-size:.65rem;
+}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{font-weight:900;color:#ffd35a;text-align:center}
+.lb-name{color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-score{color:#9B59B6;font-weight:900;text-align:right}
+.lb-tier{color:#8892a0;text-align:center;font-size:.55rem;text-transform:uppercase}
+.lb-loading{text-align:center;padding:12px;color:#8892a0;font-size:.65rem}
 
-::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:rgba(155,89,182,.1)}
-::-webkit-scrollbar-thumb{background:rgba(155,89,182,.4);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(155,89,182,.4);border-radius:2px}
+
+/* MOBILE: Stack vertically */
+@media (max-width:1024px){
+  .main{grid-template-columns:1fr}
+  .header{grid-template-columns:auto 1fr auto;gap:8px}
+  .stats-compact{flex-direction:column;gap:6px}
+  .stat-compact{padding:5px 8px}
+  .logo{font-size:1.1rem}
+  .bonus-grid{flex-direction:row;flex-wrap:wrap}
+  .bonus-card{flex:1;min-width:80px}
+}
+
+@media (max-width:640px){
+  body{padding:8px}
+  .header{grid-template-columns:auto 1fr;gap:6px;margin-bottom:8px}
+  .btn-signout{order:-1}
+  .class-compact{display:none}
+  .stats-compact{font-size:.6rem}
+  .logo{font-size:.9rem}
+  .main{grid-template-columns:1fr}
+  .flagship-title{font-size:1rem}
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <div class="logo">REACTIFIC<span>™</span></div>
-    <div class="header-info">
-      <div class="user-name" id="userName">Student</div>
-      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+<div class="header">
+  <div class="logo">REACTIFIC<span>™</span></div>
+  
+  <div class="class-compact">
+    <div class="class-compact-label">Your Class</div>
+    <div class="class-compact-name" id="className">Loading...</div>
+  </div>
+
+  <div class="stats-compact">
+    <div class="stat-compact">
+      <div class="stat-compact-label">Best</div>
+      <div class="stat-compact-val" id="bestScore">—</div>
+    </div>
+    <div class="stat-compact">
+      <div class="stat-compact-label">Tier</div>
+      <div class="stat-compact-val" id="bestTier">—</div>
+    </div>
+    <div class="stat-compact">
+      <div class="stat-compact-label">Rank</div>
+      <div class="stat-compact-val" id="myRank">—</div>
     </div>
   </div>
 
-  <!-- CLASS INFO -->
-  <div class="class-info">
-    <div class="class-label">Your Class</div>
-    <div class="class-name" id="className">Loading...</div>
-    <div class="class-stats">
-      <div class="stat">
-        <div class="stat-label">Classmates</div>
-        <div class="stat-val" id="classmates">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Class Code</div>
-        <div class="stat-val" id="classcode" style="font-size:.9rem">—</div>
-      </div>
-    </div>
-  </div>
+  <button class="btn-signout" onclick="signOut()">Sign Out</button>
+</div>
 
-  <!-- PERSONAL STATS -->
-  <div class="personal-section">
-    <div class="section-title">Your Stats</div>
-    <div class="personal-stats">
-      <div class="ps-box">
-        <div class="ps-label">Best Score</div>
-        <div class="ps-val" id="bestScore">—</div>
-      </div>
-      <div class="ps-box">
-        <div class="ps-label">Best Tier</div>
-        <div class="ps-val" id="bestTier">—</div>
-      </div>
-      <div class="ps-box">
-        <div class="ps-label">Rank</div>
-        <div class="ps-val" id="myRank">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FLAGSHIP: REACTIFIC SPORT -->
-  <div class="flagship-section">
-    <div class="flagship-badge">🏆 Championship Sport</div>
-    <div class="flagship-title">Reactific Sport</div>
-    <div class="flagship-desc">5 Tiers. 2 Modes. Live Leaderboard. Defend Your Rank.</div>
-    <button class="play-btn" onclick="window.location.href='/vr-reactific.html'">🏆 Enter The Court</button>
-  </div>
-
-  <!-- BONUS GAMES -->
+<div class="main">
+  <!-- LEFT: BONUS GAMES -->
   <div class="bonus-section">
-    <div class="section-title">Bonus Training</div>
+    <div class="bonus-title">Bonus</div>
     <div class="bonus-grid">
       <div class="bonus-card" onclick="window.location.href='/vr-echo.html'">
         <div class="bonus-icon">🧠</div>
-        <div class="bonus-name">Echo Recall</div>
+        <div class="bonus-name">Echo</div>
         <div class="bonus-desc">Memory</div>
       </div>
       <div class="bonus-card" onclick="window.location.href='/vr-pattern.html'">
         <div class="bonus-icon">🎨</div>
-        <div class="bonus-name">Pattern Rec</div>
+        <div class="bonus-name">Pattern</div>
         <div class="bonus-desc">Visual</div>
       </div>
       <div class="bonus-card" onclick="window.location.href='/vr-numhunt.html'">
         <div class="bonus-icon">🔢</div>
-        <div class="bonus-name">Number Hunt</div>
+        <div class="bonus-name">Number</div>
         <div class="bonus-desc">Math</div>
       </div>
       <div class="bonus-card" onclick="window.location.href='/vr-reaction.html'">
         <div class="bonus-icon">⚡</div>
-        <div class="bonus-name">Reaction Plus</div>
+        <div class="bonus-name">Reaction</div>
         <div class="bonus-desc">Classic</div>
       </div>
     </div>
   </div>
 
-  <!-- LEADERBOARD -->
-  <div class="leaderboard-section">
-    <div class="leaderboard-header">
-      <h3>School Leaderboard</h3>
-      <div class="lb-filter">Top 20</div>
-    </div>
-    <div class="leaderboard-list" id="leaderboard">
-      <div class="lb-loading">Loading leaderboard...</div>
-    </div>
+  <!-- CENTER: REACTIFIC SPORT -->
+  <div class="flagship-section">
+    <div class="flagship-badge">🏆 Championship Sport</div>
+    <div class="flagship-title">Reactific Sport</div>
+    <div class="flagship-desc">5 Tiers. 2 Modes. Live Rank.</div>
+    <button class="play-btn" onclick="window.location.href='/vr-reactific.html'">🏆 Enter Court</button>
   </div>
 
-  <!-- FOOTER NAV -->
-  <div class="footer-nav">
-    <button class="nav-btn" onclick="window.location.href='/teacher-guide.html'">📖 How to Play</button>
-    <button class="nav-btn" onclick="window.location.href='/leaderboard.html'">📊 Full Rankings</button>
+  <!-- RIGHT: LEADERBOARD -->
+  <div class="leaderboard-section">
+    <div class="leaderboard-header">Top 20</div>
+    <div class="leaderboard-list" id="leaderboard">
+      <div class="lb-loading">Loading...</div>
+    </div>
   </div>
 </div>
 
@@ -294,35 +346,26 @@ if(!token||!user){
   throw new Error('Not logged in');
 }
 
-document.getElementById('userName').textContent=user.username||'Student';
-
 function signOut(){
   localStorage.removeItem('rct-token');
   localStorage.removeItem('rct-user');
   window.location.href='/index.html';
 }
 
-// Load class info
 async function loadClassInfo(){
   try{
     var res=await fetch(API+'/api/classes/mine',{headers:{'Authorization':'Bearer '+token}});
     if(!res.ok){
-      document.getElementById('className').textContent='Not in a class';
+      document.getElementById('className').textContent='—';
       return;
     }
     var data=await res.json();
-    var cls=data.class;
-    if(cls){
-      document.getElementById('className').textContent=cls.name;
-      document.getElementById('classcode').textContent=cls.code;
-      document.getElementById('classmates').textContent=cls.student_count||'—';
+    if(data.class){
+      document.getElementById('className').textContent=data.class.name;
     }
-  }catch(e){
-    console.error('Class load error:',e);
-  }
+  }catch(e){console.error('Class load error:',e)}
 }
 
-// Load personal stats
 async function loadPersonalStats(){
   try{
     var res=await fetch(API+'/api/scores/personal',{headers:{'Authorization':'Bearer '+token}});
@@ -335,12 +378,9 @@ async function loadPersonalStats(){
     if(data.rank){
       document.getElementById('myRank').textContent='#'+data.rank;
     }
-  }catch(e){
-    console.error('Stats load error:',e);
-  }
+  }catch(e){console.error('Stats load error:',e)}
 }
 
-// Load leaderboard
 async function loadLeaderboard(){
   try{
     var res=await fetch(API+'/api/scores/leaderboard?limit=20',{headers:{'Authorization':'Bearer '+token}});
@@ -348,7 +388,7 @@ async function loadLeaderboard(){
     var data=await res.json();
     var scores=data.scores||[];
     if(!scores.length){
-      document.getElementById('leaderboard').innerHTML='<div class="lb-loading">No scores yet</div>';
+      document.getElementById('leaderboard').innerHTML='<div class="lb-loading">No scores</div>';
       return;
     }
     var html=scores.map(function(s,i){
@@ -356,13 +396,11 @@ async function loadLeaderboard(){
     }).join('');
     document.getElementById('leaderboard').innerHTML=html;
   }catch(e){
-    document.getElementById('leaderboard').innerHTML='<div class="lb-loading">Leaderboard coming online...</div>';
+    document.getElementById('leaderboard').innerHTML='<div class="lb-loading">Coming online...</div>';
   }
 }
 
-// Refresh leaderboard every 5 seconds (live)
 setInterval(loadLeaderboard,5000);
-
 loadClassInfo();
 loadPersonalStats();
 loadLeaderboard();
