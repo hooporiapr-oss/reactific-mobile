@@ -281,6 +281,13 @@ body{
 
 <script>
 var API='https://api.reactificgaming.com';
+var token=localStorage.getItem('rct-token');
+var user=JSON.parse(localStorage.getItem('rct-user')||'null');
+
+// If logged in, show VR badge as "Hub" instead
+if(token && user){
+  document.querySelector('.vr-badge').textContent='🏠 Game Hub';
+}
 
 async function loadLeaderboard(){
   try{
