@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reactific VR Sport | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
+
+body{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
+  padding:20px 16px;
+  box-sizing:border-box;
+  overflow-y:auto;
+}
+
+.header{text-align:center;margin-bottom:32px}
+.logo{font-size:2.8rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-shadow:0 0 60px rgba(155,89,182,1);margin-bottom:8px}
+.logo span{color:#9B59B6}
+.tagline{font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#00a8ff}
+
+.hub-title{font-size:1.4rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-align:center;margin:24px 0 16px;padding-bottom:12px;border-bottom:2px solid rgba(155,89,182,.3)}
+
+.flagship-section{
+  width:100%;
+  max-width:480px;
+  background:linear-gradient(135deg,rgba(155,89,182,.2),rgba(0,150,136,.1));
+  border:3px solid #9B59B6;
+  border-radius:20px;
+  padding:32px 24px;
+  text-align:center;
+  margin-bottom:32px;
+  box-shadow:0 0 40px rgba(155,89,182,.4);
+}
+
+.flagship-badge{
+  display:inline-block;
+  background:#9B59B6;
+  color:#fff;
+  padding:8px 16px;
+  border-radius:999px;
+  font-size:.7rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+
+.flagship-title{
+  font-size:1.8rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+.flagship-desc{
+  font-size:.9rem;
+  color:#8892a0;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.flagship-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.stat-box{
+  background:rgba(0,0,0,.4);
+  border:1px solid rgba(155,89,182,.3);
+  border-radius:10px;
+  padding:12px 8px;
+}
+
+.stat-label{
+  font-size:.65rem;
+  color:#8892a0;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:4px;
+}
+
+.stat-val{
+  font-size:1.4rem;
+  font-weight:900;
+  color:#9B59B6;
+}
+
+.play-btn{
+  width:100%;
+  padding:16px 24px;
+  background:linear-gradient(135deg,#9B59B6,#A873B8);
+  border:none;
+  border-radius:16px;
+  color:#fff;
+  font-size:1.1rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 0 30px rgba(155,89,182,.6);
+  transition:all .2s;
+}
+
+.play-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 0 50px rgba(155,89,182,1);
+}
+
+.bonus-section{
+  width:100%;
+  max-width:480px;
+  margin-bottom:32px;
+}
+
+.bonus-title{
+  font-size:.9rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#8892a0;
+  margin-bottom:12px;
+  text-align:center;
+}
+
+.bonus-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+
+.bonus-card{
+  background:rgba(155,89,182,.08);
+  border:2px solid rgba(155,89,182,.3);
+  border-radius:14px;
+  padding:16px 12px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.bonus-card:hover{
+  background:rgba(155,89,182,.15);
+  border-color:#9B59B6;
+  box-shadow:0 0 20px rgba(155,89,182,.3);
+}
+
+.bonus-icon{font-size:1.8rem;margin-bottom:8px}
+
+.bonus-name{
+  font-size:.9rem;
+  font-weight:900;
+  color:#fff;
+  margin-bottom:4px;
+}
+
+.bonus-desc{
+  font-size:.65rem;
+  color:#8892a0;
+}
+
+.footer-nav{
+  width:100%;
+  max-width:480px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:24px;
+}
+
+.nav-btn{
+  padding:12px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  color:#fff;
+  font-size:.85rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.nav-btn:hover{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.2);
+}
+
+@media (max-width:480px){
+  .logo{font-size:2rem}
+  .tagline{font-size:.7rem}
+  .hub-title{font-size:1.1rem}
+  .flagship-section{padding:24px 16px}
+  .flagship-title{font-size:1.4rem}
+  .flagship-desc{font-size:.8rem}
+  .stat-box{padding:10px 6px}
+  .stat-val{font-size:1.2rem}
+  .play-btn{padding:12px 16px;font-size:.95rem}
+  .bonus-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">REACTIFIC<span>™</span></div>
+  <div class="tagline">VR Sport Platform</div>
+</div>
+
+<div class="hub-title">The Court Awaits</div>
+
+<!-- FLAGSHIP: REACTIFIC SPORT -->
+<div class="flagship-section">
+  <div class="flagship-badge">🏆 Championship Sport</div>
+  
+  <div class="flagship-title">Reactific Sport</div>
+  
+  <div class="flagship-desc">
+    Master the 5×10 court. Compete across 5 tiers. Defend your rank on the live leaderboard.
+  </div>
+  
+  <div class="flagship-stats">
+    <div class="stat-box">
+      <div class="stat-label">Tiers</div>
+      <div class="stat-val">5</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Modes</div>
+      <div class="stat-val">2</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Max Score</div>
+      <div class="stat-val">4.8K</div>
+    </div>
+  </div>
+  
+  <button class="play-btn" onclick="window.location.href='/vr-reactific.html'">
+    🏆 ENTER THE COURT
+  </button>
+</div>
+
+<!-- BONUS GAMES -->
+<div class="bonus-section">
+  <div class="bonus-title">Bonus Training Games</div>
+  
+  <div class="bonus-grid">
+    <div class="bonus-card" onclick="window.location.href='/vr-echo.html'">
+      <div class="bonus-icon">🧠</div>
+      <div class="bonus-name">Echo Recall</div>
+      <div class="bonus-desc">Memory Training</div>
+    </div>
+    
+    <div class="bonus-card" onclick="window.location.href='/vr-pattern.html'">
+      <div class="bonus-icon">🎨</div>
+      <div class="bonus-name">Pattern Rec</div>
+      <div class="bonus-desc">Visual Recognition</div>
+    </div>
+    
+    <div class="bonus-card" onclick="window.location.href='/vr-numhunt.html'">
+      <div class="bonus-icon">🔢</div>
+      <div class="bonus-name">Number Hunt</div>
+      <div class="bonus-desc">Math Speed</div>
+    </div>
+    
+    <div class="bonus-card" onclick="window.location.href='/vr-reaction.html'">
+      <div class="bonus-icon">⚡</div>
+      <div class="bonus-name">Reaction Plus</div>
+      <div class="bonus-desc">Single-Color Challenge</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-nav">
+  <button class="nav-btn" onclick="window.location.href='/teacher-guide.html'">📖 How to Play</button>
+  <button class="nav-btn" onclick="window.location.href='/leaderboard.html'">🏆 Leaderboard</button>
+</div>
+
+</body>
+</html>
