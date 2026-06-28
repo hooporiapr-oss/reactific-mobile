@@ -356,8 +356,7 @@ async function loadLeaderboard(){
     }).join('');
     document.getElementById('leaderboard').innerHTML=html;
   }catch(e){
-    console.error('Leaderboard load error:',e);
-    document.getElementById('leaderboard').innerHTML='<div class="lb-loading">Error loading</div>';
+    document.getElementById('leaderboard').innerHTML='<div class="lb-loading">Leaderboard coming online...</div>';
   }
 }
 
