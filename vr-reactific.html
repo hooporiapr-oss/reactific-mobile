@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>VR Reaction Control | REACTIFIC™</title>
+<title>Reactific Sport | REACTIFIC™</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -126,30 +126,30 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 
 <div id="screen-intro">
   <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-home.html">← Games</a>
-  <div class="vrr-logo">REACTION <span>CONTROL</span></div>
-  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-logo">REACTIFIC <span>SPORT</span></div>
+  <div class="vrr-sub">5×10 Court · Championship Training</div>
 
   <!-- COLOR MODE SELECT -->
   <div class="color-mode-section">
     <div class="color-mode-label">Color Challenge</div>
     <div class="color-mode-row">
-      <button class="color-mode-btn active" data-colors="1">1<small>Pure Reflex</small></button>
-      <button class="color-mode-btn" data-colors="2">2<small>Identify</small></button>
-      <button class="color-mode-btn" data-colors="3">3<small>Find It</small></button>
-      <button class="color-mode-btn" data-colors="4">4<small>Expert</small></button>
-      <button class="color-mode-btn" data-colors="5">5<small>Legend</small></button>
+      <button class="color-mode-btn active" data-colors="1">1<small>Rookie</small></button>
+      <button class="color-mode-btn" data-colors="2">2<small>Varsity</small></button>
+      <button class="color-mode-btn" data-colors="3">3<small>Elite</small></button>
+      <button class="color-mode-btn" data-colors="4">4<small>Pro</small></button>
+      <button class="color-mode-btn" data-colors="5">5<small>Champion</small></button>
     </div>
   </div>
 
   <!-- MODE SELECT -->
   <div class="mode-row">
     <button class="mode-btn active" id="modePracticeBtn">
-      ⚡ PRACTICE
-      <small>Choose your speed · 5 levels</small>
+      ⚡ TRAINING
+      <small>Pick your tier · 5 speeds</small>
     </button>
     <button class="mode-btn compete-btn" id="modeCompeteBtn">
-      🏆 COMPETE
-      <small>Auto speed · 20 taps per level</small>
+      🏆 CHAMPIONSHIP
+      <small>Auto-progress · Ranked</small>
     </button>
   </div>
 
@@ -168,16 +168,16 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <button class="big-btn" id="startBtn">⚡ ENTER THE COURT</button>
 
   <div class="intro-info" id="introInfo">
-    <strong>TAP THE LIT CELL</strong> — before it disappears<br>
+    <strong>TAP THE LIT CELL</strong> — master your tier<br>
     <strong>COLORS CHANGE</strong> — every 20 taps<br>
-    <strong>100 CORRECT TAPS</strong> — maximum session<br>
-    <strong>ONE MISS</strong> — session ends
+    <strong>100 CORRECT TAPS</strong> — perfect session<br>
+    <strong>ONE MISS</strong> — game over
   </div>
 </div>
 
 <div id="screen-game">
   <div class="topbar">
-    <div class="top-box bpm-box"><div class="top-label">BPM</div><div class="top-val" id="hBpm">40</div></div>
+    <div class="top-box bpm-box"><div class="top-label">TIER</div><div class="top-val" id="hBpm">40</div></div>
     <div class="top-box"><div class="top-label">Taps</div><div class="top-val" id="hTaps">0</div></div>
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
     <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hBest">0</div></div>
@@ -244,9 +244,9 @@ document.querySelectorAll('[data-colors]').forEach(btn=>{
 function updateIntroInfo(){
   var intro=$('introInfo');
   if(mode==='compete'){
-    intro.innerHTML='<strong>STARTS AT 40 BPM</strong> — every 20 correct taps<br><strong>'+colorMode+'-COLOR MODE</strong> — colors shift every 20 taps<br><strong>ONE MISS</strong> — session ends, score posted';
+    intro.innerHTML='<strong>CHAMPIONSHIP TIER</strong> — starting at Rookie<br><strong>'+colorMode+'-COLOR CHALLENGE</strong> — colors shift every 20 taps<br><strong>ONE MISS</strong> — match over, score posted';
   }else{
-    intro.innerHTML='<strong>TAP THE LIT CELL</strong> — before it disappears<br><strong>'+colorMode+'-COLOR MODE</strong> — identify the target<br><strong>100 CORRECT TAPS</strong> — maximum session<br><strong>ONE MISS</strong> — session ends';
+    intro.innerHTML='<strong>TAP THE LIT CELL</strong> — master your tier<br><strong>'+colorMode+'-COLOR CHALLENGE</strong> — identify the target<br><strong>100 CORRECT TAPS</strong> — perfect training session<br><strong>ONE MISS</strong> — training ends';
   }
 }
 
@@ -259,10 +259,10 @@ function setMode(m){
   var btn=$('startBtn');
   if(m==='compete'){
     btn.classList.add('compete-mode');
-    btn.textContent='🏆 START COMPETE';
+    btn.textContent='🏆 ENTER CHAMPIONSHIP';
   }else{
     btn.classList.remove('compete-mode');
-    btn.textContent='⚡ ENTER THE COURT';
+    btn.textContent='⚡ START TRAINING';
   }
   updateIntroInfo();
 }
@@ -353,7 +353,7 @@ function getDecoyCount(lv){if(lv<=4)return 0;if(lv<=6)return 1;if(lv<=8)return 2
 function updateActiveColors(){
   activeColorIndices=[];
   for(var i=0;i<colorMode;i++){
-    activeColorIndices.push((Math.floor(g.speedTaps/COMPETE_TAPS)+i)%SPEEDS.length);
+    activeColorIndices.push((g.speedIdx+i)%SPEEDS.length);
   }
 }
 
@@ -407,9 +407,9 @@ function startSession(){
   if(phase!=='idle')return;
   phase='playing';
   $('actBtn').disabled=true;
-  msg('GET READY...','watch');
+  msg('GET SET...','watch');
   timers.push(setTimeout(function(){
-    msg(mode==='compete'?'🏆 COMPETE — GO!':'⚡ TAP!','go');
+    msg(mode==='compete'?'🏆 MATCH — GO!':'⚡ GO!','go');
     timers.push(setTimeout(fireCell,400));
   },700));
 }
@@ -504,7 +504,7 @@ function handleTap(idx){
         timers.push(setTimeout(function(){if(phase==='playing')fireCell()},600));
       }else if(g.speedIdx>=SPEEDS.length-1&&g.speedTaps>=COMPETE_TAPS){
         phase='idle';clrT();
-        msg('🏆 CHAMPION! ALL SPEEDS MASTERED!','perfect');
+        msg('🏆 CHAMPION! ALL TIERS CONQUERED!','perfect');
         submitScore(g.sc,g.lv,mode);
         timers.push(setTimeout(finishSession,2000));
       }else{
@@ -514,7 +514,7 @@ function handleTap(idx){
     }else{
       if(g.taps>=MAX_TAPS){
         phase='idle';clrT();
-        msg('💯 PERFECT 100! SCORE: '+g.sc,'perfect');
+        msg('💯 PERFECT SESSION! SCORE: '+g.sc,'perfect');
         submitScore(g.sc,g.lv,mode);
         timers.push(setTimeout(finishSession,2000));
       }else{
