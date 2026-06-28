@@ -133,6 +133,7 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
 
 <script>
 var API='https://api.reactificgaming.com';
+var isRedirecting=false;
 
 // 1. HANDLE QUERY PARAMS
 var params=new URLSearchParams(window.location.search);
@@ -166,9 +167,10 @@ try{
 
 // 5. SIGNOUT
 function signOut(){
+  isRedirecting=true;
   localStorage.removeItem('rct-token');
   localStorage.removeItem('rct-user');
-  window.location.href='https://gostar.digital/index.html';
+  window.location.replace('https://gostar.digital/index.html');
 }
 
 // 6. JOIN CLASS
