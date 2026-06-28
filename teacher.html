@@ -234,7 +234,7 @@ try{
 
 // 3. AUTH CHECK
 if(!token||!user){
-  window.location.href='/index.html';
+  window.location.href='https://gostar.digital/index.html';
   throw new Error('Not logged in');
 }
 
@@ -245,7 +245,7 @@ document.getElementById('uname').textContent=user.username||'Teacher';
 function signOut(){
   localStorage.removeItem('rct-token');
   localStorage.removeItem('rct-user');
-  window.location.href='/index.html';
+  window.location.href='https://gostar.digital/index.html';
 }
 
 // 6. CREATE CLASS
