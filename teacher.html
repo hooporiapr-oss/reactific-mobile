@@ -214,6 +214,7 @@
 
 <script>
 var API='https://api.reactificgaming.com';
+var isRedirecting=false;
 
 // 1. HANDLE QUERY PARAMS — cross-domain token pass
 var params=new URLSearchParams(window.location.search);
@@ -234,7 +235,10 @@ try{
 
 // 3. AUTH CHECK
 if(!token||!user){
-  window.location.href='https://gostar.digital/index.html';
+  if(!isRedirecting){
+    isRedirecting=true;
+    window.location.replace('https://gostar.digital/index.html');
+  }
   throw new Error('Not logged in');
 }
 
@@ -243,9 +247,10 @@ document.getElementById('uname').textContent=user.username||'Teacher';
 
 // 5. SIGNOUT
 function signOut(){
+  isRedirecting=true;
   localStorage.removeItem('rct-token');
   localStorage.removeItem('rct-user');
-  window.location.href='https://gostar.digital/index.html';
+  window.location.replace('https://gostar.digital/index.html');
 }
 
 // 6. CREATE CLASS
