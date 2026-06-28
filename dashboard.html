@@ -16,7 +16,6 @@ body{
   padding:12px;
 }
 
-/* HEADER — compact horizontal */
 .header{
   display:grid;
   grid-template-columns:auto 1fr auto;
@@ -60,10 +59,10 @@ body{
   font-size:.65rem;
   font-weight:900;
   text-transform:uppercase;
+  text-decoration:none;
 }
 .btn-back:hover{background:rgba(255,255,255,.15)}
 
-/* MAIN CONTENT — 3 columns */
 .main{
   display:grid;
   grid-template-columns:1fr 2fr 1fr;
@@ -72,7 +71,6 @@ body{
   overflow:hidden;
 }
 
-/* LEFT: Bonus Games */
 .bonus-section{
   display:flex;
   flex-direction:column;
@@ -100,6 +98,8 @@ body{
   cursor:pointer;
   transition:all .2s;
   flex-shrink:0;
+  text-decoration:none;
+  color:inherit;
 }
 .bonus-card:hover{
   background:rgba(155,89,182,.15);
@@ -109,7 +109,6 @@ body{
 .bonus-name{font-size:.65rem;font-weight:900;color:#fff;margin-bottom:1px}
 .bonus-desc{font-size:.55rem;color:#8892a0}
 
-/* CENTER: Reactific Sport */
 .flagship-section{
   display:flex;
   flex-direction:column;
@@ -164,10 +163,10 @@ body{
   cursor:pointer;
   box-shadow:0 0 30px rgba(155,89,182,.6);
   transition:all .2s;
+  text-decoration:none;
 }
 .play-btn:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(155,89,182,1)}
 
-/* RIGHT: Leaderboard */
 .leaderboard-section{
   display:flex;
   flex-direction:column;
@@ -208,7 +207,6 @@ body{
 ::-webkit-scrollbar-track{background:rgba(155,89,182,.1)}
 ::-webkit-scrollbar-thumb{background:rgba(155,89,182,.4);border-radius:2px}
 
-/* MOBILE: Stack vertically */
 @media (max-width:1024px){
   .main{grid-template-columns:1fr}
   .header{grid-template-columns:auto 1fr auto;gap:8px}
@@ -231,46 +229,43 @@ body{
 <div class="header">
   <div class="logo">REACTIFIC<span>™</span></div>
   <div class="vr-badge">🎮 VR Lab Session</div>
-  <button class="btn-back" onclick="window.location.href='/vr-reactific.html'">← Play</button>
+  <a class="btn-back" href="/vr-reactific.html">← Play</a>
 </div>
 
 <div class="main">
-  <!-- LEFT: BONUS GAMES -->
   <div class="bonus-section">
     <div class="bonus-title">Bonus</div>
     <div class="bonus-grid">
-      <div class="bonus-card" onclick="window.location.href='/vr-echo.html'">
+      <a class="bonus-card" href="/vr-echo.html">
         <div class="bonus-icon">🧠</div>
         <div class="bonus-name">Echo</div>
         <div class="bonus-desc">Memory</div>
-      </div>
-      <div class="bonus-card" onclick="window.location.href='/vr-pattern.html'">
+      </a>
+      <a class="bonus-card" href="/vr-pattern.html">
         <div class="bonus-icon">🎨</div>
         <div class="bonus-name">Pattern</div>
         <div class="bonus-desc">Visual</div>
-      </div>
-      <div class="bonus-card" onclick="window.location.href='/vr-numhunt.html'">
+      </a>
+      <a class="bonus-card" href="/vr-numhunt.html">
         <div class="bonus-icon">🔢</div>
         <div class="bonus-name">Number</div>
         <div class="bonus-desc">Math</div>
-      </div>
-      <div class="bonus-card" onclick="window.location.href='/vr-reaction.html'">
+      </a>
+      <a class="bonus-card" href="/vr-reaction.html">
         <div class="bonus-icon">⚡</div>
         <div class="bonus-name">Reaction</div>
         <div class="bonus-desc">Classic</div>
-      </div>
+      </a>
     </div>
   </div>
 
-  <!-- CENTER: REACTIFIC SPORT -->
   <div class="flagship-section">
     <div class="flagship-badge">🏆 Championship Sport</div>
     <div class="flagship-title">Reactific Sport</div>
     <div class="flagship-desc">Master the Court. Defend Your Rank.</div>
-    <button class="play-btn" onclick="window.location.href='/vr-reactific.html'">🏆 Enter Court</button>
+    <a class="play-btn" href="/vr-reactific.html">🏆 Enter Court</a>
   </div>
 
-  <!-- RIGHT: LEADERBOARD -->
   <div class="leaderboard-section">
     <div class="leaderboard-header">Top 20</div>
     <div class="leaderboard-list" id="leaderboard">
@@ -281,13 +276,6 @@ body{
 
 <script>
 var API='https://api.reactificgaming.com';
-var token=localStorage.getItem('rct-token');
-var user=JSON.parse(localStorage.getItem('rct-user')||'null');
-
-// If logged in, show VR badge as "Hub" instead
-if(token && user){
-  document.querySelector('.vr-badge').textContent='🏠 Game Hub';
-}
 
 async function loadLeaderboard(){
   try{
