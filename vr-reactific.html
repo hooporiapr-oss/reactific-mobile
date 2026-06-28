@@ -204,7 +204,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
     <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
-    <button class="bot-btn" style="border-color:#ffd35a;color:#ffd35a" onclick="location.href='/vr-home.html'">⊞ Games<span style="display:block;color:#ffd35a;font-size:.55rem;margin-top:1px">All 6</span></button>
+    <button class="bot-btn" style="border-color:#ffd35a;color:#ffd35a" onclick="goToGames()">⊞ Games<span style="display:block;color:#ffd35a;font-size:.55rem;margin-top:1px">All 6</span></button>
     <button class="bot-btn" id="fsBtn">Fullscreen<span>Toggle</span></button>
   </div>
 </div>
@@ -324,6 +324,15 @@ var API='https://api.reactificgaming.com';
   var urlToken=new URLSearchParams(window.location.search).get('t');
   if(urlToken)localStorage.setItem('rct-token',urlToken);
 })();
+
+function goToGames(){
+  var token=localStorage.getItem('rct-token');
+  if(token){
+    window.location.href='/vr-home.html';
+  }else{
+    window.location.href='/dashboard.html';
+  }
+}
 
 function submitScore(score,level,m){
   var token=localStorage.getItem('rct-token');
