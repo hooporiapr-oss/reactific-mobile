@@ -133,10 +133,19 @@ html,body{width:100%;min-height:100%;font-family:'Segoe UI',Arial,sans-serif;
 
 <script>
 var API='https://api.reactificgaming.com';
+// Handle cross-domain token pass via query params
+var params=new URLSearchParams(window.location.search);
+if(params.get('token')&&params.get('user')){
+  localStorage.setItem('rct-token',params.get('token'));
+  localStorage.setItem('rct-user',params.get('user'));
+  // Clean up URL — remove query params
+  window.history.replaceState({},document.title,window.location.pathname);
+}
+
 var token=localStorage.getItem('rct-token');
 var user=JSON.parse(localStorage.getItem('rct-user')||'null');
 
-if(!token||!user){window.location.href='/login.html';throw new Error('Not logged in')}
+if(!token||!user){window.location.href='/index.html';throw new Error('Not logged in')}
 
 // Build each game card link with the token attached so the game can identify the student
 document.querySelectorAll('.game-card[data-game]').forEach(function(card){
@@ -187,7 +196,7 @@ fetch(API+'/api/leaderboard/alltime?speed=slow&limit=10')
     ).join('');
   }).catch(()=>{document.getElementById('lb').innerHTML='<div class="lb-empty">Leaderboard unavailable</div>'});
 
-function signOut(){localStorage.removeItem('rct-token');localStorage.removeItem('rct-user');window.location.href='/login.html'}
+function signOut(){localStorage.removeItem('rct-token');localStorage.removeItem('rct-user');window.location.href='/index.html'}
 </script>
 </body>
 </html>
