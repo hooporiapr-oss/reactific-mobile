@@ -202,7 +202,7 @@
   <!-- ACCESS CODE -->
   <div id="form-access" style="display:none">
     <div class="field-label">VR Lab Access Code</div>
-    <input class="input" id="a-code" maxlength="8" placeholder="Ask your teacher" autocomplete="off">
+    <input class="input" id="a-code" maxlength="8" placeholder="Enter code">
     <button class="btn" onclick="accessCodeLogin()">Enter VR Lab →</button>
     <div class="hint">Ask your teacher for today's VR Lab access code to enter the championship court.</div>
   </div>
@@ -309,7 +309,7 @@ function accessCodeLogin(){
   var code=document.getElementById('a-code').value.trim().toUpperCase();
   if(!code){showError('Enter the access code');return}
   sessionStorage.setItem('rct-gate-pass','1');
-  window.location.href='/dashboard.html';
+  window.location.href='/vr-lab.html';
 }
 
 // Auto-redirect if already logged in
