@@ -51,9 +51,9 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(155,89,182,.3)}
 .top-label{font-size:.5rem;color:#9B59B6;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
 .top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
-.bpm-box{border-color:#ffd35a!important}
+.bpm-box{border-color:#9B59B6}
 .bpm-box .top-label{color:#ffd35a}
-.bpm-box .top-val{color:#ffd35a}
+.bpm-box .top-val{color:#9B59B6}
 
 /* SPEED PROGRESS */
 .speed-progress{flex-shrink:0;padding:2px 10px;display:flex;gap:4px;align-items:center}
@@ -237,12 +237,17 @@ var phase='idle',currentTarget=-1,timers=[],shrinkRAF=null,currentSpeed=null,tra
 
 function clrT(){timers.forEach(clearTimeout);timers=[];if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}}
 
+function updateBpm(){
+  if(!currentSpeed)return;
+  var bpmEl=$('hBpm');
+  var bpmBox=document.querySelector('.bpm-box');
+  bpmEl.textContent=currentSpeed.bpm;
+  bpmEl.style.cssText='color:'+currentSpeed.color+'!important';
+  bpmBox.style.cssText='border-color:'+currentSpeed.color+'!important';
+}
+
 function updateHUD(){
-  if(currentSpeed){
-    $('hBpm').textContent=currentSpeed.bpm;
-    $('hBpm').style.color=currentSpeed.color;
-    document.querySelector('.bpm-box').style.borderColor=currentSpeed.color;
-  }
+  updateBpm();
   $('hTaps').textContent=g.taps;
   $('hSc').textContent=g.sc;
   $('hBest').textContent=best;
@@ -251,7 +256,7 @@ function updateHUD(){
     var seg=$('seg'+j);
     seg.className='spd-seg'+(j<g.speedIdx?' done':j===g.speedIdx?' current':'');
     if(j<g.speedIdx){seg.style.background=SPEEDS[j].color;seg.style.borderColor=SPEEDS[j].color;seg.style.boxShadow='0 0 6px '+SPEEDS[j].glow}
-    else if(j===g.speedIdx){seg.style.background=currentSpeed.color+'80';seg.style.borderColor=currentSpeed.color;seg.style.boxShadow='0 0 8px '+currentSpeed.glow}
+    else if(j===g.speedIdx&&currentSpeed){seg.style.background=currentSpeed.color+'80';seg.style.borderColor=currentSpeed.color;seg.style.boxShadow='0 0 8px '+currentSpeed.glow}
     else{seg.style.background='';seg.style.borderColor='';seg.style.boxShadow=''}
   }
   $('spd-label').textContent=currentSpeed?currentSpeed.bpm+' BPM':'';
