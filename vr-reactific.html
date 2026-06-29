@@ -14,154 +14,141 @@ body{
   background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
   height:100vh;
   padding:12px;
-  box-sizing:border-box;
 }
 
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid rgba(155,89,182,.2);flex-shrink:0}
+#screen-game{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
+  z-index:1;padding:12px;box-sizing:border-box;
+}
+
+#header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:8px;border-bottom:2px solid rgba(155,89,182,.2);
+  margin-bottom:12px;flex-shrink:0;gap:16px;
+}
+
 .logo{font-size:1.4rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8)}
 .logo span{color:#9B59B6}
-.hud{display:flex;gap:16px;font-size:.75rem;font-weight:900;text-transform:uppercase}
-.hud-item{background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.2);border-radius:6px;padding:8px 12px}
+
+#hud{display:flex;gap:16px;font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em}
+.hud-item{background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.2);border-radius:6px;padding:6px 12px}
 .hud-val{color:#9B59B6;font-size:.9rem}
 
-.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:0}
+#gameContainer{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;overflow:hidden;min-height:0;
+}
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(10,1fr);
-  grid-template-rows:repeat(5,1fr);
-  gap:8px;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.5);
-  border:3px solid #9B59B6;
-  border-radius:12px;
-  padding:12px;
-  box-sizing:border-box;
-  box-shadow:0 0 40px rgba(155,89,182,.3);
+#msg{font-size:1.3rem;font-weight:900;color:#9B59B6;text-shadow:0 0 20px rgba(155,89,182,.6);height:32px;text-align:center}
+#msg.perfect{color:#00D9A5}
+#msg.miss{color:#FF1493}
+
+#grid{
+  display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);
+  gap:6px;width:100%;height:100%;
+  background:rgba(0,0,0,.3);border:2px solid #9B59B6;border-radius:12px;padding:8px;
+  box-sizing:border-box;box-shadow:0 0 40px rgba(155,89,182,.3);
 }
 
 .cell{
-  background:rgba(155,89,182,.1);
-  border:2px solid rgba(155,89,182,.2);
-  border-radius:8px;
-  cursor:pointer;
-  transition:all .1s;
-  user-select:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.2);border-radius:6px;
+  cursor:pointer;transition:all .05s;user-select:none;
 }
 
 .cell:hover{background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.4)}
 
 .cell.active{
-  background:#9B59B6;
-  border-color:#9B59B6;
-  box-shadow:0 0 30px rgba(155,89,182,.8);
-  animation:pulse .3s;
+  background:#9B59B6;border-color:#9B59B6;box-shadow:0 0 30px rgba(155,89,182,.8);
+  animation:pulse .25s;
 }
 
 .cell.correct{background:#00D9A5;border-color:#00D9A5;box-shadow:0 0 20px rgba(0,217,165,.8)}
 .cell.wrong{background:#FF1493;border-color:#FF1493;box-shadow:0 0 20px rgba(255,20,147,.8)}
 .cell.missed{background:#333;border-color:#333}
 
-@keyframes pulse{0%{transform:scale(0.9)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes pulse{0%{transform:scale(0.85)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
 
-.msg{font-size:1.2rem;font-weight:900;color:#9B59B6;text-shadow:0 0 20px rgba(155,89,182,.6);text-align:center;height:24px}
-.msg.perfect{color:#00D9A5}
-.msg.miss{color:#FF1493}
-
-.stats{display:flex;gap:24px;justify-content:center;font-size:.85rem;font-weight:900;text-transform:uppercase}
+#stats{display:flex;gap:24px;justify-content:center;font-size:.8rem;font-weight:900;text-transform:uppercase;flex-shrink:0}
 .stat{text-align:center}
-.stat-label{color:#8892a0;font-size:.7rem;margin-bottom:4px}
-.stat-val{color:#9B59B6;font-size:1.2rem}
+.stat-label{color:#8892a0;font-size:.65rem;margin-bottom:3px}
+.stat-val{color:#9B59B6;font-size:1.1rem}
 
-.controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn{padding:12px 24px;background:rgba(155,89,182,.2);border:2px solid rgba(155,89,182,.3);color:#9B59B6;border-radius:10px;cursor:pointer;font-size:.8rem;font-weight:900;text-transform:uppercase;transition:all .2s}
+#controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;flex-shrink:0}
+.btn{padding:10px 20px;background:rgba(155,89,182,.2);border:2px solid rgba(155,89,182,.3);
+  color:#9B59B6;border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:900;
+  text-transform:uppercase;transition:all .2s;text-decoration:none;display:inline-block}
 .btn:hover{background:rgba(155,89,182,.35);border-color:#9B59B6}
 .btn-play{background:linear-gradient(135deg,#9B59B6,#A873B8);border:none;color:#fff;box-shadow:0 0 30px rgba(155,89,182,.6)}
 .btn-play:hover{box-shadow:0 0 50px rgba(155,89,182,.9);transform:translateY(-2px)}
-.btn-games{background:rgba(0,150,136,.2);border-color:rgba(0,150,136,.3);color:#00D9A5}
-.btn-games:hover{background:rgba(0,150,136,.35);border-color:#00D9A5}
 
 @media (max-width:640px){
+  #header{flex-wrap:wrap;gap:8px}
+  #hud{flex-wrap:wrap}
   .logo{font-size:1.1rem}
-  .hud{flex-wrap:wrap;gap:8px}
-  .grid{gap:6px;padding:8px}
-  .cell{border-radius:6px}
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">REACTIFIC<span>™</span></div>
-  <div class="hud">
-    <div class="hud-item">BPM: <span class="hud-val" id="bpm">40</span></div>
-    <div class="hud-item">TAPS: <span class="hud-val" id="taps">0</span></div>
-    <div class="hud-item">SCORE: <span class="hud-val" id="score">0</span></div>
-  </div>
-</div>
-
-<div class="game-area">
-  <div class="msg" id="msg"></div>
-  
-  <div class="grid" id="grid"></div>
-  
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label">Speed</div>
-      <div class="stat-val" id="speed-display">Tier 1</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Accuracy</div>
-      <div class="stat-val" id="accuracy">100%</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Streak</div>
-      <div class="stat-val" id="streak">0</div>
+<div id="screen-game">
+  <div id="header">
+    <div class="logo">REACTIFIC<span>™</span></div>
+    <div id="hud">
+      <div class="hud-item">BPM: <span class="hud-val" id="bpmVal">40</span></div>
+      <div class="hud-item">TAPS: <span class="hud-val" id="tapsVal">0</span></div>
+      <div class="hud-item">SCORE: <span class="hud-val" id="scoreVal">0</span></div>
     </div>
   </div>
-</div>
 
-<div class="controls">
-  <button class="btn btn-play" id="playBtn" onclick="startGame()">🏆 Start Match</button>
-  <button class="btn btn-games" onclick="goToGames()">⊞ Games</button>
+  <div id="gameContainer">
+    <div id="msg"></div>
+    <div id="grid"></div>
+    <div id="stats">
+      <div class="stat">
+        <div class="stat-label">Speed Tier</div>
+        <div class="stat-val" id="tierDisplay">Rookie</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-val" id="accuracyDisplay">100%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Streak</div>
+        <div class="stat-val" id="streakDisplay">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button class="btn btn-play" id="playBtn" onclick="startGame()">🏆 Start Match</button>
+    <a class="btn" href="javascript:goToGames()" id="gamesBtn">⊞ Games</a>
+  </div>
 </div>
 
 <script src="/challenge-utils.js"></script>
 <script>
+(function(){
+var $=id=>document.getElementById(id);
+
 var API='https://api.reactificgaming.com';
 var token=localStorage.getItem('rct-token');
-var user=JSON.parse(localStorage.getItem('rct-user')||'null');
-
 var challengeLevel=new URLSearchParams(window.location.search).get('challenge');
 var challengeMode=challengeLevel?true:false;
 
-// Speeds (5 tiers)
 var SPEEDS=[
-  {bpm:40, ms:1500, pts:10, tier:'Rookie'},
-  {bpm:60, ms:1000, pts:20, tier:'Varsity'},
-  {bpm:80, ms:750, pts:40, tier:'Elite'},
-  {bpm:100, ms:600, pts:70, tier:'Pro'},
-  {bpm:120, ms:500, pts:100, tier:'Champion'}
+  {bpm:40,ms:1500,pts:10,tier:'Rookie',color:'#9B59B6'},
+  {bpm:60,ms:1000,pts:20,tier:'Varsity',color:'#00BFFF'},
+  {bpm:80,ms:750,pts:40,tier:'Elite',color:'#00D9A5'},
+  {bpm:100,ms:600,pts:70,tier:'Pro',color:'#ff6b00'},
+  {bpm:120,ms:500,pts:100,tier:'Champion',color:'#FF1493'}
 ];
 
-var gameState={
-  playing:false,
-  speedIdx:0,
-  taps:0,
-  correct:0,
-  score:0,
-  streak:0,
-  targetIdx:-1,
-  timers:[]
-};
-
+var g={taps:0,correct:0,score:0,streak:0,speedIdx:0};
+var phase='idle';
+var currentTargetIdx=-1;
+var timers=[];
 var cells=[];
-
-function $(id){return document.getElementById(id)}
 
 function initGrid(){
   var grid=$('grid');
@@ -170,125 +157,96 @@ function initGrid(){
   for(var i=0;i<50;i++){
     var cell=document.createElement('div');
     cell.className='cell';
-    cell.onclick=function(){handleTap(this)};
+    cell.onclick=function(){handleTap(cells.indexOf(this))};
     grid.appendChild(cell);
     cells.push(cell);
   }
 }
 
-function clearTimers(){
-  gameState.timers.forEach(t=>clearTimeout(t));
-  gameState.timers=[];
-}
+function clearTimers(){timers.forEach(t=>clearTimeout(t));timers=[]}
 
 function updateHUD(){
-  $('taps').textContent=gameState.taps;
-  $('score').textContent=gameState.score;
-  $('bpm').textContent=SPEEDS[gameState.speedIdx].bpm;
-  $('speed-display').textContent=SPEEDS[gameState.speedIdx].tier;
-  var acc=gameState.taps>0?Math.round((gameState.correct/gameState.taps)*100):100;
-  $('accuracy').textContent=acc+'%';
-  $('streak').textContent=gameState.streak;
+  $('bpmVal').textContent=SPEEDS[g.speedIdx].bpm;
+  $('tapsVal').textContent=g.taps;
+  $('scoreVal').textContent=g.score;
+  $('tierDisplay').textContent=SPEEDS[g.speedIdx].tier;
+  var acc=g.taps>0?Math.round((g.correct/g.taps)*100):100;
+  $('accuracyDisplay').textContent=acc+'%';
+  $('streakDisplay').textContent=g.streak;
 }
 
-function showMsg(text, type){
+function showMsg(txt,type){
   var msg=$('msg');
-  msg.textContent=text;
-  msg.className='msg'+(type?' '+type:'');
+  msg.textContent=txt;
+  msg.className='';
+  if(type)msg.classList.add(type);
 }
 
 function fireCell(){
-  if(!gameState.playing)return;
+  if(phase!=='playing')return;
   
-  // Clear old target
-  if(gameState.targetIdx>=0)cells[gameState.targetIdx].className='cell';
+  if(currentTargetIdx>=0)cells[currentTargetIdx].className='cell';
   
-  // Random new target
-  gameState.targetIdx=Math.floor(Math.random()*50);
-  var speed=SPEEDS[gameState.speedIdx];
-  cells[gameState.targetIdx].className='cell active';
-  cells[gameState.targetIdx].style.background=speed.color||'#9B59B6';
+  currentTargetIdx=Math.floor(Math.random()*50);
+  var speed=SPEEDS[g.speedIdx];
+  cells[currentTargetIdx].className='cell active';
+  cells[currentTargetIdx].style.background=speed.color;
   
-  // Schedule next fire
-  gameState.timers.push(setTimeout(function(){
-    if(gameState.playing&&gameState.targetIdx>=0){
-      onMiss();
-    }
-  }, speed.ms));
+  timers.push(setTimeout(function(){
+    if(phase==='playing'&&currentTargetIdx>=0)onMiss();
+  },speed.ms));
 }
 
-function handleTap(cell){
-  if(!gameState.playing)return;
+function handleTap(idx){
+  if(phase!=='playing')return;
   
-  var idx=cells.indexOf(cell);
-  var speed=SPEEDS[gameState.speedIdx];
+  var speed=SPEEDS[g.speedIdx];
   
-  if(idx===gameState.targetIdx){
-    // CORRECT TAP
-    gameState.taps++;
-    gameState.correct++;
-    gameState.score+=speed.pts;
-    gameState.streak++;
+  if(idx===currentTargetIdx){
+    g.taps++;
+    g.correct++;
+    g.score+=speed.pts;
+    g.streak++;
     
-    cell.className='cell correct';
-    showMsg('✓ +'+speed.pts+' pts','');
+    cells[idx].className='cell correct';
+    showMsg('✓ +'+speed.pts);
     updateHUD();
     
-    // Check if speed advance (every 20 taps)
-    if(gameState.taps%20===0&&gameState.speedIdx<SPEEDS.length-1){
-      gameState.speedIdx++;
-      showMsg('🔥 '+SPEEDS[gameState.speedIdx].bpm+' BPM!','');
+    if(g.taps%20===0&&g.speedIdx<SPEEDS.length-1){
+      g.speedIdx++;
+      showMsg('🔥 '+SPEEDS[g.speedIdx].bpm+' BPM!');
       updateHUD();
-      gameState.timers.push(setTimeout(fireCell,600));
+      timers.push(setTimeout(fireCell,600));
     }else{
-      gameState.timers.push(setTimeout(fireCell,200));
+      timers.push(setTimeout(fireCell,150));
     }
   }else{
-    // WRONG TAP
+    cells[idx].className='cell wrong';
     onMiss();
   }
 }
 
 function onMiss(){
-  if(!gameState.playing)return;
-  gameState.playing=false;
+  if(phase==='idle')return;
+  phase='idle';
   clearTimers();
-  
-  if(gameState.targetIdx>=0)cells[gameState.targetIdx].className='cell missed';
-  
-  showMsg('GAME OVER · '+gameState.taps+' TAPS · '+gameState.score+' PTS','miss');
+  showMsg('GAME OVER · '+g.taps+' TAPS · '+g.score+' PTS','miss');
   submitScore();
-  
-  gameState.timers.push(setTimeout(finishGame,1800));
+  timers.push(setTimeout(finishGame,1800));
 }
 
 function finishGame(){
-  clearTimers();
-  cells.forEach(c=>c.className='cell');
-  gameState.targetIdx=-1;
+  phase='idle';clearTimers();
+  cells.forEach(c=>{c.className='cell';c.style.background=''});
+  currentTargetIdx=-1;
   
-  // Handle challenge mode
   if(challengeMode){
-    var score=gameState.score;
-    var wasSuccessful=gameState.taps>=100;
-    console.log('Challenge game end - score:',score,'successful:',wasSuccessful);
-    setTimeout(function(){
-      onChallengeGameEnd(score,'reactific',wasSuccessful);
-    },800);
+    var score=g.score;
+    setTimeout(function(){onChallengeGameEnd(score,'reactific',false)},800);
     return;
   }
   
-  // Normal mode - reset
-  gameState={
-    playing:false,
-    speedIdx:0,
-    taps:0,
-    correct:0,
-    score:0,
-    streak:0,
-    targetIdx:-1,
-    timers:[]
-  };
+  g={taps:0,correct:0,score:0,streak:0,speedIdx:0};
   updateHUD();
   showMsg('');
   $('playBtn').disabled=false;
@@ -296,27 +254,13 @@ function finishGame(){
 }
 
 function startGame(){
-  if(gameState.playing)return;
-  gameState.playing=true;
-  gameState={
-    playing:true,
-    speedIdx:0,
-    taps:0,
-    correct:0,
-    score:0,
-    streak:0,
-    targetIdx:-1,
-    timers:[]
-  };
+  if(phase==='playing')return;
+  phase='playing';
+  g={taps:0,correct:0,score:0,streak:0,speedIdx:0};
   updateHUD();
   showMsg('GET SET...');
   $('playBtn').disabled=true;
-  $('playBtn').textContent='Playing...';
-  
-  gameState.timers.push(setTimeout(function(){
-    showMsg('GO!');
-    fireCell();
-  },800));
+  timers.push(setTimeout(function(){showMsg('GO!');fireCell()},800));
 }
 
 function submitScore(){
@@ -325,59 +269,34 @@ function submitScore(){
   fetch(API+'/api/scores/game',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'reactific',score:gameState.score,level:5,mode:mode})
-  }).catch(e=>console.error('Score submit error:',e));
+    body:JSON.stringify({game_id:'reactific',score:g.score,level:5,mode:mode})
+  }).catch(e=>console.error('Error:',e));
 }
 
-function onChallengeGameEnd(score, gameName, wasSuccessful){
-  console.log('=== onChallengeGameEnd called ===');
-  console.log('Score:',score,'GameName:',gameName,'WasSuccessful:',wasSuccessful);
-  
-  if(!ChallengeMode.isActive()){
-    console.log('Challenge not active');
-    return;
-  }
-  
+function onChallengeGameEnd(score,gameName,wasSuccessful){
+  if(!ChallengeMode.isActive())return;
   ChallengeMode.addScore(score);
-  console.log('New total:',ChallengeMode.getTotalScore());
-  
   if(ChallengeMode.isLastGame()){
-    console.log('LAST GAME - setting final score');
-    var finalScore=ChallengeMode.getTotalScore();
-    sessionStorage.setItem('challenge-final-score',finalScore);
+    sessionStorage.setItem('challenge-final-score',ChallengeMode.getTotalScore());
     window.location.href='/challenge-complete.html';
   }else{
-    console.log('Advancing to next game...');
     ChallengeMode.advanceGame();
     var nextGame=ChallengeMode.getNextGame();
-    console.log('Next game:',nextGame);
-    
     if(nextGame){
-      var gameUrls={
-        'echo':'/vr-echo.html',
-        'pattern':'/vr-pattern.html',
-        'numhunt':'/vr-numhunt.html',
-        'reaction':'/vr-reaction.html',
-        'bonus':'/vr-reactific.html'
-      };
-      var nextUrl=gameUrls[nextGame.id]||'/vr-echo.html';
-      console.log('Redirecting to:',nextUrl+'?challenge='+ChallengeMode.getLevel());
-      window.location.href=nextUrl+'?challenge='+ChallengeMode.getLevel();
+      var urls={echo:'/vr-echo.html',pattern:'/vr-pattern.html',numhunt:'/vr-numhunt.html',reaction:'/vr-reaction.html',bonus:'/vr-reactific.html'};
+      window.location.href=(urls[nextGame.id]||'/vr-echo.html')+'?challenge='+ChallengeMode.getLevel();
     }
   }
 }
 
 function goToGames(){
-  if(challengeMode){
-    window.location.href='/challenge.html?level='+challengeLevel;
-  }else{
-    window.location.href='/vr-lab.html';
-  }
+  if(challengeMode)window.location.href='/challenge.html?level='+challengeLevel;
+  else window.location.href='/vr-lab.html';
 }
 
-// Initialize
 initGrid();
 updateHUD();
+})();
 </script>
 
 </body>
