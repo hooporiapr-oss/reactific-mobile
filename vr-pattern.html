@@ -136,8 +136,13 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <script>
 (function(){
 var $=id=>document.getElementById(id);
+
+// CYCLE MODE — two additions
+var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
+var NEXT_GAME='/vr-numhunt.html?cycle=true';
+
 var speedMult=1.0,bpm=90,strobe='soft',strobeTimer=null;
-var BASE_MS_PER_CELL=400; // ms per cell at Tempo — scales with difficulty
+var BASE_MS_PER_CELL=400;
 
 function getDisplayTime(){return Math.round(BASE_MS_PER_CELL*gcc()*speedMult)}
 
@@ -148,7 +153,17 @@ document.querySelectorAll('[data-strobe]').forEach(btn=>{btn.onclick=function(){
 function stopStrobe(){if(strobeTimer){clearInterval(strobeTimer);strobeTimer=null}var c=$('court');if(c)c.classList.remove('strobe-soft','strobe-medium','strobe-hard')}
 function startStrobe(){stopStrobe();if(strobe==='off')return;var c=$('court');var cls=strobe==='soft'?'strobe-soft':strobe==='medium'?'strobe-medium':'strobe-hard';var beat=60000/bpm;var flash=Math.max(80,Math.min(170,beat*.25));strobeTimer=setInterval(function(){c.classList.add(cls);setTimeout(function(){c.classList.remove(cls)},flash)},beat)}
 
-$('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();updateHUD()};
+// If cycle mode, skip intro and go straight to game
+if(cycleMode){
+  $('screen-intro').style.display='none';
+  $('screen-game').style.display='flex';
+  buildCourt();
+  updateHUD();
+  setTimeout(startRound,1000);
+}else{
+  $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();updateHUD()};
+}
+
 $('menuBtn').onclick=function(){stopStrobe();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
@@ -164,7 +179,6 @@ function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.rd;$('hLv'
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 
-// ── SCORE SUBMISSION ──────────────────────────────────
 var API='https://api.reactificgaming.com';
 (function(){
   var urlToken=new URLSearchParams(window.location.search).get('t');
@@ -178,12 +192,9 @@ function submitScore(score,level,mode){
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
     body:JSON.stringify({game_id:'pattern',score:score,level:level,mode:mode})
-  }).catch(function(err){
-    console.error('Score submit error:',err);
-  });
+  }).catch(function(err){console.error('Score submit error:',err)});
 }
 
-// Ensure score is saved when leaving
 window.addEventListener('beforeunload',function(){
   var token=localStorage.getItem('rct-token');
   if(token && g && g.sc>0){
@@ -230,18 +241,12 @@ function handleTap(idx){
       msg('✅ PERFECT!','perfect');
       if(g.pf>=1){
         timers.push(setTimeout(function(){
-          if(g.lv<10){
-            g.lv++;
-            g.pf=0;
-            submitScore(g.sc,g.lv,'progression');  // FIXED: Submit on level up
-          }
-          updateHUD();
-          resetCells();
-          msg('🔥 LEVEL UP!','perfect');
+          if(g.lv<10){g.lv++;g.pf=0;submitScore(g.sc,g.lv,'progression');}
+          updateHUD();resetCells();msg('🔥 LEVEL UP!','perfect');
           timers.push(setTimeout(autoNextRound,900))
         },1200))
       }else{
-        submitScore(g.sc,g.lv,'progression');  // FIXED: Submit on success
+        submitScore(g.sc,g.lv,'progression');
         timers.push(setTimeout(autoNextRound,1000))
       }
     }
@@ -250,11 +255,23 @@ function handleTap(idx){
     cellSt(idx,'wrong');g.st=0;g.pf=0;updateHUD();
     msg('WRONG ORDER!','miss');
     submitScore(g.sc,g.lv,'progression');
-    timers.push(setTimeout(function(){pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});timers.push(setTimeout(showMissOptions,1800))},500));
+    // WRONG TAP = miss in cycle mode
+    if(cycleMode){
+      timers.push(setTimeout(function(){
+        pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});
+        timers.push(setTimeout(function(){
+          msg('NEXT GAME...','watch');
+          timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
+        },1800));
+      },500));
+    }else{
+      timers.push(setTimeout(function(){pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});timers.push(setTimeout(showMissOptions,1800))},500));
+    }
   }
 }
 
 function autoNextRound(){if(phase!=='idle')return;resetCells();$('clockFill').style.width='0%';$('actBtn').disabled=true;$('restartBtn').style.display='none';startRound()}
+
 function showMissOptions(){phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';
   msg("TRY AGAIN",'miss');
   $('actBtn').textContent="TRY AGAIN";$('actBtn').onclick=function(){$('restartBtn').style.display='none';startRound()};$('actBtn').disabled=false;
