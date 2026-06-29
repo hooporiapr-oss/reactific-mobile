@@ -285,7 +285,7 @@ function handleTap(idx){
 function revealAnswer(){echo.forEach(function(ci){cellSt(ci)});cellSt(changedCell,'reveal-answer',changePos+1);cellSt(originalCell,'reveal-original',changePos+1)}
 
 function roundSuccess(){
-  phase='idle';g.pf++;g.st++;g.sc+=20*g.lv;updateHUD();setPhase('✅');msg('CORRECT!','perfect');
+  phase='idle';g.pf++;g.st++;g.sc+=10*g.lv;updateHUD();setPhase('✅');msg('CORRECT!','perfect');
   if(g.pf>=2){
     timers.push(setTimeout(function(){
       if(g.lv<10){g.lv++;g.pf=0;submitScore(g.sc,g.lv,'progression');}
