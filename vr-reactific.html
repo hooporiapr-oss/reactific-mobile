@@ -613,15 +613,23 @@ function finishSession(){
   transitionMs=null;transitionTapsLeft=0;
   $('clockFill').style.width='100%';
   
+  console.log('finishSession called - challengeMode:', challengeMode);
+  console.log('ChallengeMode object exists:', typeof ChallengeMode);
+  
   // If in challenge mode, handle game chaining
   if(challengeMode){
+    console.log('Challenge mode ACTIVE - calling onChallengeGameEnd');
     var finalScore=g.sc;
     var wasSuccessful=g.taps>=MAX_TAPS;
+    console.log('Final Score:', finalScore, 'Successful:', wasSuccessful);
     setTimeout(function(){
+      console.log('Executing onChallengeGameEnd...');
       onChallengeGameEnd(finalScore,'reactific',wasSuccessful);
     },800);
     return;
   }
+  
+  console.log('Challenge mode NOT active - normal flow');
   
   // Normal game flow
   if(mode==='practice'){
