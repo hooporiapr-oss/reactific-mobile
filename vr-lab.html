@@ -9,186 +9,64 @@
 html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
 
 body{
-  display:flex;
-  flex-direction:column;
+  display:flex;flex-direction:column;
   background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
-  height:100vh;
-  padding:12px;
+  height:100vh;padding:12px;
 }
 
 .header{
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  gap:16px;
-  align-items:center;
-  margin-bottom:12px;
-  padding-bottom:8px;
-  border-bottom:2px solid rgba(155,89,182,.2);
-  flex-shrink:0;
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:16px;align-items:center;
+  margin-bottom:12px;padding-bottom:8px;
+  border-bottom:2px solid rgba(155,89,182,.2);flex-shrink:0;
 }
-
-.logo{
-  font-size:1.4rem;
-  font-weight:900;
-  font-style:italic;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:#fff;
-  text-shadow:0 0 40px rgba(155,89,182,.8);
-}
+.logo{font-size:1.4rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8)}
 .logo span{color:#9B59B6}
-
-.vr-badge{
-  background:rgba(155,89,182,.2);
-  color:#9B59B6;
-  padding:4px 10px;
-  border-radius:6px;
-  font-size:.65rem;
-  font-weight:900;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
+.vr-badge{background:rgba(155,89,182,.2);color:#9B59B6;padding:4px 10px;border-radius:6px;font-size:.65rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
 
 .main{
-  display:grid;
-  grid-template-columns:1fr 2fr 1fr;
-  gap:12px;
-  flex:1;
-  overflow:hidden;
+  display:grid;grid-template-columns:1fr 2fr 1fr;
+  gap:12px;flex:1;overflow:hidden;
 }
 
-.bonus-section{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.bonus-title{
-  font-size:.7rem;
-  font-weight:900;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:#8892a0;
-  margin-bottom:4px;
-}
-.bonus-grid{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.bonus-card{
-  background:rgba(155,89,182,.08);
-  border:1px solid rgba(155,89,182,.25);
-  border-radius:8px;
-  padding:10px;
-  text-align:center;
-  cursor:pointer;
-  transition:all .2s;
-  flex-shrink:0;
-  text-decoration:none;
-  color:inherit;
-  display:block;
-}
-.bonus-card:hover{
-  background:rgba(155,89,182,.15);
-  border-color:#9B59B6;
-}
-.bonus-icon{font-size:1.3rem;margin-bottom:4px}
-.bonus-name{font-size:.65rem;font-weight:900;color:#fff;margin-bottom:1px}
-.bonus-desc{font-size:.55rem;color:#8892a0}
+/* LEFT — 4 Games */
+.games-section{display:flex;flex-direction:column;gap:8px}
+.games-title{font-size:.7rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#8892a0;margin-bottom:4px}
+.games-grid{display:flex;flex-direction:column;gap:8px;flex:1}
 
-.flagship-section{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(135deg,rgba(155,89,182,.2),rgba(0,150,136,.1));
-  border:2px solid #9B59B6;
-  border-radius:12px;
-  padding:16px;
-  box-shadow:0 0 40px rgba(155,89,182,.3);
-  gap:12px;
+.game-card{
+  background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25);
+  border-radius:10px;padding:12px;text-align:center;cursor:pointer;
+  transition:all .2s;text-decoration:none;color:inherit;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;
 }
+.game-card:hover{background:rgba(155,89,182,.18);border-color:#9B59B6;transform:translateY(-2px)}
+.game-icon{font-size:1.6rem}
+.game-name{font-size:.7rem;font-weight:900;color:#fff}
+.game-skill{font-size:.55rem;color:#8892a0;text-transform:uppercase;letter-spacing:.08em}
 
-.flagship-badge{
-  display:inline-block;
-  background:#9B59B6;
-  color:#fff;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:.55rem;
-  font-weight:900;
-  letter-spacing:.08em;
-  text-transform:uppercase;
+/* CENTER — Platform Identity */
+.center-section{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(155,89,182,.15),rgba(0,150,136,.08));
+  border:2px solid rgba(155,89,182,.4);border-radius:16px;padding:24px;
+  box-shadow:0 0 60px rgba(155,89,182,.2);gap:16px;text-align:center;
 }
+.platform-logo{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8)}
+.platform-logo span{color:#9B59B6}
+.platform-tagline{font-size:.75rem;color:#8892a0;line-height:1.6;max-width:260px}
+.platform-badge{background:rgba(155,89,182,.2);border:1px solid rgba(155,89,182,.3);color:#9B59B6;padding:6px 14px;border-radius:999px;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.divider{width:60%;height:1px;background:rgba(155,89,182,.2)}
 
-.flagship-title{
-  font-size:1.3rem;
-  font-weight:900;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:#fff;
-}
-
-.flagship-desc{
-  font-size:.7rem;
-  color:#8892a0;
-  text-align:center;
-  line-height:1.4;
-}
-
-.play-btn{
-  width:100%;
-  padding:12px 20px;
-  background:linear-gradient(135deg,#9B59B6,#A873B8);
-  border:none;
-  border-radius:10px;
-  color:#fff;
-  font-size:.95rem;
-  font-weight:900;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  cursor:pointer;
-  box-shadow:0 0 30px rgba(155,89,182,.6);
-  transition:all .2s;
-  text-decoration:none;
-  display:block;
-}
-.play-btn:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(155,89,182,1)}
-
-.leaderboard-section{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.leaderboard-header{
-  font-size:.7rem;
-  font-weight:900;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:#8892a0;
-}
-.leaderboard-list{
-  background:rgba(0,0,0,.3);
-  border:1px solid rgba(155,89,182,.2);
-  border-radius:8px;
-  padding:8px;
-  overflow-y:auto;
-  flex:1;
-}
-.lb-row{
-  display:grid;
-  grid-template-columns:28px 1fr 50px 35px;
-  gap:6px;
-  align-items:center;
-  padding:5px 0;
-  border-bottom:1px solid rgba(155,89,182,.1);
-  font-size:.65rem;
-}
+/* RIGHT — Leaderboard */
+.leaderboard-section{display:flex;flex-direction:column;gap:8px}
+.leaderboard-header{font-size:.7rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#8892a0}
+.leaderboard-list{background:rgba(0,0,0,.3);border:1px solid rgba(155,89,182,.2);border-radius:8px;padding:8px;overflow-y:auto;flex:1}
+.lb-row{display:grid;grid-template-columns:28px 1fr 50px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(155,89,182,.1);font-size:.65rem}
 .lb-row:last-child{border-bottom:none}
 .lb-rank{font-weight:900;color:#ffd35a;text-align:center}
 .lb-name{color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lb-score{color:#9B59B6;font-weight:900;text-align:right}
-.lb-tier{color:#8892a0;text-align:center;font-size:.55rem;text-transform:uppercase}
 .lb-loading{text-align:center;padding:12px;color:#8892a0;font-size:.65rem}
 
 ::-webkit-scrollbar{width:4px}
@@ -197,18 +75,13 @@ body{
 
 @media (max-width:1024px){
   .main{grid-template-columns:1fr}
-  .header{grid-template-columns:auto 1fr;gap:8px}
-  .logo{font-size:1.1rem}
-  .bonus-grid{flex-direction:row;flex-wrap:wrap}
-  .bonus-card{flex:1;min-width:80px}
+  .games-grid{flex-direction:row;flex-wrap:wrap}
+  .game-card{flex:1;min-width:80px}
 }
-
 @media (max-width:640px){
   body{padding:8px}
-  .header{gap:6px;margin-bottom:8px}
   .logo{font-size:.9rem}
-  .main{grid-template-columns:1fr}
-  .flagship-title{font-size:1rem}
+  .platform-logo{font-size:1.4rem}
 }
 </style>
 </head>
@@ -216,54 +89,63 @@ body{
 
 <div class="header">
   <div class="logo">REACTIFIC<span>™</span></div>
-  <div class="vr-badge">🎮 VR Lab</div>
+  <div class="vr-badge">🎮 VR Lab Session</div>
   <div></div>
 </div>
 
 <div class="main">
-  <!-- LEFT: BONUS GAMES -->
-  <div class="bonus-section">
-    <div class="bonus-title">Bonus</div>
-    <div class="bonus-grid">
-      <a class="bonus-card" href="/vr-echo.html?return=/vr-lab.html">
-        <div class="bonus-icon">🧠</div>
-        <div class="bonus-name">Echo</div>
-        <div class="bonus-desc">Memory</div>
+
+  <!-- LEFT: 4 GAMES -->
+  <div class="games-section">
+    <div class="games-title">Choose Your Game</div>
+    <div class="games-grid">
+      <a class="game-card" href="/vr-echo.html">
+        <div class="game-icon">👁️</div>
+        <div class="game-name">Echo Recall</div>
+        <div class="game-skill">Spot the Difference</div>
       </a>
-      <a class="bonus-card" href="/vr-pattern.html?return=/vr-lab.html">
-        <div class="bonus-icon">🎨</div>
-        <div class="bonus-name">Pattern</div>
-        <div class="bonus-desc">Visual</div>
+      <a class="game-card" href="/vr-pattern.html">
+        <div class="game-icon">🧩</div>
+        <div class="game-name">Pattern Recognition</div>
+        <div class="game-skill">Memory + Order</div>
       </a>
-      <a class="bonus-card" href="/vr-numhunt.html?return=/vr-lab.html">
-        <div class="bonus-icon">🔢</div>
-        <div class="bonus-name">Number</div>
-        <div class="bonus-desc">Math</div>
+      <a class="game-card" href="/vr-flash.html">
+        <div class="game-icon">⚡</div>
+        <div class="game-name">Flash Recall</div>
+        <div class="game-skill">Spatial Memory</div>
       </a>
-      <a class="bonus-card" href="/vr-reaction.html?return=/vr-lab.html">
-        <div class="bonus-icon">⚡</div>
-        <div class="bonus-name">Reaction</div>
-        <div class="bonus-desc">Classic</div>
+      <a class="game-card" href="/vr-sequence.html">
+        <div class="game-icon">🎵</div>
+        <div class="game-name">Sequence Control</div>
+        <div class="game-skill">Order + Memory</div>
       </a>
     </div>
   </div>
 
-  <!-- CENTER: REACTIFIC SPORT -->
-  <div class="flagship-section">
-    <div class="flagship-badge">🏆 Championship Sport</div>
-    <div class="flagship-title">Reactific Sport</div>
-    <div class="flagship-desc">Master the Court. Defend Your Rank.</div>
-    <a class="play-btn" href="/vr-reactific.html?cycle=true">🏆 Enter Court</a>
-    <a class="play-btn" style="background:linear-gradient(135deg,#ffd35a,#b8860b);box-shadow:0 0 30px rgba(255,211,90,.6);font-size:.9rem" href="/challenge-select.html">⚡ Challenge Mode</a>
+  <!-- CENTER: PLATFORM IDENTITY -->
+  <div class="center-section">
+    <div class="platform-badge">🎮 VR Lab</div>
+    <div class="platform-logo">REACTIFIC<span>™</span></div>
+    <div class="divider"></div>
+    <div class="platform-tagline">
+      Pure VR. Pure Spatial. Pure Memory.<br><br>
+      Four games. Four cognitive skills.<br>
+      One platform built for the court.
+    </div>
+    <div class="divider"></div>
+    <div class="platform-tagline" style="font-size:.65rem;color:#5a6070">
+      Pick a game from the left<br>and enter the court.
+    </div>
   </div>
 
   <!-- RIGHT: LEADERBOARD -->
   <div class="leaderboard-section">
-    <div class="leaderboard-header">Top 20</div>
+    <div class="leaderboard-header">🏆 Top 20</div>
     <div class="leaderboard-list" id="leaderboard">
       <div class="lb-loading">Loading...</div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -276,11 +158,11 @@ async function loadLeaderboard(){
     var data=await res.json();
     var scores=data.scores||[];
     if(!scores.length){
-      document.getElementById('leaderboard').innerHTML='<div class="lb-loading">No scores</div>';
+      document.getElementById('leaderboard').innerHTML='<div class="lb-loading">No scores yet</div>';
       return;
     }
     var html=scores.map(function(s,i){
-      return '<div class="lb-row"><div class="lb-rank">#'+(i+1)+'</div><div class="lb-name">'+s.username+'</div><div class="lb-score">'+s.score+'</div><div class="lb-tier">L'+s.level+'</div></div>';
+      return '<div class="lb-row"><div class="lb-rank">#'+(i+1)+'</div><div class="lb-name">'+s.username+'</div><div class="lb-score">'+s.score+'</div></div>';
     }).join('');
     document.getElementById('leaderboard').innerHTML=html;
   }catch(e){
