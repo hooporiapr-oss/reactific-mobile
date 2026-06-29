@@ -375,21 +375,33 @@ function submitScore(score,level,m){
 }
 
 function onChallengeGameEnd(score, gameName, wasSuccessful){
+  console.log('=== onChallengeGameEnd called ===');
+  console.log('Score:', score);
+  console.log('GameName:', gameName);
+  console.log('WasSuccessful:', wasSuccessful);
+  console.log('ChallengeMode.isActive():', ChallengeMode.isActive());
+  
   if(!ChallengeMode.isActive()){
+    console.log('Challenge not active - returning');
     return;
   }
   
-  // Add score regardless of success/failure
+  console.log('Adding score to total...');
   ChallengeMode.addScore(score);
+  console.log('New total score:', ChallengeMode.getTotalScore());
+  
+  console.log('Is last game?', ChallengeMode.isLastGame());
   
   // Check if this was the last game
   if(ChallengeMode.isLastGame()){
-    // All games complete - show final score
+    console.log('LAST GAME - redirecting to challenge-complete.html');
     window.location.href='/challenge-complete.html';
   }else{
-    // Advance to next game
+    console.log('Not last game - advancing to next...');
     ChallengeMode.advanceGame();
     var nextGame=ChallengeMode.getNextGame();
+    console.log('Next game:', nextGame);
+    
     if(nextGame){
       var gameUrls={
         'echo':'/vr-echo.html',
@@ -399,7 +411,10 @@ function onChallengeGameEnd(score, gameName, wasSuccessful){
         'bonus':'/vr-reactific.html'
       };
       var nextUrl=gameUrls[nextGame.id]||'/vr-echo.html';
+      console.log('Redirecting to:', nextUrl+'?challenge='+ChallengeMode.getLevel());
       window.location.href=nextUrl+'?challenge='+ChallengeMode.getLevel();
+    }else{
+      console.log('ERROR: nextGame is null!');
     }
   }
 }
