@@ -123,6 +123,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 </style>
 </head>
 <body>
+<script src="/challenge-lib.js"></script>
 
 <div id="screen-intro">
   <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-lab.html">← Games</a>
@@ -209,6 +210,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   </div>
 </div>
 
+<script src="/challenge-utils.js"></script>
 <script>
 (function(){
 var $=id=>document.getElementById(id);
@@ -320,24 +322,86 @@ function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
 var g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
 var API='https://api.reactificgaming.com';
+var challengeLevel=new URLSearchParams(window.location.search).get('challenge');
+var challengeMode=challengeLevel?true:false;
+
+// Challenge game sequence
+var CHALLENGE_GAMES=[
+  'reactific',
+  'echo',
+  'pattern',
+  'numhunt',
+  'reaction',
+  'bonus'
+];
+
 (function(){
   var urlToken=new URLSearchParams(window.location.search).get('t');
   if(urlToken)localStorage.setItem('rct-token',urlToken);
+  
+  // Initialize challenge mode if needed
+  if(challengeMode){
+    if(!sessionStorage.getItem('challenge-active')){
+      sessionStorage.setItem('challenge-active','1');
+      sessionStorage.setItem('challenge-level',challengeLevel);
+      sessionStorage.setItem('challenge-idx','0');
+      sessionStorage.setItem('challenge-scores','{}');
+    }
+  }
 })();
 
 function goToGames(){
-  console.log('goToGames() called - redirecting to vr-lab');
-  window.location.href='/vr-lab.html';
+  if(challengeMode){
+    window.location.href='/challenge.html?level='+challengeLevel;
+  }else{
+    window.location.href='/vr-lab.html';
+  }
 }
 
 function submitScore(score,level,m){
   var token=localStorage.getItem('rct-token');
   if(!token)return;
+  
+  var mode=m;
+  if(challengeMode){
+    mode='challenge-'+challengeLevel+'-game';
+  }
+  
   fetch(API+'/api/scores/game',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'reaction',score:score,level:level,mode:m+'-color-'+colorMode})
+    body:JSON.stringify({game_id:'reaction',score:score,level:level,mode:mode})
   }).catch(function(err){console.error('Score submit error:',err)});
+}
+
+function onChallengeGameEnd(score, gameName, wasSuccessful){
+  if(!ChallengeMode.isActive()){
+    return;
+  }
+  
+  // Add score regardless of success/failure
+  ChallengeMode.addScore(score);
+  
+  // Check if this was the last game
+  if(ChallengeMode.isLastGame()){
+    // All games complete - show final score
+    window.location.href='/challenge-complete.html';
+  }else{
+    // Advance to next game
+    ChallengeMode.advanceGame();
+    var nextGame=ChallengeMode.getNextGame();
+    if(nextGame){
+      var gameUrls={
+        'echo':'/vr-echo.html',
+        'pattern':'/vr-pattern.html',
+        'numhunt':'/vr-numhunt.html',
+        'reaction':'/vr-reaction.html',
+        'bonus':'/vr-reactific.html'
+      };
+      var nextUrl=gameUrls[nextGame.id]||'/vr-echo.html';
+      window.location.href=nextUrl+'?challenge='+ChallengeMode.getLevel();
+    }
+  }
 }
 
 window.addEventListener('beforeunload',function(){
@@ -548,6 +612,18 @@ function finishSession(){
   currentTargets=[];
   transitionMs=null;transitionTapsLeft=0;
   $('clockFill').style.width='100%';
+  
+  // If in challenge mode, handle game chaining
+  if(challengeMode){
+    var finalScore=g.sc;
+    var wasSuccessful=g.taps>=MAX_TAPS;
+    setTimeout(function(){
+      onChallengeGameEnd(finalScore,'reactific',wasSuccessful);
+    },800);
+    return;
+  }
+  
+  // Normal game flow
   if(mode==='practice'){
     currentSpeed=selectedSpeed;
   }else{
