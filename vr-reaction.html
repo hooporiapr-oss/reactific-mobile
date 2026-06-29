@@ -13,56 +13,41 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   align-items:center;justify-content:flex-start;
   background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);z-index:100;
   overflow-y:auto;overflow-x:hidden;
-  padding:20px 16px 24px;
-  box-sizing:border-box;
+  padding:20px 16px 24px;box-sizing:border-box;
 }
 .vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(155,89,182,1);margin-bottom:6px}
 .vrr-logo span{color:#9B59B6}
-.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#9B59B6;margin-bottom:16px;text-align:center}
+.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#9B59B6;margin-bottom:24px;text-align:center}
 
-/* MODE SELECTOR */
-.mode-row{display:flex;gap:10px;margin-bottom:16px;width:100%;max-width:420px}
-.mode-btn{flex:1;min-width:0;height:64px;border:3px solid rgba(155,89,182,.4);background:rgba(155,89,182,.08);border-radius:16px;color:#fff;font-size:.85rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;transition:all .2s;padding:6px 4px}
-.mode-btn.active{border-color:#9B59B6;background:rgba(155,89,182,.25);box-shadow:0 0 30px rgba(155,89,182,.6);color:#9B59B6}
-.mode-btn small{display:block;font-size:.55rem;color:#a7adba;letter-spacing:.04em;margin-top:3px;font-weight:400;text-transform:none;white-space:normal;line-height:1.3}
-.mode-btn.compete-btn.active{border-color:#ffd35a;background:rgba(255,211,90,.15);box-shadow:0 0 30px rgba(255,211,90,.5);color:#ffd35a}
-.mode-btn.compete-btn small{color:#a7adba}
-
-/* SPEED SELECTOR — practice only */
-.speed-section{margin-bottom:14px;text-align:center;width:100%;max-width:420px}
-.speed-label{font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8892a0;margin-bottom:8px}
+/* SPEED INFO — display only, not selectable */
+.speed-info{margin-bottom:24px;text-align:center;width:100%;max-width:420px}
+.speed-info-label{font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8892a0;margin-bottom:10px}
 .speed-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
-.speed-btn{width:100%;min-width:0;height:54px;border:2px solid rgba(155,89,182,.4);background:rgba(155,89,182,.08);border-radius:12px;color:#fff;font-size:.8rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.02em;transition:all .2s;padding:4px 2px}
-.speed-btn.active{transition:all .2s}
-.speed-btn small{display:block;font-size:.5rem;color:#a7adba;letter-spacing:.02em;margin-top:2px;white-space:normal;line-height:1.2}
+.speed-tile{width:100%;height:54px;border:2px solid;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px}
+.speed-tile-bpm{font-size:.85rem;font-weight:900}
+.speed-tile-info{font-size:.5rem;color:#a7adba;margin-top:2px;letter-spacing:.02em}
 
-.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#9B59B6,#A873B8);color:#fff;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(155,89,182,.7);margin-bottom:12px;animation:btnPulse 2s ease-in-out infinite}
-.big-btn.compete-mode{background:linear-gradient(135deg,#b8860b,#ffd35a);color:#000;box-shadow:0 0 40px rgba(255,211,90,.6)}
-@keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(155,89,182,.7)}50%{box-shadow:0 0 70px rgba(155,89,182,1)}}
+.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#b8860b,#ffd35a);color:#000;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,211,90,.7);margin-bottom:16px;animation:btnPulse 2s ease-in-out infinite}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(255,211,90,.7)}50%{box-shadow:0 0 70px rgba(255,211,90,1)}}
+
 .intro-info{font-size:.72rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.intro-info strong{color:#ffd35a}
 
 @media (max-width:420px){
   #screen-intro{padding:16px 12px 20px}
   .vrr-logo{font-size:1.8rem}
-  .vrr-sub{font-size:.62rem;margin-bottom:12px}
-  .mode-row{gap:8px;margin-bottom:12px}
-  .mode-btn{height:56px;font-size:.72rem}
-  .mode-btn small{font-size:.48rem}
-  .speed-section{margin-bottom:10px}
   .speed-row{gap:4px}
-  .speed-btn{height:48px;font-size:.68rem}
-  .speed-btn small{font-size:.42rem}
-  .big-btn{height:58px;font-size:1rem;margin-bottom:10px}
-  .intro-info{font-size:.62rem;line-height:1.6}
+  .speed-tile{height:46px}
+  .big-btn{height:56px;font-size:1rem}
+  .intro-info{font-size:.62rem}
 }
-.intro-info strong{color:#ffd35a}
 
 /* GAME SCREEN */
 #screen-game{
   position:fixed;inset:0;display:none;flex-direction:column;
   background:radial-gradient(circle at 16% 5%,rgba(155,89,182,.2),transparent 30%),linear-gradient(180deg,#0a0018,#05000a);
 }
-.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:8px;padding:6px 10px 4px;flex-shrink:0}
+.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;padding:6px 10px 4px;flex-shrink:0}
 .top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(155,89,182,.3)}
 .top-label{font-size:.5rem;color:#9B59B6;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
 .top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
@@ -70,12 +55,11 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .bpm-box .top-label{color:#ffd35a}
 .bpm-box .top-val{color:#ffd35a}
 
-/* SPEED PROGRESS BAR — compete mode */
-.speed-progress{flex-shrink:0;padding:2px 10px;display:none}
-.speed-progress.visible{display:flex;gap:4px;align-items:center}
+/* SPEED PROGRESS */
+.speed-progress{flex-shrink:0;padding:2px 10px;display:flex;gap:4px;align-items:center}
 .spd-seg{flex:1;height:8px;border-radius:4px;background:rgba(155,89,182,.2);border:1px solid rgba(155,89,182,.3);transition:all .4s}
-.spd-seg.done{background:#9B59B6;box-shadow:0 0 8px rgba(155,89,182,.6)}
-.spd-seg.current{background:rgba(255,211,90,.5);border-color:#ffd35a;box-shadow:0 0 8px rgba(255,211,90,.5);animation:segPulse 1s ease-in-out infinite}
+.spd-seg.done{box-shadow:0 0 8px rgba(155,89,182,.6)}
+.spd-seg.current{border-color:#ffd35a;box-shadow:0 0 8px rgba(255,211,90,.5);animation:segPulse 1s ease-in-out infinite}
 @keyframes segPulse{0%,100%{opacity:.7}50%{opacity:1}}
 .spd-label{font-size:.55rem;font-weight:900;letter-spacing:.1em;color:#ffd35a;width:50px;text-align:right;flex-shrink:0}
 
@@ -84,8 +68,6 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
 .msg-bar.watch{color:#9B59B6}.msg-bar.go{color:#ffd35a}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}.msg-bar.levelup{color:#ffd35a;animation:flash .4s ease-in-out 3}
 @keyframes flash{0%,100%{opacity:1}50%{opacity:.2}}
-
-
 
 .court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
 .court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(155,89,182,.25);border-radius:14px;padding:6px;background:rgba(8,0,15,.85);box-shadow:0 0 60px rgba(155,89,182,.3),inset 0 0 40px rgba(155,89,182,.04),0 20px 60px rgba(0,0,0,.8)}
@@ -97,16 +79,14 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .cell.missed{border:3px dashed #FF1493!important;background:rgba(255,20,147,.15)!important}
 .cell.expired{background:rgba(255,20,147,.4)!important;border-color:#FF1493!important;opacity:.4!important;cursor:default!important;animation:expireFade .3s ease-out}
 @keyframes expireFade{0%{transform:scale(1.15);opacity:1}100%{transform:scale(.9);opacity:.4}}
-.cell.decoy{background:rgba(60,60,80,.4)!important;border-color:rgba(155,89,182,.15)!important}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
 .bottombar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:4px 10px 6px;gap:8px;flex-shrink:0}
 .bot-btn{height:48px;border:2px solid rgba(155,89,182,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .bot-btn span{display:block;color:#9B59B6;font-size:.55rem;margin-top:1px}
-.start-btn{border-color:#9B59B6;background:linear-gradient(180deg,#A873B8,#9B59B6);font-size:1.1rem;box-shadow:0 0 18px rgba(155,89,182,.7)}
+.start-btn{border-color:#ffd35a;background:linear-gradient(180deg,#ffd35a,#b8860b);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(255,211,90,.7)}
 .start-btn:disabled{opacity:.5}
 
-/* Hide fullscreen button on mobile/touch devices — fullscreen API is unreliable there */
 @media (max-width:768px){
   .bottombar{grid-template-columns:1fr 1fr 1fr}
   #fsBtn{display:none}
@@ -120,37 +100,40 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="vrr-logo">REACTION <span>CONTROL</span></div>
   <div class="vrr-sub">5×10 VR Court · Reactific™</div>
 
-  <!-- MODE SELECT -->
-  <div class="mode-row">
-    <button class="mode-btn active" id="modePracticeBtn">
-      ⚡ PRACTICE
-      <small>Choose your speed · 5 levels</small>
-    </button>
-    <button class="mode-btn compete-btn" id="modeCompeteBtn">
-      🏆 COMPETE
-      <small>Auto speed · 20 taps per level</small>
-    </button>
-  </div>
-
-  <!-- SPEED SELECT — practice only -->
-  <div class="speed-section" id="speedSection">
-    <div class="speed-label">Select Speed</div>
+  <!-- SPEED INFO — display only -->
+  <div class="speed-info">
+    <div class="speed-info-label">Speed Progression</div>
     <div class="speed-row">
-      <button class="speed-btn active" data-bpm="40" data-ms="1500" data-pts="10" data-color="#9B59B6" data-glow="rgba(155,89,182,1)">40<small>BPM · 10pt</small></button>
-      <button class="speed-btn" data-bpm="60" data-ms="1000" data-pts="20" data-color="#00BFFF" data-glow="rgba(0,191,255,1)">60<small>BPM · 20pt</small></button>
-      <button class="speed-btn" data-bpm="80" data-ms="750" data-pts="40" data-color="#00D9A5" data-glow="rgba(0,217,165,1)">80<small>BPM · 40pt</small></button>
-      <button class="speed-btn" data-bpm="100" data-ms="600" data-pts="70" data-color="#ff6b00" data-glow="rgba(255,107,0,1)">100<small>BPM · 70pt</small></button>
-      <button class="speed-btn" data-bpm="120" data-ms="500" data-pts="100" data-color="#FF1493" data-glow="rgba(255,20,147,1)">120<small>BPM · 100pt</small></button>
+      <div class="speed-tile" style="border-color:#9B59B6;color:#9B59B6">
+        <div class="speed-tile-bpm">40</div>
+        <div class="speed-tile-info">BPM · 1-20</div>
+      </div>
+      <div class="speed-tile" style="border-color:#00BFFF;color:#00BFFF">
+        <div class="speed-tile-bpm">60</div>
+        <div class="speed-tile-info">BPM · 21-40</div>
+      </div>
+      <div class="speed-tile" style="border-color:#00D9A5;color:#00D9A5">
+        <div class="speed-tile-bpm">80</div>
+        <div class="speed-tile-info">BPM · 41-60</div>
+      </div>
+      <div class="speed-tile" style="border-color:#ff6b00;color:#ff6b00">
+        <div class="speed-tile-bpm">100</div>
+        <div class="speed-tile-info">BPM · 61-80</div>
+      </div>
+      <div class="speed-tile" style="border-color:#FF1493;color:#FF1493">
+        <div class="speed-tile-bpm">120</div>
+        <div class="speed-tile-info">BPM · 81-100</div>
+      </div>
     </div>
   </div>
 
-  <button class="big-btn" id="startBtn">⚡ ENTER THE COURT</button>
+  <button class="big-btn" id="startBtn">🏆 ENTER THE COURT</button>
 
-  <div class="intro-info" id="introInfo">
+  <div class="intro-info">
     <strong>TAP THE LIT CELL</strong> — before it disappears<br>
-    <strong>DECOYS APPEAR</strong> — at higher levels<br>
-    <strong>100 CORRECT TAPS</strong> — maximum session<br>
-    <strong>ONE MISS</strong> — session ends
+    <strong>SPEED INCREASES</strong> — every 20 taps<br>
+    <strong>ONE MISS</strong> — game over<br>
+    <strong>PERFECT SCORE</strong> — 100 taps = 100 points
   </div>
 </div>
 
@@ -160,11 +143,9 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <div class="top-box"><div class="top-label">Taps</div><div class="top-val" id="hTaps">0</div></div>
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
     <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hBest">0</div></div>
-    <div class="top-box"><div class="top-label">Level</div><div class="top-val" id="hLv">1</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
   </div>
 
-  <!-- COMPETE SPEED PROGRESS -->
   <div class="speed-progress" id="speedProgress">
     <div class="spd-seg" id="seg0"></div>
     <div class="spd-seg" id="seg1"></div>
@@ -182,7 +163,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
     <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
-    <button class="bot-btn" style="border-color:#ffd35a;color:#ffd35a" onclick="location.href='/vr-home.html'">⊞ Games<span style="display:block;color:#ffd35a;font-size:.55rem;margin-top:1px">All 6</span></button>
+    <button class="bot-btn" style="border-color:#ffd35a;color:#ffd35a" onclick="window.location.href='/vr-home.html'">⊞ Games<span style="display:block;color:#ffd35a;font-size:.55rem;margin-top:1px">Hub</span></button>
     <button class="bot-btn" id="fsBtn">Fullscreen<span>Toggle</span></button>
   </div>
 </div>
@@ -191,71 +172,46 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 (function(){
 var $=id=>document.getElementById(id);
 
-// SPEEDS config
 var SPEEDS=[
-  {bpm:40,  ms:1500, pts:10,  color:'#9B59B6', glow:'rgba(155,89,182,1)'},
-  {bpm:60,  ms:1000, pts:20,  color:'#00BFFF', glow:'rgba(0,191,255,1)'},
-  {bpm:80,  ms:750,  pts:40,  color:'#00D9A5', glow:'rgba(0,217,165,1)'},
-  {bpm:100, ms:600,  pts:70,  color:'#ff6b00', glow:'rgba(255,107,0,1)'},
-  {bpm:120, ms:500,  pts:100, color:'#FF1493', glow:'rgba(255,20,147,1)'},
+  {bpm:40,  ms:1500, color:'#9B59B6', glow:'rgba(155,89,182,1)'},
+  {bpm:60,  ms:1000, color:'#00BFFF', glow:'rgba(0,191,255,1)'},
+  {bpm:80,  ms:750,  color:'#00D9A5', glow:'rgba(0,217,165,1)'},
+  {bpm:100, ms:600,  color:'#ff6b00', glow:'rgba(255,107,0,1)'},
+  {bpm:120, ms:500,  color:'#FF1493', glow:'rgba(255,20,147,1)'},
 ];
-var COMPETE_TAPS=20;  // taps to advance speed in compete
-var MAX_TAPS=100;     // max taps in practice
+var COMPETE_TAPS=20;
 
-var mode='practice';
-var selectedSpeed=SPEEDS[0];
 var best=0;
+var API='https://api.reactificgaming.com';
 
-// MODE
-function setMode(m){
-  mode=m;
-  document.getElementById('modePracticeBtn').classList.toggle('active',m==='practice');
-  document.getElementById('modeCompeteBtn').classList.toggle('active',m==='compete');
-  $('speedSection').style.display=m==='practice'?'block':'none';
-  var btn=$('startBtn');
-  if(m==='compete'){
-    btn.classList.add('compete-mode');
-    btn.textContent='🏆 START COMPETE';
-    $('introInfo').innerHTML='<strong>STARTS AT 40 BPM</strong> — every 20 correct taps<br><strong>SPEED JUMPS</strong> — 40→60→80→100→120 BPM<br><strong>ONE MISS</strong> — session ends, score posted<br><strong>HOW FAR CAN YOU GO?</strong>';
-  }else{
-    btn.classList.remove('compete-mode');
-    btn.textContent='⚡ ENTER THE COURT';
-    $('introInfo').innerHTML='<strong>TAP THE LIT CELL</strong> — before it disappears<br><strong>DECOYS APPEAR</strong> — at higher levels<br><strong>100 CORRECT TAPS</strong> — maximum session<br><strong>ONE MISS</strong> — session ends';
-  }
+(function(){
+  var urlToken=new URLSearchParams(window.location.search).get('t');
+  if(urlToken)localStorage.setItem('rct-token',urlToken);
+})();
+
+function submitScore(score,level){
+  var token=localStorage.getItem('rct-token');
+  if(!token)return;
+  fetch(API+'/api/scores/game',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({game_id:'reaction',score:score,level:level,mode:'compete'})
+  }).catch(function(err){console.error('Score submit error:',err)});
 }
 
-// SPEED BUTTONS — color each box to match its speed tier, always
-function paintSpeedButtons(){
-  document.querySelectorAll('[data-bpm]').forEach(b=>{
-    var col=b.dataset.color, glow=b.dataset.glow;
-    b.style.borderColor=col;
-    b.style.color=col;
-    if(b.classList.contains('active')){
-      b.style.background=col+'30';
-      b.style.boxShadow='0 0 20px '+glow;
-    }else{
-      b.style.background=col+'14';
-      b.style.boxShadow='none';
-    }
-  });
-}
-document.querySelectorAll('[data-bpm]').forEach(btn=>{
-  btn.onclick=function(){
-    selectedSpeed=SPEEDS.find(s=>s.bpm===Number(btn.dataset.bpm));
-    document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    paintSpeedButtons();
+window.addEventListener('beforeunload',function(){
+  var token=localStorage.getItem('rct-token');
+  if(token && g && g.sc>0){
+    navigator.sendBeacon(API+'/api/scores/game',
+      JSON.stringify({game_id:'reaction',score:g.sc,level:g.lv,mode:'compete'})
+    );
   }
 });
-paintSpeedButtons();
-
-
 
 $('startBtn').onclick=function(){
   $('screen-intro').style.display='none';
   $('screen-game').style.display='flex';
-  buildCourt();
-  initGame();
+  buildCourt();initGame();
 };
 $('menuBtn').onclick=function(){
   clrT();resetCells();
@@ -264,7 +220,6 @@ $('menuBtn').onclick=function(){
 };
 $('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
-// COURT
 var cells=[];
 function buildCourt(){
   var court=$('court');court.innerHTML='';cells=[];
@@ -277,85 +232,37 @@ function buildCourt(){
 function cellSt(i,st){cells[i].className='cell';cells[i].style.background='';cells[i].style.borderColor='';cells[i].style.boxShadow='';if(st)cells[i].classList.add(st)}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-// GAME STATE
 var g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
-// ── SCORE SUBMISSION ──────────────────────────────────
-// Token arrives via ?t= from hub.html, stored locally so it survives reloads on this game page
-var API='https://api.reactificgaming.com';
-(function(){
-  var urlToken=new URLSearchParams(window.location.search).get('t');
-  if(urlToken)localStorage.setItem('rct-token',urlToken);
-})();
-
-function submitScore(score,level,mode){
-  var token=localStorage.getItem('rct-token');
-  if(!token)return; // not logged in — VR/demo play, nothing to submit
-  fetch(API+'/api/scores/game',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'reaction',score:score,level:level,mode:mode})
-  }).catch(function(err){
-    console.error('Score submit error:',err);
-  });
-}
-
-// Ensure score is saved when leaving
-window.addEventListener('beforeunload',function(){
-  var token=localStorage.getItem('rct-token');
-  if(token && g && g.sc>0){
-    navigator.sendBeacon(API+'/api/scores/game',
-      JSON.stringify({game_id:'reaction',score:g.sc,level:g.lv,mode:mode})
-    );
-  }
-});
-
 var phase='idle',currentTarget=-1,timers=[],shrinkRAF=null,currentSpeed=null,transitionMs=null,transitionTapsLeft=0;
 
 function clrT(){timers.forEach(clearTimeout);timers=[];if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}}
 
-function getDecoyCount(lv){if(lv<=4)return 0;if(lv<=6)return 1;if(lv<=8)return 2;return 3}
-
 function updateHUD(){
   $('hBpm').textContent=currentSpeed?currentSpeed.bpm:'—';
-  if(mode==='compete'&&currentSpeed){
+  if(currentSpeed){
     document.querySelector('.bpm-box').style.borderColor=currentSpeed.color;
     $('hBpm').style.color=currentSpeed.color;
   }
   $('hTaps').textContent=g.taps;
   $('hSc').textContent=g.sc;
   $('hBest').textContent=best;
-  $('hLv').textContent=g.lv;
   $('hSt').textContent=g.st;
-  // Speed progress — compete only
-  if(mode==='compete'){
-    $('speedProgress').classList.add('visible');
-    for(var j=0;j<5;j++){
-      var seg=$('seg'+j);
-      seg.className='spd-seg'+(j<g.speedIdx?' done':j===g.speedIdx?' current':'');
-    }
-    $('spd-label').textContent=currentSpeed.bpm+' BPM';
-    $('spd-label').style.color=currentSpeed.color;
-    for(var k=0;k<5;k++){
-      var seg=$('seg'+k);
-      if(k<g.speedIdx){seg.style.background=SPEEDS[k].color;seg.style.borderColor=SPEEDS[k].color;seg.style.boxShadow='0 0 6px '+SPEEDS[k].glow}
-      else if(k===g.speedIdx){seg.style.background=currentSpeed.color+'80';seg.style.borderColor=currentSpeed.color;seg.style.boxShadow='0 0 8px '+currentSpeed.glow}
-      else{seg.style.background='';seg.style.borderColor='';seg.style.boxShadow=''}
-    }
-  }else{
-    $('speedProgress').classList.remove('visible');
+  for(var j=0;j<5;j++){
+    var seg=$('seg'+j);
+    seg.className='spd-seg'+(j<g.speedIdx?' done':j===g.speedIdx?' current':'');
+    if(j<g.speedIdx){seg.style.background=SPEEDS[j].color;seg.style.borderColor=SPEEDS[j].color;seg.style.boxShadow='0 0 6px '+SPEEDS[j].glow}
+    else if(j===g.speedIdx){seg.style.background=currentSpeed.color+'80';seg.style.borderColor=currentSpeed.color;seg.style.boxShadow='0 0 8px '+currentSpeed.glow}
+    else{seg.style.background='';seg.style.borderColor='';seg.style.boxShadow=''}
   }
+  $('spd-label').textContent=currentSpeed?currentSpeed.bpm+' BPM':'';
+  if(currentSpeed)$('spd-label').style.color=currentSpeed.color;
 }
 
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 
 function initGame(){
-  if(mode==='practice'){
-    currentSpeed=selectedSpeed;
-    g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
-  }else{
-    currentSpeed=SPEEDS[0];
-    g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
-  }
+  currentSpeed=SPEEDS[0];
+  g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
   best=best||0;
   updateHUD();
   msg("TAP LET'S GO!",'watch');
@@ -371,7 +278,7 @@ function startSession(){
   $('actBtn').disabled=true;
   msg('GET READY...','watch');
   timers.push(setTimeout(function(){
-    msg(mode==='compete'?'🏆 COMPETE — GO!':'⚡ TAP THE LIT CELL!','go');
+    msg('🏆 GO!','go');
     timers.push(setTimeout(fireCell,400));
   },700));
 }
@@ -384,39 +291,26 @@ function fireCell(){
   fireSeq++;
   var mySeq=fireSeq;
 
-  var dc=getDecoyCount(g.lv);
-  var used=[];
-  for(var d=0;d<dc;d++){
-    var di;do{di=Math.floor(Math.random()*50)}while(used.indexOf(di)!==-1);
-    used.push(di);cellSt(di,'decoy');
-  }
-  var ti;do{ti=Math.floor(Math.random()*50)}while(used.indexOf(ti)!==-1);
+  var ti=Math.floor(Math.random()*50);
   currentTarget=ti;
   cells[ti].className='cell target';
   cells[ti].style.background=currentSpeed.color;
   cells[ti].style.borderColor=currentSpeed.color;
   cells[ti].style.boxShadow='0 0 30px '+currentSpeed.glow;
 
-  // Shrink clock — ease into new speed with 2 transition cells at the prior pace
   var cw=currentSpeed.ms;
-  if(transitionTapsLeft>0){
-    cw=transitionMs;
-    transitionTapsLeft--;
-  }
+  if(transitionTapsLeft>0){cw=transitionMs;transitionTapsLeft--}
   var startMs=performance.now();
   $('clockFill').style.width='100%';
-  if(mode==='compete'){
-    $('clockFill').style.background='linear-gradient(90deg,'+currentSpeed.color+','+currentSpeed.color+')';
-  }else{
-    $('clockFill').style.background='';
-  }
+  $('clockFill').style.background='linear-gradient(90deg,'+currentSpeed.color+','+currentSpeed.color+')';
+
   function tick(){
-    if(mySeq!==fireSeq)return; // stale loop, abandon
+    if(mySeq!==fireSeq)return;
     var pct=Math.max(0,1-(performance.now()-startMs)/cw);
     $('clockFill').style.width=(pct*100)+'%';
     if(pct<=0){
       if(currentTarget>=0){cellSt(currentTarget,'expired');currentTarget=-1}
-      onMiss('MISSED!');return
+      onMiss('MISSED!');return;
     }
     if(phase==='playing')shrinkRAF=requestAnimationFrame(tick);
   }
@@ -426,53 +320,39 @@ function fireCell(){
 var tapLocked=false;
 function handleTap(idx){
   if(phase!=='playing')return;
-  if(tapLocked)return; // debounce: ignore duplicate/double-fired tap events
+  if(tapLocked)return;
   tapLocked=true;
   setTimeout(function(){tapLocked=false},80);
   var tappedTarget=currentTarget;
-  currentTarget=-1; // prevent double-processing the same tap
+  currentTarget=-1;
   timers.forEach(clearTimeout);timers=[];
   if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}
+
   if(idx===tappedTarget){
     cellSt(idx,'correct');
     g.taps++;g.st++;g.speedTaps++;
-    g.sc+=currentSpeed.pts;
+    g.sc=g.taps;
     if(g.taps>best)best=g.taps;
     g.lv=Math.min(10,1+Math.floor(g.taps/10));
     updateHUD();
 
-    if(mode==='compete'){
-      // Check speed advance
-      if(g.speedTaps>=COMPETE_TAPS&&g.speedIdx<SPEEDS.length-1){
-        var prevSpeedMs=currentSpeed.ms; // give 2 transition taps at the OLD (slower) pace
-        g.speedIdx++;g.speedTaps=0;
-        currentSpeed=SPEEDS[g.speedIdx];
-        updateHUD();
-        msg('🔥 '+currentSpeed.bpm+' BPM — FASTER!','levelup');
-        transitionMs=prevSpeedMs;
-        transitionTapsLeft=2;
-        timers.push(setTimeout(function(){if(phase==='playing')fireCell()},600));
-      }else if(g.speedIdx>=SPEEDS.length-1&&g.speedTaps>=COMPETE_TAPS){
-        // All speeds mastered
-        phase='idle';clrT();
-        msg('🏆 CHAMPION! ALL SPEEDS MASTERED!','perfect');
-        submitScore(g.sc,g.lv,mode);  // ✓ Already here
-        timers.push(setTimeout(finishSession,2000));
-      }else{
-        msg('⚡ '+g.speedTaps+'/'+COMPETE_TAPS+' @ '+currentSpeed.bpm+'BPM','go');
-        timers.push(setTimeout(function(){if(phase==='playing')fireCell()},300));
-      }
+    if(g.speedTaps>=COMPETE_TAPS&&g.speedIdx<SPEEDS.length-1){
+      var prevSpeedMs=currentSpeed.ms;
+      g.speedIdx++;g.speedTaps=0;
+      currentSpeed=SPEEDS[g.speedIdx];
+      updateHUD();
+      msg('🔥 '+currentSpeed.bpm+' BPM!','levelup');
+      transitionMs=prevSpeedMs;
+      transitionTapsLeft=2;
+      timers.push(setTimeout(function(){if(phase==='playing')fireCell()},600));
+    }else if(g.speedIdx>=SPEEDS.length-1&&g.speedTaps>=COMPETE_TAPS){
+      phase='idle';clrT();
+      msg('🏆 PERFECT 100!','perfect');
+      submitScore(g.sc,g.lv);
+      timers.push(setTimeout(finishSession,2000));
     }else{
-      // Practice — 100 tap max
-      if(g.taps>=MAX_TAPS){
-        phase='idle';clrT();
-        msg('💯 PERFECT 100! SCORE: '+g.sc,'perfect');
-        submitScore(g.sc,g.lv,mode);  // FIXED: Added this submission
-        timers.push(setTimeout(finishSession,2000));
-      }else{
-        msg('⚡ '+g.taps+' / '+MAX_TAPS,'go');
-        timers.push(setTimeout(function(){if(phase==='playing')fireCell()},300));
-      }
+      msg('⚡ '+g.taps+' / 100','go');
+      timers.push(setTimeout(function(){if(phase==='playing')fireCell()},300));
     }
   }else{
     cellSt(idx,'wrong');
@@ -485,22 +365,16 @@ function onMiss(reason){
   if(phase==='idle')return;
   phase='idle';clrT();
   g.st=0;updateHUD();
-  msg(reason+' — '+g.taps+' TAPS · '+g.sc+' PTS','miss');
-  submitScore(g.sc,g.lv,mode);
+  msg(reason+' — '+g.taps+' / 100 — SCORE: '+g.sc,'miss');
+  submitScore(g.sc,g.lv);
   timers.push(setTimeout(finishSession,1800));
 }
 
 function finishSession(){
   phase='idle';clrT();resetCells();
-  currentTarget=-1;
-  transitionMs=null;transitionTapsLeft=0;
+  currentTarget=-1;transitionMs=null;transitionTapsLeft=0;
   $('clockFill').style.width='100%';
-  // Reset game state for next session
-  if(mode==='practice'){
-    currentSpeed=selectedSpeed;
-  }else{
-    currentSpeed=SPEEDS[0];
-  }
+  currentSpeed=SPEEDS[0];
   g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
   updateHUD();
   msg("TAP LET'S GO!",'watch');
@@ -509,12 +383,6 @@ function finishSession(){
 }
 
 $('actBtn').onclick=startSession;
-
-// Wire mode buttons safely
-var pb=document.getElementById('modePracticeBtn');
-var cb=document.getElementById('modeCompeteBtn');
-if(pb)pb.onclick=function(){setMode('practice')};
-if(cb)cb.onclick=function(){setMode('compete')};
 })();
 </script>
 </body>
