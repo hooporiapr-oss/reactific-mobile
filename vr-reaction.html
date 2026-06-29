@@ -238,10 +238,10 @@ var phase='idle',currentTarget=-1,timers=[],shrinkRAF=null,currentSpeed=null,tra
 function clrT(){timers.forEach(clearTimeout);timers=[];if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}}
 
 function updateHUD(){
-  $('hBpm').textContent=currentSpeed?currentSpeed.bpm:'—';
   if(currentSpeed){
-    document.querySelector('.bpm-box').style.borderColor=currentSpeed.color;
+    $('hBpm').textContent=currentSpeed.bpm;
     $('hBpm').style.color=currentSpeed.color;
+    document.querySelector('.bpm-box').style.borderColor=currentSpeed.color;
   }
   $('hTaps').textContent=g.taps;
   $('hSc').textContent=g.sc;
@@ -340,6 +340,9 @@ function handleTap(idx){
       var prevSpeedMs=currentSpeed.ms;
       g.speedIdx++;g.speedTaps=0;
       currentSpeed=SPEEDS[g.speedIdx];
+      $('hBpm').textContent=currentSpeed.bpm;
+      $('hBpm').style.color=currentSpeed.color;
+      document.querySelector('.bpm-box').style.borderColor=currentSpeed.color;
       updateHUD();
       msg('🔥 '+currentSpeed.bpm+' BPM!','levelup');
       transitionMs=prevSpeedMs;
