@@ -277,6 +277,8 @@ function initGame(){
   resetCells();
 }
 
+$('actBtn').onclick=startSession;
+
 function startSession(){
   if(phase!=='idle')return;
   phase='playing';
@@ -382,15 +384,25 @@ function finishSession(){
   phase='idle';clrT();resetCells();
   currentTarget=-1;transitionMs=null;transitionTapsLeft=0;
   $('clockFill').style.width='100%';
-  currentSpeed=SPEEDS[0];
-  g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
-  updateHUD();
-  msg("TAP LET'S GO!",'watch');
+  // Keep score and BPM visible — reset only when new game starts
   $('actBtn').disabled=false;
   $('actBtn').onclick=startSession;
 }
 
-$('actBtn').onclick=startSession;
+function startSession(){
+  if(phase!=='idle')return;
+  // Reset game state at START of new session, not after miss
+  currentSpeed=SPEEDS[0];
+  g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
+  updateHUD();
+  phase='playing';
+  $('actBtn').disabled=true;
+  msg('GET READY...','watch');
+  timers.push(setTimeout(function(){
+    msg('🏆 GO!','go');
+    timers.push(setTimeout(fireCell,400));
+  },700));
+}
 })();
 </script>
 </body>
