@@ -229,7 +229,7 @@ function handleTap(idx){
     cellSt(idx,'correct',playerIdx+1);playerIdx++;
     if(playerIdx>=sequence.length){
       phase='idle';clrT();
-      g.sc+=gsl()*10*g.lv;g.st++;g.rd++;updateHUD();
+      g.sc+=g.lv*10;g.st++;g.rd++;updateHUD();
       msg('✅ PERFECT!','perfect');
       if(g.rd>=ROUNDS_PER_TIER){timers.push(setTimeout(tierUp,900))}
       else{timers.push(setTimeout(autoNextRound,1000))}
