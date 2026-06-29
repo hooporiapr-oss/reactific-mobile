@@ -215,24 +215,24 @@ var API='https://api.reactificgaming.com';
 var token=localStorage.getItem('rct-token');
 var user=JSON.parse(localStorage.getItem('rct-user')||'null');
 
-var GAMES=[
+var CHALLENGE_GAMES=[
   {id:'reactific', name:'Reactific Sport', icon:'⚡'},
   {id:'echo', name:'Echo Recall', icon:'🧠'},
   {id:'pattern', name:'Pattern Rec', icon:'🎨'},
   {id:'numhunt', name:'Number Hunt', icon:'🔢'},
   {id:'reaction', name:'Reaction Plus', icon:'⚡'},
-  {id:'reactific-plus', name:'Bonus Round', icon:'🏆'}
+  {id:'bonus', name:'Bonus Round', icon:'🏆'}
 ];
 
 var urlParams=new URLSearchParams(window.location.search);
 var level=parseInt(urlParams.get('level'))||1;
-var challengeGames=GAMES.slice(0,level);
+var challengeGames=CHALLENGE_GAMES.slice(0,level);
 var currentGameIdx=0;
 var totalScore=0;
 
 function initChallenge(){
   var title='Challenge '+level;
-  if(level===6) title='6-Game Gauntlet';
+  if(level===6) title='🏆 6-Game Gauntlet';
   document.getElementById('title').textContent=title;
 
   var gamesList='';
@@ -245,11 +245,30 @@ function initChallenge(){
   sessionStorage.setItem('challenge-games',JSON.stringify(challengeGames));
   sessionStorage.setItem('challenge-score',0);
   sessionStorage.setItem('challenge-idx',0);
+  sessionStorage.setItem('challenge-scores','{}');
 }
 
 function startChallenge(){
+  // Initialize challenge in sessionStorage
   sessionStorage.setItem('challenge-active','1');
-  window.location.href='/vr-reactific.html?challenge='+level;
+  sessionStorage.setItem('challenge-level',level);
+  sessionStorage.setItem('challenge-games',JSON.stringify(challengeGames));
+  sessionStorage.setItem('challenge-score',0);
+  sessionStorage.setItem('challenge-idx',0);
+  
+  // Build URL for first game (always Reactific)
+  var gameUrls={
+    'reactific':'/vr-reactific.html',
+    'echo':'/vr-echo.html',
+    'pattern':'/vr-pattern.html',
+    'numhunt':'/vr-numhunt.html',
+    'reaction':'/vr-reaction.html',
+    'bonus':'/vr-reactific.html'
+  };
+  var firstGame=challengeGames[0];
+  var firstGameUrl=gameUrls[firstGame.id]||'/vr-reactific.html';
+  
+  window.location.href=firstGameUrl+'?challenge='+level;
 }
 
 function retryChallenge(){
@@ -258,6 +277,8 @@ function retryChallenge(){
   sessionStorage.removeItem('challenge-active');
   sessionStorage.removeItem('challenge-score');
   sessionStorage.removeItem('challenge-idx');
+  sessionStorage.removeItem('challenge-scores');
+  sessionStorage.removeItem('challenge-gameover');
 }
 
 function showGameOver(failedGame, score){
@@ -271,8 +292,21 @@ function showGameOver(failedGame, score){
 // Check if returning from game over
 if(sessionStorage.getItem('challenge-gameover')){
   var failedGame=sessionStorage.getItem('challenge-failed-game');
-  var score=parseInt(sessionStorage.getItem('challenge-score'))||0;
+  var score=parseInt(sessionStorage.getItem('challenge-final-score'))||0;
+  var completed=sessionStorage.getItem('challenge-completed')==='1';
+  
   showGameOver(failedGame,score);
+  
+  // Submit score if completed and logged in
+  if(completed && token){
+    var mode='challenge-'+level+'-game';
+    fetch(API+'/api/scores/game',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({game_id:'challenge',score:score,level:1,mode:mode})
+    }).catch(function(err){console.error('Challenge score submit:',err)});
+  }
+  
   sessionStorage.removeItem('challenge-gameover');
 }
 
