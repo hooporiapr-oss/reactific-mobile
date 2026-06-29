@@ -237,7 +237,7 @@ function handleTap(idx){
     cellSt(idx,'correct',playerIdx+1);playerIdx++;
     if(playerIdx>=pattern.length){
       phase='idle';clrT();stopStrobe();
-      g.sc+=gcc()*20;g.st++;g.pf++;updateHUD();
+      g.sc+=g.lv*10;g.st++;g.pf++;updateHUD();
       msg('✅ PERFECT!','perfect');
       if(g.pf>=1){
         timers.push(setTimeout(function(){
