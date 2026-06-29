@@ -9,17 +9,9 @@
 html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
 
 body{
-  display:flex;
-  flex-direction:column;
+  display:flex;flex-direction:column;
   background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
-  height:100vh;
-  padding:12px;
-}
-
-#screen-game{
-  position:fixed;inset:0;display:flex;flex-direction:column;
-  background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
-  z-index:1;padding:12px;box-sizing:border-box;
+  height:100vh;padding:12px;
 }
 
 #header{
@@ -31,17 +23,13 @@ body{
 .logo{font-size:1.4rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8)}
 .logo span{color:#9B59B6}
 
-#hud{display:flex;gap:16px;font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em}
+#hud{display:flex;gap:16px;font-size:.7rem;font-weight:900;text-transform:uppercase}
 .hud-item{background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.2);border-radius:6px;padding:6px 12px}
 .hud-val{color:#9B59B6;font-size:.9rem}
 
-#gameContainer{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;overflow:hidden;min-height:0;
-}
+#gameContainer{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}
 
-#msg{font-size:1.3rem;font-weight:900;color:#9B59B6;text-shadow:0 0 20px rgba(155,89,182,.6);height:32px;text-align:center}
-#msg.perfect{color:#00D9A5}
+#msg{font-size:1.2rem;font-weight:900;color:#9B59B6;text-shadow:0 0 20px rgba(155,89,182,.6);height:28px}
 #msg.miss{color:#FF1493}
 
 #grid{
@@ -56,18 +44,10 @@ body{
   cursor:pointer;transition:all .05s;user-select:none;
 }
 
-.cell:hover{background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.4)}
-
-.cell.active{
-  background:#9B59B6;border-color:#9B59B6;box-shadow:0 0 30px rgba(155,89,182,.8);
-  animation:pulse .25s;
-}
-
-.cell.correct{background:#00D9A5;border-color:#00D9A5;box-shadow:0 0 20px rgba(0,217,165,.8)}
-.cell.wrong{background:#FF1493;border-color:#FF1493;box-shadow:0 0 20px rgba(255,20,147,.8)}
+.cell.active{background:#9B59B6;border-color:#9B59B6;box-shadow:0 0 30px rgba(155,89,182,.8)}
+.cell.correct{background:#00D9A5;border-color:#00D9A5}
+.cell.wrong{background:#FF1493;border-color:#FF1493}
 .cell.missed{background:#333;border-color:#333}
-
-@keyframes pulse{0%{transform:scale(0.85)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
 
 #stats{display:flex;gap:24px;justify-content:center;font-size:.8rem;font-weight:900;text-transform:uppercase;flex-shrink:0}
 .stat{text-align:center}
@@ -77,60 +57,50 @@ body{
 #controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;flex-shrink:0}
 .btn{padding:10px 20px;background:rgba(155,89,182,.2);border:2px solid rgba(155,89,182,.3);
   color:#9B59B6;border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:900;
-  text-transform:uppercase;transition:all .2s;text-decoration:none;display:inline-block}
-.btn:hover{background:rgba(155,89,182,.35);border-color:#9B59B6}
+  text-transform:uppercase;transition:all .2s}
+.btn:hover{background:rgba(155,89,182,.35)}
 .btn-play{background:linear-gradient(135deg,#9B59B6,#A873B8);border:none;color:#fff;box-shadow:0 0 30px rgba(155,89,182,.6)}
-.btn-play:hover{box-shadow:0 0 50px rgba(155,89,182,.9);transform:translateY(-2px)}
-
-@media (max-width:640px){
-  #header{flex-wrap:wrap;gap:8px}
-  #hud{flex-wrap:wrap}
-  .logo{font-size:1.1rem}
-}
+.btn-play:hover{box-shadow:0 0 50px rgba(155,89,182,.9)}
 </style>
 </head>
 <body>
 
-<div id="screen-game">
-  <div id="header">
-    <div class="logo">REACTIFIC<span>™</span></div>
-    <div id="hud">
-      <div class="hud-item">BPM: <span class="hud-val" id="bpmVal">40</span></div>
-      <div class="hud-item">TAPS: <span class="hud-val" id="tapsVal">0</span></div>
-      <div class="hud-item">SCORE: <span class="hud-val" id="scoreVal">0</span></div>
+<div id="header">
+  <div class="logo">REACTIFIC<span>™</span></div>
+  <div id="hud">
+    <div class="hud-item">BPM: <span class="hud-val" id="bpmVal">40</span></div>
+    <div class="hud-item">TAPS: <span class="hud-val" id="tapsVal">0</span></div>
+    <div class="hud-item">SCORE: <span class="hud-val" id="scoreVal">0</span></div>
+  </div>
+</div>
+
+<div id="gameContainer">
+  <div id="msg"></div>
+  <div id="grid"></div>
+  <div id="stats">
+    <div class="stat">
+      <div class="stat-label">Tier</div>
+      <div class="stat-val" id="tierDisplay">Rookie</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Accuracy</div>
+      <div class="stat-val" id="accuracyDisplay">100%</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Streak</div>
+      <div class="stat-val" id="streakDisplay">0</div>
     </div>
   </div>
+</div>
 
-  <div id="gameContainer">
-    <div id="msg"></div>
-    <div id="grid"></div>
-    <div id="stats">
-      <div class="stat">
-        <div class="stat-label">Speed Tier</div>
-        <div class="stat-val" id="tierDisplay">Rookie</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Accuracy</div>
-        <div class="stat-val" id="accuracyDisplay">100%</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Streak</div>
-        <div class="stat-val" id="streakDisplay">0</div>
-      </div>
-    </div>
-  </div>
-
-  <div id="controls">
-    <button class="btn btn-play" id="playBtn" onclick="startGame()">🏆 Start Match</button>
-    <a class="btn" href="javascript:goToGames()" id="gamesBtn">⊞ Games</a>
-  </div>
+<div id="controls">
+  <button class="btn btn-play" id="playBtn" onclick="startGame()">🏆 Start Match</button>
+  <button class="btn" onclick="goToGames()">⊞ Games</button>
 </div>
 
 <script src="/challenge-utils.js"></script>
 <script>
-(function(){
-var $=id=>document.getElementById(id);
-
+var $=function(id){return document.getElementById(id)};
 var API='https://api.reactificgaming.com';
 var token=localStorage.getItem('rct-token');
 var challengeLevel=new URLSearchParams(window.location.search).get('challenge');
@@ -163,7 +133,10 @@ function initGrid(){
   }
 }
 
-function clearTimers(){timers.forEach(t=>clearTimeout(t));timers=[]}
+function clearTimers(){
+  timers.forEach(function(t){clearTimeout(t)});
+  timers=[];
+}
 
 function updateHUD(){
   $('bpmVal').textContent=SPEEDS[g.speedIdx].bpm;
@@ -184,14 +157,11 @@ function showMsg(txt,type){
 
 function fireCell(){
   if(phase!=='playing')return;
-  
   if(currentTargetIdx>=0)cells[currentTargetIdx].className='cell';
-  
   currentTargetIdx=Math.floor(Math.random()*50);
   var speed=SPEEDS[g.speedIdx];
   cells[currentTargetIdx].className='cell active';
   cells[currentTargetIdx].style.background=speed.color;
-  
   timers.push(setTimeout(function(){
     if(phase==='playing'&&currentTargetIdx>=0)onMiss();
   },speed.ms));
@@ -199,19 +169,15 @@ function fireCell(){
 
 function handleTap(idx){
   if(phase!=='playing')return;
-  
   var speed=SPEEDS[g.speedIdx];
-  
   if(idx===currentTargetIdx){
     g.taps++;
     g.correct++;
     g.score+=speed.pts;
     g.streak++;
-    
     cells[idx].className='cell correct';
     showMsg('✓ +'+speed.pts);
     updateHUD();
-    
     if(g.taps%20===0&&g.speedIdx<SPEEDS.length-1){
       g.speedIdx++;
       showMsg('🔥 '+SPEEDS[g.speedIdx].bpm+' BPM!');
@@ -236,21 +202,19 @@ function onMiss(){
 }
 
 function finishGame(){
-  phase='idle';clearTimers();
-  cells.forEach(c=>{c.className='cell';c.style.background=''});
+  phase='idle';
+  clearTimers();
+  cells.forEach(function(c){c.className='cell';c.style.background=''});
   currentTargetIdx=-1;
-  
   if(challengeMode){
     var score=g.score;
     setTimeout(function(){onChallengeGameEnd(score,'reactific',false)},800);
     return;
   }
-  
   g={taps:0,correct:0,score:0,streak:0,speedIdx:0};
   updateHUD();
   showMsg('');
   $('playBtn').disabled=false;
-  $('playBtn').textContent='🏆 Start Match';
 }
 
 function startGame(){
@@ -270,7 +234,7 @@ function submitScore(){
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
     body:JSON.stringify({game_id:'reactific',score:g.score,level:5,mode:mode})
-  }).catch(e=>console.error('Error:',e));
+  }).catch(function(e){console.error('Error:',e)});
 }
 
 function onChallengeGameEnd(score,gameName,wasSuccessful){
@@ -296,7 +260,6 @@ function goToGames(){
 
 initGrid();
 updateHUD();
-})();
 </script>
 
 </body>
