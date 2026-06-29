@@ -130,6 +130,11 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <script>
 (function(){
 var $=id=>document.getElementById(id);
+
+// CYCLE MODE — two additions
+var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
+var NEXT_GAME='/vr-pattern.html?cycle=true';
+
 var beatIv=1000;
 
 document.querySelectorAll('[data-iv]').forEach(btn=>{btn.onclick=function(){beatIv=Number(btn.dataset.iv);document.querySelectorAll('[data-iv]').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}});
@@ -138,7 +143,17 @@ var timerRAF=null,timerStart=0,timerDur=0,canTap=false;
 function startTimer(dur){timerDur=dur;timerStart=performance.now();$('timerFill').style.width='100%';$('timerFill').className='timerbar-fill';function tick(){var pct=Math.max(0,1-(performance.now()-timerStart)/timerDur);$('timerFill').style.width=(pct*100)+'%';if(pct<0.3)$('timerFill').className='timerbar-fill danger';else if(pct<0.5)$('timerFill').className='timerbar-fill warn';if(pct>0&&canTap)timerRAF=requestAnimationFrame(tick)}timerRAF=requestAnimationFrame(tick)}
 function stopTimer(){if(timerRAF)cancelAnimationFrame(timerRAF);timerRAF=null;$('timerFill').style.width='100%';$('timerFill').className='timerbar-fill'}
 
-$('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
+// If cycle mode, skip intro and go straight to game
+if(cycleMode){
+  $('screen-intro').style.display='none';
+  $('screen-game').style.display='flex';
+  buildCourt();
+  initGame();
+  setTimeout(startRound,1000);
+}else{
+  $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
+}
+
 $('menuBtn').onclick=function(){stopTimer();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
@@ -154,7 +169,6 @@ function setPhase(txt){$('hPhase').textContent=txt}
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function initGame(){g={lv:1,sc:0,rd:0,st:0,pf:0};updateHUD();setPhase('READY');msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRound;$('restartBtn').style.display='none';stopTimer()}
 
-// ── SCORE SUBMISSION ──────────────────────────────────
 var API='https://api.reactificgaming.com';
 (function(){
   var urlToken=new URLSearchParams(window.location.search).get('t');
@@ -168,12 +182,9 @@ function submitScore(score,level,mode){
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
     body:JSON.stringify({game_id:'recovery',score:score,level:level,mode:mode})
-  }).catch(function(err){
-    console.error('Score submit error:',err);
-  });
+  }).catch(function(err){console.error('Score submit error:',err)});
 }
 
-// Ensure score is saved when leaving
 window.addEventListener('beforeunload',function(){
   var token=localStorage.getItem('rct-token');
   if(token && g && g.sc>0){
@@ -234,7 +245,16 @@ function startFind(){
   timers.push(setTimeout(function(){
     if(phase!=='finding')return;
     canTap=false;stopTimer();setPhase('TIME');msg("TIME'S UP!",'miss');
-    revealAnswer();timers.push(setTimeout(roundFail,1500));
+    revealAnswer();
+    // TIME'S UP = miss in cycle mode
+    if(cycleMode){
+      timers.push(setTimeout(function(){
+        msg('NEXT GAME...','watch');
+        timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
+      },1500));
+    }else{
+      timers.push(setTimeout(roundFail,1500));
+    }
   },dur));
 }
 
@@ -250,7 +270,15 @@ function handleTap(idx){
   }else{
     cellSt(idx,'wrong');
     timers.push(setTimeout(function(){revealAnswer()},400));
-    timers.push(setTimeout(roundFail,1800));
+    // WRONG TAP = miss in cycle mode
+    if(cycleMode){
+      timers.push(setTimeout(function(){
+        msg('NEXT GAME...','watch');
+        timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
+      },1800));
+    }else{
+      timers.push(setTimeout(roundFail,1800));
+    }
   }
 }
 
@@ -260,18 +288,12 @@ function roundSuccess(){
   phase='idle';g.pf++;g.st++;g.sc+=20*g.lv;updateHUD();setPhase('✅');msg('CORRECT!','perfect');
   if(g.pf>=2){
     timers.push(setTimeout(function(){
-      if(g.lv<10){
-        g.lv++;
-        g.pf=0;
-        submitScore(g.sc,g.lv,'progression');  // FIXED: Submit on level up
-      }
-      updateHUD();
-      resetCells();
-      msg('LEVEL UP! L'+g.lv,'perfect');
+      if(g.lv<10){g.lv++;g.pf=0;submitScore(g.sc,g.lv,'progression');}
+      updateHUD();resetCells();msg('LEVEL UP! L'+g.lv,'perfect');
       timers.push(setTimeout(autoNextRound,900))
     },1200))
   }else{
-    submitScore(g.sc,g.lv,'progression');  // FIXED: Submit on regular success
+    submitScore(g.sc,g.lv,'progression');
     timers.push(setTimeout(autoNextRound,1000))
   }
 }
