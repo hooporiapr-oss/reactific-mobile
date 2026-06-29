@@ -475,7 +475,7 @@ function handleTap(){
     showMsg('🔥 '+currentSpeed.bpm+' BPM!','levelup');
     transitionMs=prevMs;transitionTapsLeft=2;
     timers.push(setTimeout(fireTarget,600));
-  }else if(g.speedIdx>=SPEEDS.length-1&&g.speedTaps>=COMPETE_TAPS){
+  }else if(g.taps>=100){
     phase='idle';
     showMsg('🏆 PERFECT 100!','perfect');
     flashScreen(currentSpeed.color,false);
