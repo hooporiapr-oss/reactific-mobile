@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge Mode | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
+
+body{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
+  padding:16px;
+  box-sizing:border-box;
+  overflow-y:auto;
+  min-height:100vh;
+}
+
+.container{width:100%;max-width:600px}
+
+.header{text-align:center;margin-bottom:32px;padding-bottom:16px;border-bottom:2px solid rgba(155,89,182,.2)}
+
+.logo{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8);margin-bottom:8px}
+.logo span{color:#9B59B6}
+
+.subtitle{font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#ffd35a;margin-bottom:4px}
+
+.tagline{font-size:.75rem;color:#8892a0;font-style:italic;margin-top:12px}
+
+.challenges{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:32px}
+
+.challenge-card{
+  background:linear-gradient(135deg,rgba(155,89,182,.15),rgba(0,150,136,.08));
+  border:2px solid rgba(155,89,182,.3);
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.challenge-card:hover{
+  background:linear-gradient(135deg,rgba(155,89,182,.25),rgba(0,150,136,.15));
+  border-color:#9B59B6;
+  box-shadow:0 0 30px rgba(155,89,182,.4);
+  transform:translateY(-4px);
+}
+
+.challenge-badge{
+  font-size:1.8rem;
+  font-weight:900;
+}
+
+.challenge-title{
+  font-size:1.2rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#9B59B6;
+}
+
+.challenge-desc{
+  font-size:.75rem;
+  color:#8892a0;
+  line-height:1.4;
+}
+
+.challenge-games{
+  font-size:.65rem;
+  color:#ffd35a;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+
+.gauntlet-card{
+  grid-column:1/-1;
+  background:linear-gradient(135deg,rgba(255,211,90,.15),rgba(155,89,182,.2));
+  border-color:#ffd35a;
+}
+.gauntlet-card:hover{
+  border-color:#ffd35a;
+  box-shadow:0 0 50px rgba(255,211,90,.4);
+  background:linear-gradient(135deg,rgba(255,211,90,.25),rgba(155,89,182,.3));
+}
+.gauntlet-card .challenge-title{color:#ffd35a}
+
+.info-section{
+  background:rgba(0,150,136,.1);
+  border:1px solid rgba(0,150,136,.2);
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:24px;
+  font-size:.8rem;
+  line-height:1.6;
+  color:#8892a0;
+}
+
+.info-title{
+  font-weight:900;
+  color:#00D9A5;
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.back-btn{
+  padding:10px 20px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:.75rem;
+  font-weight:900;
+  text-transform:uppercase;
+  text-decoration:none;
+  display:inline-block;
+  margin-bottom:24px;
+}
+.back-btn:hover{background:rgba(255,255,255,.15)}
+
+@media (max-width:640px){
+  .logo{font-size:1.4rem}
+  .challenges{grid-template-columns:1fr}
+  .gauntlet-card{grid-column:1}
+  .challenge-title{font-size:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <a class="back-btn" href="/vr-home.html">← Back</a>
+
+  <div class="header">
+    <div class="logo">CHALLENGE<span>MODE</span></div>
+    <div class="subtitle">🏆 One Life. Multiple Games.</div>
+    <div class="tagline">One miss anywhere = Game Over</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-title">How It Works</div>
+    Play through games in sequence. A single miss ends your run. Complete all games in a challenge to claim the leaderboard.
+  </div>
+
+  <div class="challenges">
+    <a class="challenge-card" href="/challenge.html?level=1">
+      <div class="challenge-badge">⚡</div>
+      <div class="challenge-title">1-Game</div>
+      <div class="challenge-games">Reactific Sport</div>
+      <div class="challenge-desc">Master the court in one shot</div>
+    </a>
+
+    <a class="challenge-card" href="/challenge.html?level=2">
+      <div class="challenge-badge">⚡⚡</div>
+      <div class="challenge-title">2-Game</div>
+      <div class="challenge-games">Reactific → Echo Recall</div>
+      <div class="challenge-desc">Reflex + Memory</div>
+    </a>
+
+    <a class="challenge-card" href="/challenge.html?level=3">
+      <div class="challenge-badge">⚡⚡⚡</div>
+      <div class="challenge-title">3-Game</div>
+      <div class="challenge-games">+ Pattern Rec</div>
+      <div class="challenge-desc">Add visual recognition</div>
+    </a>
+
+    <a class="challenge-card" href="/challenge.html?level=4">
+      <div class="challenge-badge">⚡⚡⚡⚡</div>
+      <div class="challenge-title">4-Game</div>
+      <div class="challenge-games">+ Number Hunt</div>
+      <div class="challenge-desc">Math speed joins the gauntlet</div>
+    </a>
+
+    <a class="challenge-card" href="/challenge.html?level=5">
+      <div class="challenge-badge">⚡⚡⚡⚡⚡</div>
+      <div class="challenge-title">5-Game</div>
+      <div class="challenge-games">+ Reaction Plus</div>
+      <div class="challenge-desc">Extended endurance test</div>
+    </a>
+
+    <a class="challenge-card gauntlet-card" href="/challenge.html?level=6">
+      <div class="challenge-badge">🏆</div>
+      <div class="challenge-title">6-Game Gauntlet</div>
+      <div class="challenge-games">All 6 Games • All or Nothing</div>
+      <div class="challenge-desc">Legendary status awaits champions</div>
+    </a>
+  </div>
+
+  <div class="info-section">
+    <div class="info-title">Scoring</div>
+    Each challenge has its own leaderboard. Scores are combined totals across all games. Appear on leaderboard only if you complete the full challenge.
+  </div>
+</div>
+
+</body>
+</html>
