@@ -7,140 +7,53 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-
-/* SPACE ENVIRONMENT */
-#space{
-  position:fixed;inset:0;
-  background:radial-gradient(ellipse at center,#05001a 0%,#000 70%);
-  overflow:hidden;
-}
-
-/* STAR FIELD */
+#space{position:fixed;inset:0;background:radial-gradient(ellipse at center,#05001a 0%,#000 70%);overflow:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0}
-
-/* EDGE GLOW — shifts with speed */
-#edge-glow{
-  position:fixed;inset:0;pointer-events:none;z-index:1;
-  border:3px solid transparent;
-  box-shadow:inset 0 0 80px rgba(155,89,182,.3),0 0 80px rgba(155,89,182,.1);
-  transition:box-shadow 1s ease,border-color 1s ease;
-}
-
-/* SCREEN FLASH */
-#flash{
-  position:fixed;inset:0;pointer-events:none;z-index:10;
-  opacity:0;transition:opacity .1s;
-}
-
-/* HUD */
-#hud{
-  position:fixed;top:0;left:0;right:0;z-index:20;
-  display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;
-  gap:8px;padding:10px 16px;
-  background:linear-gradient(180deg,rgba(0,0,0,.8),transparent);
-}
+#edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(155,89,182,.3),0 0 80px rgba(155,89,182,.1);transition:box-shadow 1s ease,border-color 1s ease}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;padding:10px 16px;background:linear-gradient(180deg,rgba(0,0,0,.8),transparent)}
 .hud-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 8px;background:rgba(0,0,0,.5);border:1px solid rgba(155,89,182,.3);border-radius:10px;backdrop-filter:blur(4px)}
 .hud-label{font-size:.45rem;color:#9B59B6;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
 .hud-val{font-size:1.2rem;font-weight:900;color:#fff;line-height:1}
 #hud-bpm{border-color:rgba(155,89,182,.5)}
-
-/* SPEED PROGRESS */
-#speed-bar{
-  position:fixed;bottom:70px;left:16px;right:16px;z-index:20;
-  display:flex;gap:4px;align-items:center;
-}
+#speed-bar{position:fixed;bottom:70px;left:16px;right:16px;z-index:20;display:flex;gap:4px;align-items:center}
 .spd-seg{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);transition:all .5s}
 .spd-seg.done{box-shadow:0 0 8px}
 .spd-seg.current{animation:segPulse 1s ease-in-out infinite}
 @keyframes segPulse{0%,100%{opacity:.6}50%{opacity:1}}
 #spd-label{font-size:.6rem;font-weight:900;color:#fff;width:55px;text-align:right;flex-shrink:0;letter-spacing:.06em}
-
-/* MESSAGE */
-#msg{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  z-index:20;font-size:1.6rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;
-  text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;
-  transition:opacity .3s;
-}
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;font-size:1.6rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
 #msg.watch{color:#9B59B6}
 #msg.go{color:#ffd35a}
 #msg.miss{color:#FF1493}
 #msg.perfect{color:#00D9A5}
 #msg.levelup{color:#ffd35a;animation:flash .4s ease-in-out 3}
 @keyframes flash{0%,100%{opacity:1}50%{opacity:.1}}
-
-/* TARGET */
-#target{
-  position:fixed;z-index:15;
-  border-radius:50%;
-  cursor:pointer;
-  transform:translate(-50%,-50%) scale(0);
-  transition:transform .15s cubic-bezier(.34,1.56,.64,1);
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
-#target.visible{
-  transform:translate(-50%,-50%) scale(1);
-  pointer-events:all;
-}
-#target-inner{
-  width:100%;height:100%;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-}
-#target-ring{
-  position:absolute;inset:-6px;border-radius:50%;border:3px solid;
-  animation:ringPulse 1s ease-in-out infinite;
-  opacity:.6;
-}
+#target{position:fixed;z-index:15;border-radius:50%;cursor:pointer;transform:translate(-50%,-50%) scale(0);transition:transform .15s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;pointer-events:none;padding:22px;box-sizing:content-box}
+#target.visible{transform:translate(-50%,-50%) scale(1);pointer-events:all}
+#target-inner{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#target-ring{position:absolute;inset:-6px;border-radius:50%;border:3px solid;animation:ringPulse 1s ease-in-out infinite;opacity:.6}
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
-
-/* HIT RIPPLE */
-.ripple{
-  position:fixed;border-radius:50%;border:3px solid;
-  transform:translate(-50%,-50%) scale(0);
-  pointer-events:none;z-index:14;
-  animation:rippleOut .6s ease-out forwards;
-}
-@keyframes rippleOut{
-  0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}
-  100%{transform:translate(-50%,-50%) scale(3);opacity:0}
-}
-
-/* MISS RIPPLE */
-.miss-ripple{
-  position:fixed;border-radius:50%;border:3px solid #FF1493;
-  transform:translate(-50%,-50%) scale(0);
-  pointer-events:none;z-index:14;
-  animation:missRipple .8s ease-out forwards;
-}
-@keyframes missRipple{
-  0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}
-  100%{transform:translate(-50%,-50%) scale(4);opacity:0}
-}
-
-/* CONTROLS */
-#controls{
-  position:fixed;bottom:0;left:0;right:0;z-index:20;
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  gap:8px;padding:8px 16px 12px;
-  background:linear-gradient(0deg,rgba(0,0,0,.9),transparent);
-}
+.ripple{position:fixed;border-radius:50%;border:3px solid;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:rippleOut .6s ease-out forwards}
+@keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}100%{transform:translate(-50%,-50%) scale(3);opacity:0}}
+.miss-ripple{position:fixed;border-radius:50%;border:3px solid #FF1493;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:missRipple .8s ease-out forwards}
+@keyframes missRipple{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}100%{transform:translate(-50%,-50%) scale(4);opacity:0}}
+#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px 16px 12px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
 .ctrl-btn{height:48px;border:2px solid rgba(155,89,182,.4);background:rgba(0,0,0,.6);border-radius:12px;color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px);transition:all .2s}
 .ctrl-btn:hover{background:rgba(155,89,182,.2)}
 .ctrl-play{border-color:#ffd35a;background:linear-gradient(135deg,rgba(184,134,11,.4),rgba(255,211,90,.2));color:#ffd35a;box-shadow:0 0 20px rgba(255,211,90,.3)}
 .ctrl-play:disabled{opacity:.4}
-
-/* INTRO SCREEN */
-#screen-intro{
-  position:fixed;inset:0;z-index:50;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);
-  overflow-y:auto;padding:20px 16px 24px;box-sizing:border-box;
-}
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:radial-gradient(ellipse at center,#0e0018 0%,#000 70%);overflow-y:auto;padding:20px 16px 24px;box-sizing:border-box}
 .vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;color:#fff;text-shadow:0 0 60px rgba(155,89,182,1);margin-bottom:6px}
 .vrr-logo span{color:#9B59B6}
 .vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#9B59B6;margin-bottom:24px;text-align:center}
-.speed-info{margin-bottom:24px;text-align:center;width:100%;max-width:420px}
+.speed-info{margin-bottom:18px;text-align:center;width:100%;max-width:420px}
+.level-info{margin-bottom:24px;text-align:center;width:100%;max-width:420px}
+.level-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.level-btn{height:60px;border:2px solid rgba(255,211,90,.35);background:rgba(255,211,90,.06);border-radius:14px;color:#fff;font-size:1rem;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .2s;letter-spacing:.02em}
+.level-btn small{font-size:.5rem;color:#a7adba;margin-top:3px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.level-btn.active{border-color:#ffd35a;background:rgba(255,211,90,.18);color:#ffd35a;box-shadow:0 0 24px rgba(255,211,90,.4)}
+.level-btn.active small{color:#ffd35a}
 .speed-info-label{font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8892a0;margin-bottom:10px}
 .speed-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
 .speed-tile{width:100%;height:54px;border:2px solid;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}
@@ -150,30 +63,22 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 @keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(255,211,90,.7)}50%{box-shadow:0 0 80px rgba(255,211,90,1)}}
 .intro-info{font-size:.72rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
 .intro-info strong{color:#ffd35a}
-
-@media (max-width:420px){
-  .vrr-logo{font-size:1.8rem}
-  .big-btn{height:56px;font-size:1rem}
-  .intro-info{font-size:.62rem}
-}
+@media (max-width:420px){.vrr-logo{font-size:1.8rem}.big-btn{height:56px;font-size:1rem}.intro-info{font-size:.62rem}}
 </style>
 </head>
 <body>
 
-<!-- SPACE -->
 <div id="space">
   <canvas id="stars"></canvas>
   <div id="edge-glow"></div>
   <div id="flash"></div>
 </div>
 
-<!-- TARGET -->
 <div id="target">
   <div id="target-ring"></div>
   <div id="target-inner"></div>
 </div>
 
-<!-- HUD -->
 <div id="hud">
   <div class="hud-box" id="hud-bpm"><div class="hud-label">BPM</div><div class="hud-val" id="hBpm">40</div></div>
   <div class="hud-box"><div class="hud-label">Taps</div><div class="hud-val" id="hTaps">0</div></div>
@@ -182,7 +87,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <div class="hud-box"><div class="hud-label">Streak</div><div class="hud-val" id="hSt">0</div></div>
 </div>
 
-<!-- SPEED BAR -->
 <div id="speed-bar">
   <div class="spd-seg" id="seg0"></div>
   <div class="spd-seg" id="seg1"></div>
@@ -192,17 +96,14 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <div id="spd-label">40 BPM</div>
 </div>
 
-<!-- MESSAGE -->
 <div id="msg" class="watch"></div>
 
-<!-- CONTROLS -->
 <div id="controls">
   <button class="ctrl-btn" onclick="goHome()">← Home</button>
   <button class="ctrl-btn ctrl-play" id="playBtn" onclick="startGame()">LET'S GO</button>
   <button class="ctrl-btn" onclick="window.location.href='/vr-home.html'">⊞ Games</button>
 </div>
 
-<!-- INTRO -->
 <div id="screen-intro">
   <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-home.html">← Games</a>
   <div class="vrr-logo">REACTION <span>CONTROL</span></div>
@@ -219,10 +120,20 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
     </div>
   </div>
 
+  <div class="level-info">
+    <div class="speed-info-label">Select Level</div>
+    <div class="level-row">
+      <button class="level-btn" data-level="1">Level 1<small>Gentle</small></button>
+      <button class="level-btn active" data-level="2">Level 2<small>Steady</small></button>
+      <button class="level-btn" data-level="3">Level 3<small>Quick</small></button>
+      <button class="level-btn" data-level="4">Level 4<small>Elite</small></button>
+    </div>
+  </div>
+
   <button class="big-btn" onclick="enterSpace()">🚀 ENTER SPACE</button>
 
   <div class="intro-info">
-    <strong>TARGET APPEARS IN SPACE</strong> — tap it instantly<br>
+    <strong>TARGETS FLOAT IN SPACE</strong> — near and far<br>
     <strong>SPEED INCREASES</strong> — every 20 taps<br>
     <strong>ONE MISS</strong> — space goes dark<br>
     <strong>PERFECT SCORE</strong> — 100 taps · 100 points
@@ -240,6 +151,23 @@ var SPEEDS=[
 ];
 var COMPETE_TAPS=20;
 
+// LEVELS — timeMult scales each target's available time.
+// Lower levels get more time; higher levels less. startIdx lets
+// higher levels begin at a faster speed tier.
+// Level 4 sits at 1.1x (not 1.0) for a sliver of breathing room — elite, not unfair.
+var LEVELS={
+  '1': {label:'Level 1', timeMult:2.0,  startIdx:0},
+  '2': {label:'Level 2', timeMult:1.5,  startIdx:0},
+  '3': {label:'Level 3', timeMult:1.15, startIdx:1},
+  '4': {label:'Level 4', timeMult:1.1,  startIdx:1}
+};
+var level='2';
+
+// DEPTH (Z-axis illusion): targets approach from far to near.
+// The approach is dramatic at slow speeds and nearly instant at fast speeds,
+// so depth stays a VISUAL at high BPM instead of stealing reaction time.
+var DEPTH_GROW_MS=420;
+
 var g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
 var best=0;
 var phase='idle';
@@ -253,7 +181,6 @@ var transitionMs=null,transitionTapsLeft=0;
   if(urlToken)localStorage.setItem('rct-token',urlToken);
 })();
 
-// STARS
 (function(){
   var canvas=document.getElementById('stars');
   var ctx=canvas.getContext('2d');
@@ -261,13 +188,7 @@ var transitionMs=null,transitionTapsLeft=0;
   function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
   resize();window.addEventListener('resize',resize);
   for(var i=0;i<180;i++){
-    stars.push({
-      x:Math.random()*canvas.width,
-      y:Math.random()*canvas.height,
-      r:Math.random()*1.5+.3,
-      o:Math.random()*.7+.1,
-      s:Math.random()*.5+.2
-    });
+    stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.5+.3,o:Math.random()*.7+.1,s:Math.random()*.5+.2});
   }
   function drawStars(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -286,13 +207,13 @@ var transitionMs=null,transitionTapsLeft=0;
 
 function $(id){return document.getElementById(id)}
 
-function submitScore(score,level){
+function submitScore(score,lvl){
   var token=localStorage.getItem('rct-token');
   if(!token)return;
   fetch(API+'/api/scores/game',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'reaction',score:score,level:level,mode:'compete'})
+    body:JSON.stringify({game_id:'reaction',score:score,level:lvl,mode:'compete'})
   }).catch(function(e){console.error(e)});
 }
 
@@ -307,9 +228,20 @@ window.addEventListener('beforeunload',function(){
 
 function enterSpace(){
   $('screen-intro').style.display='none';
+  var lv=LEVELS[level];
+  currentSpeed=SPEEDS[lv.startIdx];
+  g.speedIdx=lv.startIdx;
   updateHUD();
   showMsg("TAP LET'S GO!",'watch');
 }
+
+document.querySelectorAll('.level-btn').forEach(function(btn){
+  btn.onclick=function(){
+    level=btn.dataset.level;
+    document.querySelectorAll('.level-btn').forEach(function(b){b.classList.remove('active')});
+    btn.classList.add('active');
+  };
+});
 
 function goHome(){
   clrT();hideTarget();
@@ -357,23 +289,35 @@ function updateHUD(){
   updateEdgeGlow(currentSpeed.color,currentSpeed.glow);
 }
 
-// TARGET
 var targetEl=$('target');
 var targetInner=$('target-inner');
 var targetRing=$('target-ring');
 var tapLocked=false;
 var targetX=0,targetY=0;
 
+// Bind ONCE with pointerdown — fires the instant a finger/trackpad touches,
+// with no ~300ms click-resolution delay and no drop-on-drift. This is the
+// core fix for "good taps reading as misses" on Chromebooks.
+targetEl.addEventListener('pointerdown',function(e){
+  e.preventDefault();
+  handleTap();
+});
+
 function showTarget(){
   var padding=80;
-  var size=currentSpeed.size;
+  var baseSize=currentSpeed.size;
   targetX=padding+Math.random()*(window.innerWidth-padding*2);
   targetY=padding+Math.random()*(window.innerHeight-padding*2);
 
+  var depth=Math.random();
+  var finalScale=0.80+depth*0.55;
+  var finalSize=Math.round(baseSize*finalScale);
+  var startSize=Math.round(finalSize*(0.45+depth*0.40));
+
   targetEl.style.left=targetX+'px';
   targetEl.style.top=targetY+'px';
-  targetEl.style.width=size+'px';
-  targetEl.style.height=size+'px';
+  targetEl.style.width=startSize+'px';
+  targetEl.style.height=startSize+'px';
 
   targetInner.style.background='radial-gradient(circle at 35% 35%,'+currentSpeed.color+','+currentSpeed.color+'88)';
   targetInner.style.boxShadow='0 0 40px '+currentSpeed.glow+', 0 0 80px '+currentSpeed.glow.replace('1)','0.4)');
@@ -381,12 +325,26 @@ function showTarget(){
   targetRing.style.boxShadow='0 0 15px '+currentSpeed.color;
 
   targetEl.classList.add('visible');
-  targetEl.onclick=handleTap;
+
+  // Approach scales DOWN as speed climbs: at 40 BPM the grow is full & dramatic;
+  // at 120 BPM it's a quick flourish so the target settles fast and stays fair.
+  // speedFactor: 1.0 at slowest tier -> ~0.25 at fastest tier.
+  var speedFactor=currentSpeed.ms/SPEEDS[0].ms; // 1500ms=1.0 ... 500ms=0.33
+  var grow=Math.min(DEPTH_GROW_MS,currentSpeed.ms*0.30)*speedFactor;
+  if(grow<60)grow=60; // keep a touch of motion even at top speed
+  var t0=performance.now();
+  (function approach(){
+    if(!targetEl.classList.contains('visible'))return;
+    var p=Math.min(1,(performance.now()-t0)/grow);
+    var s=startSize+(finalSize-startSize)*p;
+    targetEl.style.width=s+'px';
+    targetEl.style.height=s+'px';
+    if(p<1)requestAnimationFrame(approach);
+  })();
 }
 
 function hideTarget(){
   targetEl.classList.remove('visible');
-  targetEl.onclick=null;
 }
 
 function spawnRipple(x,y,color,isMiss){
@@ -414,8 +372,9 @@ function clrT(){
 
 function startGame(){
   if(phase==='playing')return;
-  currentSpeed=SPEEDS[0];
-  g={taps:0,sc:0,st:0,lv:1,speedIdx:0,speedTaps:0};
+  var lv=LEVELS[level];
+  currentSpeed=SPEEDS[lv.startIdx];
+  g={taps:0,sc:0,st:0,lv:1,speedIdx:lv.startIdx,speedTaps:0};
   updateHUD();
   phase='playing';
   $('playBtn').disabled=true;
@@ -436,9 +395,8 @@ function fireTarget(){
   timers.push(setTimeout(function(){
     if(mySeq!==fireSeq)return;
     showTarget();
-    // Clock countdown
-    var cw=currentSpeed.ms;
-    if(transitionTapsLeft>0){cw=transitionMs;transitionTapsLeft--}
+    var cw=currentSpeed.ms*LEVELS[level].timeMult;
+    if(transitionTapsLeft>0){cw=transitionMs*LEVELS[level].timeMult;transitionTapsLeft--}
     var startMs=performance.now();
     function tick(){
       if(mySeq!==fireSeq)return;
