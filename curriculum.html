@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Reactific Curriculum — Five Chapters of Sharper Thinking</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#f4f4f8;--dim:#8b91a3;--faint:#5a6070;
+  --void:#040208;--panel:#0a0712;--line:rgba(255,255,255,.08);
+  --c1:#9ACD32;--c2:#FF6B35;--c3:#00CED1;--c4:#00D9A5;--c5:#9B59B6;
+}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--ink);font-family:'Helvetica Neue',Arial,sans-serif;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+
+nav{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:24px 28px;max-width:1080px;margin:0 auto}
+.brand{font-size:1.25rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase}
+.brand span{color:var(--c5)}
+.nav-right{display:flex;align-items:center;gap:18px}
+.nav-tag{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim)}
+
+/* language toggle */
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.lang button{
+  background:none;border:none;cursor:pointer;
+  font-family:inherit;font-size:.66rem;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--dim);padding:7px 13px;transition:all .2s;
+}
+.lang button.on{background:var(--c5);color:#fff}
+.lang button:focus-visible{outline:2px solid var(--c3);outline-offset:2px}
+
+.hero{position:relative;z-index:1;text-align:center;padding:70px 0 40px}
+.eyebrow{font-size:.7rem;letter-spacing:.38em;text-transform:uppercase;color:var(--c5);margin-bottom:26px;font-weight:700}
+.hero h1{font-size:clamp(2.6rem,7vw,5.2rem);font-weight:900;line-height:.98;letter-spacing:-.02em;margin-bottom:24px}
+.hero h1 em{font-style:italic;font-weight:900;background:linear-gradient(100deg,var(--c1),var(--c3),var(--c5));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(1rem,2.2vw,1.3rem);color:var(--dim);max-width:660px;margin:0 auto 14px;line-height:1.55}
+.hero .sub{font-size:.85rem;color:var(--faint);letter-spacing:.04em}
+
+.thesis{position:relative;z-index:1;text-align:center;padding:30px 0 64px}
+.thesis-line{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.thesis-line b{color:var(--ink);font-weight:800}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--faint)}
+
+.spine-intro{position:relative;z-index:1;text-align:center;padding:36px 0 10px}
+.spine-intro .k{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--c5);font-weight:700;margin-bottom:18px}
+.spine-intro h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-.01em;line-height:1.05;margin-bottom:18px}
+.spine-intro p{color:var(--dim);max-width:600px;margin:0 auto;font-size:1rem}
+
+.spine{position:relative;z-index:1;padding:54px 0 30px}
+.chapter{position:relative;display:grid;grid-template-columns:92px 1fr;gap:28px;padding:34px 0;border-top:1px solid var(--line)}
+.chapter:last-child{border-bottom:1px solid var(--line)}
+.ch-num{font-size:3.2rem;font-weight:900;line-height:1;font-style:italic;color:var(--cc);opacity:.92;text-align:right;text-shadow:0 0 40px var(--ccglow)}
+.ch-body{padding-top:4px}
+.ch-kicker{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.ch-chip{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--cc);border:1px solid var(--cc);padding:3px 9px;border-radius:999px}
+.ch-skill{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.ch-title{font-size:1.7rem;font-weight:900;letter-spacing:-.01em;margin-bottom:8px}
+.ch-title b{color:var(--cc)}
+.ch-desc{color:var(--dim);font-size:1rem;max-width:580px}
+.ch-icon{font-size:1.5rem;margin-right:2px;filter:saturate(1.2)}
+.chapter.finale .ch-turn{display:block;margin-top:12px;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--c5);font-weight:700}
+
+.band{position:relative;z-index:1;margin:64px 0;padding:48px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(155,89,182,.05),transparent)}
+.band-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.band h3{font-size:clamp(1.6rem,3.4vw,2.3rem);font-weight:900;letter-spacing:-.01em;line-height:1.08;margin-bottom:16px}
+.band h3 em{font-style:italic;color:var(--c4)}
+.band p{color:var(--dim);font-size:1rem;margin-bottom:14px}
+.score-demo{border:1px solid var(--line);border-radius:16px;padding:30px;background:var(--panel);text-align:center}
+.score-demo .big{font-size:4.4rem;font-weight:900;line-height:1;background:linear-gradient(120deg,var(--c4),var(--c3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.score-demo .cap{font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-top:8px}
+.score-demo .rule{font-size:.92rem;color:var(--faint);margin-top:18px;line-height:1.5}
+.score-demo .rule b{color:var(--ink)}
+
+.access{position:relative;z-index:1;padding:20px 0 70px}
+.access h2{text-align:center;font-size:clamp(1.6rem,3.6vw,2.4rem);font-weight:900;letter-spacing:-.01em;margin-bottom:14px}
+.access .lead{text-align:center;color:var(--dim);max-width:620px;margin:0 auto 40px}
+.access-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.a-card{border:1px solid var(--line);border-radius:14px;padding:24px;background:var(--panel)}
+.a-card .ai{font-size:1.5rem;margin-bottom:12px}
+.a-card h4{font-size:1rem;font-weight:800;margin-bottom:6px}
+.a-card p{font-size:.86rem;color:var(--dim);line-height:1.5}
+
+.close{position:relative;z-index:1;text-align:center;padding:60px 0 90px}
+.close h2{font-size:clamp(2rem,5vw,3.4rem);font-weight:900;letter-spacing:-.02em;line-height:1.04;margin-bottom:20px}
+.close h2 em{font-style:italic;background:linear-gradient(100deg,var(--c1),var(--c5));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.close p{color:var(--dim);max-width:580px;margin:0 auto 32px;font-size:1.05rem}
+.cta{display:inline-block;padding:16px 38px;border-radius:999px;background:linear-gradient(120deg,var(--c5),var(--c3));color:#04060a;font-size:.95rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 0 40px rgba(155,89,182,.4)}
+.cta:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(155,89,182,.7)}
+.foot{position:relative;z-index:1;text-align:center;padding:30px 0 50px;color:var(--faint);font-size:.72rem;letter-spacing:.08em;border-top:1px solid var(--line)}
+.foot span{color:var(--c5);font-weight:800}
+
+@media (max-width:760px){
+  nav{flex-wrap:wrap;gap:14px}
+  .band-grid{grid-template-columns:1fr;gap:28px}
+  .access-grid{grid-template-columns:1fr}
+  .chapter{grid-template-columns:60px 1fr;gap:18px}
+  .ch-num{font-size:2.3rem}
+  .ch-title{font-size:1.4rem}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  #stars{display:none}
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<nav>
+  <div class="brand">REACTIFIC<span>™</span></div>
+  <div class="nav-right">
+    <span class="nav-tag" data-en="A Cognitive Curriculum" data-es="Un Currículo Cognitivo">A Cognitive Curriculum</span>
+    <div class="lang" role="group" aria-label="Language / Idioma">
+      <button id="btn-en" class="on" onclick="setLang('en')">EN</button>
+      <button id="btn-es" onclick="setLang('es')">ES</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <div class="eyebrow" data-en="Five Chapters · One Course" data-es="Cinco Capítulos · Un Curso">Five Chapters · One Course</div>
+  <h1 data-en="Five ways to train<br>a <em>sharper mind</em>." data-es="Cinco formas de entrenar<br>una <em>mente más aguda</em>.">Five ways to train<br>a <em>sharper mind</em>.</h1>
+  <p data-en="Reactific is a cognitive curriculum disguised as a game students ask to play. Five chapters, five distinct skills, one score that shows them growing." data-es="Reactific es un currículo cognitivo disfrazado de juego que los estudiantes piden jugar. Cinco capítulos, cinco habilidades distintas, una sola puntuación que muestra su progreso.">Reactific is a cognitive curriculum disguised as a game students ask to play. Five chapters, five distinct skills, one score that shows them growing.</p>
+  <div class="sub" data-en="Runs on the Chromebooks a school already has. No headset. No install. Just a class code." data-es="Funciona en las Chromebooks que la escuela ya tiene. Sin gafas. Sin instalación. Solo un código de clase.">Runs on the Chromebooks a school already has. No headset. No install. Just a class code.</div>
+</header>
+
+<section class="thesis wrap">
+  <div class="thesis-line">
+    <span data-en="Memory" data-es="Memoria">Memory</span><span class="dot"></span>
+    <span data-en="Attention" data-es="Atención">Attention</span><span class="dot"></span>
+    <span data-en="Pattern" data-es="Patrón">Pattern</span><span class="dot"></span>
+    <span data-en="Sequence" data-es="Secuencia">Sequence</span><span class="dot"></span>
+    <b data-en="Reflex" data-es="Reflejo">Reflex</b>
+  </div>
+</section>
+
+<section class="spine-intro wrap">
+  <div class="k" data-en="The Curriculum" data-es="El Currículo">The Curriculum</div>
+  <h2 data-en="It reads like one game.<br>It teaches like five chapters." data-es="Se siente como un solo juego.<br>Enseña como cinco capítulos.">It reads like one game.<br>It teaches like five chapters.</h2>
+  <p data-en="Each chapter challenges a different way of thinking. Played in order, they build on one another — from holding a memory, to reading a pattern, to reacting in open space." data-es="Cada capítulo desafía una forma distinta de pensar. Jugados en orden, se construyen uno sobre otro: desde retener un recuerdo, hasta leer un patrón, hasta reaccionar en el espacio abierto.">Each chapter challenges a different way of thinking. Played in order, they build on one another — from holding a memory, to reading a pattern, to reacting in open space.</p>
+</section>
+
+<section class="spine wrap">
+
+  <article class="chapter" style="--cc:var(--c1);--ccglow:rgba(154,205,50,.5)">
+    <div class="ch-num">1</div>
+    <div class="ch-body">
+      <div class="ch-kicker">
+        <span class="ch-chip" data-en="Chapter One" data-es="Capítulo Uno">Chapter One</span>
+        <span class="ch-skill" data-en="Change Detection" data-es="Detección de Cambios">Change Detection</span>
+      </div>
+      <div class="ch-title"><span class="ch-icon">👁️</span> Echo <b>Recall</b></div>
+      <p class="ch-desc" data-en="A pattern flashes, then echoes back with one cell changed. The student holds the original in mind and spots the single difference — training the working memory that underlies nearly all learning." data-es="Un patrón destella y luego se repite con una celda cambiada. El estudiante mantiene el original en mente y detecta la única diferencia, entrenando la memoria de trabajo que sostiene casi todo aprendizaje.">A pattern flashes, then echoes back with one cell changed. The student holds the original in mind and spots the single difference — training the working memory that underlies nearly all learning.</p>
+    </div>
+  </article>
+
+  <article class="chapter" style="--cc:var(--c2);--ccglow:rgba(255,107,53,.5)">
+    <div class="ch-num">2</div>
+    <div class="ch-body">
+      <div class="ch-kicker">
+        <span class="ch-chip" data-en="Chapter Two" data-es="Capítulo Dos">Chapter Two</span>
+        <span class="ch-skill" data-en="Sequential Memory" data-es="Memoria Secuencial">Sequential Memory</span>
+      </div>
+      <div class="ch-title"><span class="ch-icon">🧩</span> Pattern <b>Recognition</b></div>
+      <p class="ch-desc" data-en="Numbered cells light in order, then vanish. The student replays the sequence from memory — building the ordered recall that reading, math, and following instructions all depend on." data-es="Celdas numeradas se iluminan en orden y luego desaparecen. El estudiante repite la secuencia de memoria, desarrollando el recuerdo ordenado del que dependen la lectura, las matemáticas y seguir instrucciones.">Numbered cells light in order, then vanish. The student replays the sequence from memory — building the ordered recall that reading, math, and following instructions all depend on.</p>
+    </div>
+  </article>
+
+  <article class="chapter" style="--cc:var(--c3);--ccglow:rgba(0,206,209,.5)">
+    <div class="ch-num">3</div>
+    <div class="ch-body">
+      <div class="ch-kicker">
+        <span class="ch-chip" data-en="Chapter Three" data-es="Capítulo Tres">Chapter Three</span>
+        <span class="ch-skill" data-en="Spatial Memory" data-es="Memoria Espacial">Spatial Memory</span>
+      </div>
+      <div class="ch-title"><span class="ch-icon">⚡</span> Flash <b>Recall</b></div>
+      <p class="ch-desc" data-en="Several cells flash at once, then disappear. The student finds them all — strengthening the spatial memory used to navigate, organize, and picture things in the mind's eye." data-es="Varias celdas destellan a la vez y luego desaparecen. El estudiante las encuentra todas, fortaleciendo la memoria espacial que se usa para orientarse, organizar e imaginar cosas en la mente.">Several cells flash at once, then disappear. The student finds them all — strengthening the spatial memory used to navigate, organize, and picture things in the mind's eye.</p>
+    </div>
+  </article>
+
+  <article class="chapter" style="--cc:var(--c4);--ccglow:rgba(0,217,165,.5)">
+    <div class="ch-num">4</div>
+    <div class="ch-body">
+      <div class="ch-kicker">
+        <span class="ch-chip" data-en="Chapter Four" data-es="Capítulo Cuatro">Chapter Four</span>
+        <span class="ch-skill" data-en="Audio &amp; Order Memory" data-es="Memoria de Audio y Orden">Audio &amp; Order Memory</span>
+      </div>
+      <div class="ch-title"><span class="ch-icon">🎵</span> Sequence <b>Control</b></div>
+      <p class="ch-desc" data-en="Cells light one by one, each with its own tone. The student replays the exact order — linking sound to sequence, the same pairing that underpins music, language, and rhythm." data-es="Las celdas se iluminan una a una, cada una con su propio tono. El estudiante repite el orden exacto, uniendo sonido y secuencia, la misma combinación que sostiene la música, el lenguaje y el ritmo.">Cells light one by one, each with its own tone. The student replays the exact order — linking sound to sequence, the same pairing that underpins music, language, and rhythm.</p>
+    </div>
+  </article>
+
+  <article class="chapter finale" style="--cc:var(--c5);--ccglow:rgba(155,89,182,.5)">
+    <div class="ch-num">5</div>
+    <div class="ch-body">
+      <div class="ch-kicker">
+        <span class="ch-chip" data-en="Chapter Five" data-es="Capítulo Cinco">Chapter Five</span>
+        <span class="ch-skill" data-en="Spatial Reflex" data-es="Reflejo Espacial">Spatial Reflex</span>
+      </div>
+      <div class="ch-title"><span class="ch-icon">🎯</span> Reaction <b>Control</b></div>
+      <p class="ch-desc" data-en="The final chapter leaves the grid behind. Targets appear anywhere in open space and the student reacts on instinct — pure speed and spatial reflex, the course's fast-paced finale." data-es="El capítulo final deja atrás la cuadrícula. Los objetivos aparecen en cualquier punto del espacio abierto y el estudiante reacciona por instinto: pura velocidad y reflejo espacial, el final acelerado del curso.">The final chapter leaves the grid behind. Targets appear anywhere in open space and the student reacts on instinct — pure speed and spatial reflex, the course's fast-paced finale.</p>
+      <span class="ch-turn" data-en="The curriculum leaves the court." data-es="El currículo sale de la cancha.">The curriculum leaves the court.</span>
+    </div>
+  </article>
+
+</section>
+
+<section class="band">
+  <div class="wrap band-grid">
+    <div>
+      <h3 data-en="One number. <em>Simple as basketball.</em>" data-es="Un solo número. <em>Simple como el baloncesto.</em>">One number. <em>Simple as basketball.</em></h3>
+      <p data-en="Every chapter scores the same clean way, so a student always knows exactly where they stand — and a teacher can see growth at a glance." data-es="Cada capítulo se puntúa de la misma forma clara, así el estudiante siempre sabe exactamente dónde está, y el maestro ve el progreso de un vistazo.">Every chapter scores the same clean way, so a student always knows exactly where they stand — and a teacher can see growth at a glance.</p>
+      <p data-en="No confusing point systems. No decoding. Just a score that climbs as the mind sharpens." data-es="Sin sistemas de puntos confusos. Sin descifrar nada. Solo una puntuación que sube a medida que la mente se agudiza.">No confusing point systems. No decoding. Just a score that climbs as the mind sharpens.</p>
+    </div>
+    <div class="score-demo">
+      <div class="big">100</div>
+      <div class="cap" data-en="Perfect Chapter" data-es="Capítulo Perfecto">Perfect Chapter</div>
+      <div class="rule" data-en="Each correct round earns <b>Level × 10</b>.<br>Every chapter tops out at <b>100</b>.<br>The same goal in all five." data-es="Cada ronda correcta gana <b>Nivel × 10</b>.<br>Cada capítulo llega como máximo a <b>100</b>.<br>La misma meta en los cinco.">Each correct round earns <b>Level × 10</b>.<br>Every chapter tops out at <b>100</b>.<br>The same goal in all five.</div>
+    </div>
+  </div>
+</section>
+
+<section class="access wrap">
+  <h2 data-en="Built for the schools that need it most." data-es="Hecho para las escuelas que más lo necesitan.">Built for the schools that need it most.</h2>
+  <p class="lead" data-en="Reactific was designed to run on what classrooms already have — not on equipment they'd have to buy." data-es="Reactific fue diseñado para funcionar con lo que las aulas ya tienen, no con equipo que tendrían que comprar.">Reactific was designed to run on what classrooms already have — not on equipment they'd have to buy.</p>
+  <div class="access-grid">
+    <div class="a-card">
+      <div class="ai">💻</div>
+      <h4 data-en="Runs on Chromebooks" data-es="Funciona en Chromebooks">Runs on Chromebooks</h4>
+      <p data-en="Every chapter plays in the browser on the devices students already use. Nothing to install, nothing to deploy." data-es="Cada capítulo se juega en el navegador, en los dispositivos que los estudiantes ya usan. Nada que instalar, nada que configurar.">Every chapter plays in the browser on the devices students already use. Nothing to install, nothing to deploy.</p>
+    </div>
+    <div class="a-card">
+      <div class="ai">🔑</div>
+      <h4 data-en="A class code is all it takes" data-es="Solo hace falta un código de clase">A class code is all it takes</h4>
+      <p data-en="Students join with their email and a six-letter code. No accounts to create, no setup for teachers to manage." data-es="Los estudiantes entran con su correo y un código de seis letras. Sin cuentas que crear, sin configuración para los maestros.">Students join with their email and a six-letter code. No accounts to create, no setup for teachers to manage.</p>
+    </div>
+    <div class="a-card">
+      <div class="ai">🏆</div>
+      <h4 data-en="A live classroom arena" data-es="Una arena de clase en vivo">A live classroom arena</h4>
+      <p data-en="Scores feed a real-time board for the room's front screen — turning quiet practice into shared competition." data-es="Las puntuaciones alimentan un tablero en tiempo real para la pantalla del salón, convirtiendo la práctica callada en competencia compartida.">Scores feed a real-time board for the room's front screen — turning quiet practice into shared competition.</p>
+    </div>
+  </div>
+</section>
+
+<section class="close wrap">
+  <h2 data-en="Five chapters.<br>One <em>sharper mind</em>." data-es="Cinco capítulos.<br>Una <em>mente más aguda</em>.">Five chapters.<br>One <em>sharper mind</em>.</h2>
+  <p data-en="A complete cognitive curriculum students experience as a single game they come back to — chapter after chapter, day after day." data-es="Un currículo cognitivo completo que los estudiantes viven como un solo juego al que regresan: capítulo tras capítulo, día tras día.">A complete cognitive curriculum students experience as a single game they come back to — chapter after chapter, day after day.</p>
+  <a class="cta" href="/index.html" data-en="Bring Reactific to your school" data-es="Lleva Reactific a tu escuela">Bring Reactific to your school</a>
+</section>
+
+<div class="foot">
+  REACTIFIC<span>™</span> — <span class="foot-tag" data-en="Pure VR · Pure Spatial · Pure Memory · A five-chapter cognitive curriculum" data-es="VR Puro · Espacial Puro · Memoria Pura · Un currículo cognitivo de cinco capítulos">Pure VR · Pure Spatial · Pure Memory · A five-chapter cognitive curriculum</span>
+</div>
+
+<script>
+function setLang(lang){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-en]').forEach(function(el){
+    var t=el.getAttribute('data-'+lang);
+    if(t!=null)el.innerHTML=t;
+  });
+  document.getElementById('btn-en').classList.toggle('on',lang==='en');
+  document.getElementById('btn-es').classList.toggle('on',lang==='es');
+  try{localStorage.setItem('rct-lang',lang)}catch(e){}
+}
+// Restore last choice, or follow the browser's language on first visit.
+(function(){
+  var saved=null;
+  try{saved=localStorage.getItem('rct-lang')}catch(e){}
+  if(!saved){
+    saved=(navigator.language||'en').toLowerCase().indexOf('es')===0?'es':'en';
+  }
+  setLang(saved);
+})();
+
+// Ambient star field
+(function(){
+  var c=document.getElementById('stars');
+  if(!c)return;
+  var ctx=c.getContext('2d'),stars=[];
+  function size(){c.width=innerWidth;c.height=document.body.scrollHeight}
+  function build(){
+    stars=[];
+    var n=Math.min(220,Math.floor(c.width*c.height/9000));
+    for(var i=0;i<n;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.2,o:Math.random()*.6+.1,s:Math.random()*.4+.1});
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    var t=Date.now()/1000;
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i],p=s.o+Math.sin(t*s.s)*.12;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);
+      ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  function init(){size();build()}
+  window.addEventListener('resize',init);
+  setTimeout(init,100);init();draw();
+})();
+</script>
+</body>
+</html>
