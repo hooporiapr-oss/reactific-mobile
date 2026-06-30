@@ -73,14 +73,13 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .cell.reveal-answer{border:3px solid #00D9A5!important;background:rgba(0,217,165,.2)!important;color:#00D9A5!important}
 .cell.reveal-original{border:3px dashed #FFD700!important;background:rgba(255,215,0,.15)!important;color:#FFD700!important}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.bottombar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:4px 10px 6px;gap:8px;flex-shrink:0}
-.bot-btn{height:48px;border:2px solid rgba(154,205,50,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bottombar{display:flex;justify-content:center;flex-wrap:wrap;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.bot-btn{height:48px;flex:0 1 150px;max-width:180px;border:2px solid rgba(154,205,50,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .bot-btn span{display:block;color:#9ACD32;font-size:.55rem;margin-top:1px}
 .start-btn{border-color:#9ACD32;background:linear-gradient(180deg,#B8E050,#9ACD32);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(154,205,50,.7)}
 .start-btn:disabled{opacity:.5}
 
 @media (max-width:768px){
-  .bottombar{grid-template-columns:1fr 1fr 1fr}
   #fsBtn{display:none}
 }
 </style>
