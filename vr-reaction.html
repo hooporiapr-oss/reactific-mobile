@@ -38,7 +38,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 @keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}100%{transform:translate(-50%,-50%) scale(3);opacity:0}}
 .miss-ripple{position:fixed;border-radius:50%;border:3px solid #FF1493;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:missRipple .8s ease-out forwards}
 @keyframes missRipple{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}100%{transform:translate(-50%,-50%) scale(4);opacity:0}}
-#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px 16px 12px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
+#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:8px 16px 12px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
 .ctrl-btn{height:48px;border:2px solid rgba(155,89,182,.4);background:rgba(0,0,0,.6);border-radius:12px;color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px);transition:all .2s}
 .ctrl-btn:hover{background:rgba(155,89,182,.2)}
 .ctrl-play{border-color:#ffd35a;background:linear-gradient(135deg,rgba(184,134,11,.4),rgba(255,211,90,.2));color:#ffd35a;box-shadow:0 0 20px rgba(255,211,90,.3)}
@@ -102,6 +102,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <button class="ctrl-btn" onclick="goHome()">← Home</button>
   <button class="ctrl-btn ctrl-play" id="playBtn" onclick="startGame()">LET'S GO</button>
   <button class="ctrl-btn" onclick="window.location.href='/vr-home.html'">⊞ Games</button>
+  <button class="ctrl-btn" id="fsBtn" onclick="toggleFullscreen()">⛶ Full</button>
 </div>
 
 <div id="screen-intro">
@@ -246,6 +247,16 @@ document.querySelectorAll('.level-btn').forEach(function(btn){
 function goHome(){
   clrT();hideTarget();
   $('screen-intro').style.display='flex';
+}
+
+function toggleFullscreen(){
+  try{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen();
+    }else{
+      document.exitFullscreen();
+    }
+  }catch(e){}
 }
 
 function showMsg(txt,cls){
@@ -401,7 +412,15 @@ function fireTarget(){
     function tick(){
       if(mySeq!==fireSeq)return;
       var pct=Math.max(0,1-(performance.now()-startMs)/cw);
-      if(pct<=0){onMiss();return}
+      if(pct<=0){
+        // Time's up: make the target VANISH instantly. With nothing on screen,
+        // a late tap lands on empty space and is ignored — no punishing
+        // "I tapped a lit target but got a miss" moment. You can only hit
+        // what's actually there.
+        hideTarget();
+        onMiss();
+        return;
+      }
       if(phase==='playing')shrinkRAF=requestAnimationFrame(tick);
     }
     shrinkRAF=requestAnimationFrame(tick);
@@ -410,6 +429,7 @@ function fireTarget(){
 
 function handleTap(){
   if(phase!=='playing')return;
+  if(!targetEl.classList.contains('visible'))return;
   if(tapLocked)return;
   tapLocked=true;
   setTimeout(function(){tapLocked=false},80);
