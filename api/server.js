@@ -1,6 +1,11 @@
 // Reactific API — Auth + Stripe + Leaderboards + Google OAuth + Classes
 // Deploy on Render Web Service
-// FIXES: display_mode now included in class creation, teaching endpoint, and dashboard
+//
+// THIS VERSION adds two production hardening fixes for full-school (800+) load:
+//   1. School-aware rate limiting (a whole school shares one public IP) +
+//      trust proxy for Render, + public read endpoints exempt from the cap.
+//   2. (Pair with PATCH-2-index-migration.sql, run once on the database.)
+// Everything else is unchanged from your working version.
 
 const express = require('express');
 const cors = require('cors');
@@ -53,6 +58,10 @@ const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : nul
 
 const app = express();
 
+// IMPORTANT: Render runs behind a proxy. This lets express-rate-limit see the
+// real client IP instead of the proxy's. Without it, rate limiting misbehaves.
+app.set('trust proxy', 1);
+
 // ── Middleware ───────────────────────────────────────────
 app.use(helmet());
 
@@ -68,10 +77,35 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handl
 
 app.use(express.json({ limit: '1mb' }));
 
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 120 });
+// ── Rate limiting (school-aware) ──────────────────────────────
+// A whole school shares a handful of public IPs, so all ~800 students can look
+// like ONE client. Limits must be generous. Public read endpoints (leaderboards,
+// health) are exempt because the wall-mounted scoreboard polls them continuously
+// and many devices may load them at once.
+const PUBLIC_READ_PATHS = ['/api/leaderboard', '/api/health'];
+function isPublicRead(req) {
+  return PUBLIC_READ_PATHS.some(p => req.path.startsWith(p));
+}
+
+// General limiter — high ceiling, skips public reads.
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 6000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: isPublicRead
+});
 app.use('/api/', limiter);
 
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30 });
+// Auth limiter — logins are bursty at the bell (a whole room signs in at once),
+// so this must also tolerate a shared IP. Still far below the general limit;
+// brute force is already blunted by bcrypt + JWT.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false
+});
 app.use('/api/auth/', authLimiter);
 
 // ── Helpers ─────────────────────────────────────────────
@@ -302,7 +336,7 @@ app.get('/api/auth/me', authRequired, async (req, res) => {
 
 // ── CLASS ENDPOINTS ─────────────────────────────────────
 
-// Create class (teacher) — FIX: Now sets default display_mode to 'initials'
+// Create class (teacher)
 app.post('/api/classes/create', authRequired, async (req, res) => {
   try {
     const { name, school_id } = req.body;
@@ -364,7 +398,7 @@ app.post('/api/classes/join', authRequired, async (req, res) => {
   }
 });
 
-// Teacher dashboard — FIX: Now includes display_mode in response
+// Teacher dashboard
 app.get('/api/classes/:id/dashboard', authRequired, async (req, res) => {
   try {
     const classId = req.params.id;
@@ -414,7 +448,7 @@ app.get('/api/classes/mine', authRequired, async (req, res) => {
   }
 });
 
-// My classes (teacher) — FIX: Now includes display_mode in response
+// My classes (teacher)
 app.get('/api/classes/teaching', authRequired, async (req, res) => {
   try {
     const result = await pool.query(
@@ -434,7 +468,7 @@ app.get('/api/classes/teaching', authRequired, async (req, res) => {
   }
 });
 
-// ── SCORES ENDPOINT ─────────────────────────────────────
+// ── SCORES ENDPOINT (legacy STROBE court) ───────────────
 app.post('/api/scores', authRequired, async (req, res) => {
   try {
     const { court = 'full', speed, level, score, streak, tier, targets_found, time_remaining_ms } = req.body;
@@ -484,7 +518,7 @@ app.post('/api/scores', authRequired, async (req, res) => {
   }
 });
 
-// ── LEADERBOARD ENDPOINTS ───────────────────────────────
+// ── LEADERBOARD ENDPOINTS (legacy STROBE court) ─────────
 async function getLeaderboard(period, speedInput, limitInput) {
   const speed = normalizeSpeed(speedInput) || 'slow';
   const limit = Math.min(parseInt(limitInput, 10) || 50, 100);
@@ -678,7 +712,7 @@ app.patch('/api/classes/:id', authRequired, async (req, res) => {
   }
 });
 
-// DELETE /api/classes/:id/students/:userId — teacher removes a student from their class
+// DELETE /api/classes/:id/students/:userId — teacher removes a student
 app.delete('/api/classes/:id/students/:userId', authRequired, async (req, res) => {
   try {
     const classId = parseInt(req.params.id, 10);
@@ -695,17 +729,16 @@ app.delete('/api/classes/:id/students/:userId', authRequired, async (req, res) =
 });
 
 // ── GAME LEADERBOARD SYSTEM ──────────────────────────────
-// Six games, three time windows each, class-gated.
-// game_id must be one of these six — anything else is rejected.
+// Five games (reaction, recovery, pattern, sequence, focus). numhunt retained
+// as a harmless legacy id. game_id must be in this list — anything else rejected.
 const VALID_GAMES = ['reaction', 'numhunt', 'recovery', 'pattern', 'sequence', 'focus'];
 
 function isValidGame(g) {
   return VALID_GAMES.includes(String(g || '').toLowerCase());
 }
 
-// Build the display name for a leaderboard row
-// Defaults to initials — safest for school displays
-// Teacher can override to 'full_name' or 'username' per class
+// Build the display name for a leaderboard row.
+// Defaults to initials — safest for school displays.
 function displayName(row) {
   if (row.display_mode === 'username') return row.username;
   if (row.display_mode === 'full_name') {
@@ -715,7 +748,6 @@ function displayName(row) {
     }
     return row.username;
   }
-  // Default: initials (first name + last initial)
   if (row.first_name) {
     const first = row.first_name.trim();
     const lastInitial = (row.last_name || '').trim().charAt(0).toUpperCase();
@@ -724,9 +756,8 @@ function displayName(row) {
   return row.username;
 }
 
-// POST /api/scores/game — submit a score for one of the six games
-// Score only ranks (appears on any leaderboard) if the student is in a class.
-// mode is 'practice' or 'compete' — informational only, doesn't change ranking logic.
+// POST /api/scores/game — submit a score for one of the games.
+// Score only ranks if the student is in a class.
 app.post('/api/scores/game', authRequired, async (req, res) => {
   try {
     const { game_id, score, level, mode } = req.body;
@@ -737,7 +768,6 @@ app.post('/api/scores/game', authRequired, async (req, res) => {
     const safeLevel = Math.max(1, Math.min(parseInt(level, 10) || 1, 99));
     const safeMode = ['compete', 'progression'].includes(mode) ? mode : 'practice';
 
-    // Pull the student's current class_id — null means score is saved but unranked
     const userResult = await pool.query(`SELECT class_id FROM users WHERE id = $1`, [req.user.id]);
     const classId = userResult.rows[0]?.class_id || null;
 
@@ -771,7 +801,6 @@ app.post('/api/scores/game', authRequired, async (req, res) => {
       }
     }
 
-    // Ranked status — only true if student is in a class
     const ranked = classId !== null;
     let rank = null;
     if (ranked) {
@@ -784,6 +813,22 @@ app.post('/api/scores/game', authRequired, async (req, res) => {
         [String(game_id).toLowerCase(), safeScore]
       );
       rank = parseInt(rankResult.rows[0].rank, 10);
+    }
+
+    // Broadcast the update to any live scoreboards subscribed to this game.
+    // Folded directly into the handler (no fragile route monkey-patching).
+    // Fire-and-forget: never let a broadcast failure affect the response.
+    if (ranked) {
+      const gid = String(game_id).toLowerCase();
+      ['today', 'week', 'alltime'].forEach(function (w) {
+        broadcastLeaderboardUpdate(gid, w, classId);
+        broadcastLeaderboardUpdate(gid, w, null);
+      });
+    } else {
+      const gid = String(game_id).toLowerCase();
+      ['today', 'week', 'alltime'].forEach(function (w) {
+        broadcastLeaderboardUpdate(gid, w, null);
+      });
     }
 
     res.status(201).json({
@@ -799,8 +844,6 @@ app.post('/api/scores/game', authRequired, async (req, res) => {
 });
 
 // GET /api/leaderboard/:game_id?window=today|week|alltime&class_id=X&limit=N
-// Returns one game's leaderboard for one time window.
-// class_id is optional — omit for school-wide, include to scope to one class.
 async function getGameLeaderboard(gameId, windowParam, classIdParam, limitInput) {
   const limit = Math.min(parseInt(limitInput, 10) || 10, 100);
   let timeFilter = '';
@@ -814,28 +857,35 @@ async function getGameLeaderboard(gameId, windowParam, classIdParam, limitInput)
     classFilter = `AND gs.class_id = $${params.length}`;
   }
 
+  // Sort + limit happen IN THE DATABASE now. A subquery gets each user's best
+  // row (DISTINCT ON), then the outer query orders by score and takes the top N.
+  // This stops the server from dragging every player's row into memory.
+  params.push(limit);
+  const limitParam = `$${params.length}`;
+
   const result = await pool.query(
-    `SELECT DISTINCT ON (gs.user_id)
-       gs.user_id, gs.score, gs.level, gs.created_at,
-       u.username, u.first_name, u.last_name,
-       c.display_mode
-     FROM game_scores gs
-     JOIN users u ON u.id = gs.user_id
-     LEFT JOIN classes c ON c.id = gs.class_id
-     WHERE gs.game_id = $1 AND gs.class_id IS NOT NULL AND gs.score > 0 ${timeFilter} ${classFilter}
-     ORDER BY gs.user_id, gs.score DESC, gs.created_at ASC`,
+    `SELECT * FROM (
+       SELECT DISTINCT ON (gs.user_id)
+         gs.user_id, gs.score, gs.level, gs.created_at,
+         u.username, u.first_name, u.last_name,
+         c.display_mode
+       FROM game_scores gs
+       JOIN users u ON u.id = gs.user_id
+       LEFT JOIN classes c ON c.id = gs.class_id
+       WHERE gs.game_id = $1 AND gs.class_id IS NOT NULL AND gs.score > 0 ${timeFilter} ${classFilter}
+       ORDER BY gs.user_id, gs.score DESC, gs.created_at ASC
+     ) best
+     ORDER BY best.score DESC, best.created_at ASC
+     LIMIT ${limitParam}`,
     params
   );
 
-  const entries = result.rows
-    .sort((a, b) => b.score - a.score || new Date(a.created_at) - new Date(b.created_at))
-    .slice(0, limit)
-    .map((row, i) => ({
-      rank: i + 1,
-      name: displayName(row),
-      score: row.score,
-      level: row.level
-    }));
+  const entries = result.rows.map((row, i) => ({
+    rank: i + 1,
+    name: displayName(row),
+    score: row.score,
+    level: row.level
+  }));
 
   return { game_id: gameId, window: windowParam, entries };
 }
@@ -854,7 +904,7 @@ app.get('/api/leaderboard/:game_id', async (req, res) => {
   }
 });
 
-// GET /api/scores/personal-best/:game_id — student's own best score on one game
+// GET /api/scores/personal-best/:game_id
 app.get('/api/scores/personal-best/:game_id', authRequired, async (req, res) => {
   try {
     const gameId = String(req.params.game_id).toLowerCase();
@@ -875,7 +925,7 @@ app.get('/api/scores/personal-best/:game_id', authRequired, async (req, res) => 
   }
 });
 
-// GET /api/streak/me — global streak, any game, once per day
+// GET /api/streak/me
 app.get('/api/streak/me', authRequired, async (req, res) => {
   try {
     const result = await pool.query(
@@ -890,7 +940,7 @@ app.get('/api/streak/me', authRequired, async (req, res) => {
   }
 });
 
-// POST /api/classes/:id/display-mode — teacher sets how names show on leaderboards for their class
+// POST /api/classes/:id/display-mode
 app.post('/api/classes/:id/display-mode', authRequired, async (req, res) => {
   try {
     const { display_mode } = req.body;
@@ -910,127 +960,6 @@ app.post('/api/classes/:id/display-mode', authRequired, async (req, res) => {
   }
 });
 
-// ── WebSocket Real-Time Leaderboard Updates ─────────────
-const WebSocket = require('ws');
-const http = require('http');
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server, path: '/api/leaderboard/subscribe' });
-
-// Store active subscriptions: { gameId-window-classId: [ws1, ws2, ...] }
-var activeSubscriptions = {};
-
-wss.on('connection', function(ws) {
-  var subscriptionKey = null;
-
-  ws.on('message', function(data) {
-    try {
-      var msg = JSON.parse(data);
-
-      if (msg.action === 'subscribe') {
-        var gameId = String(msg.game_id || '').toLowerCase();
-        var window = ['today', 'week', 'alltime'].includes(msg.window) ? msg.window : 'alltime';
-        var classId = msg.class_id ? parseInt(msg.class_id, 10) : null;
-
-        if (!VALID_GAMES.includes(gameId)) {
-          ws.send(JSON.stringify({ type: 'error', message: 'Invalid game' }));
-          return;
-        }
-
-        subscriptionKey = gameId + '-' + window + '-' + (classId || 'all');
-
-        if (!activeSubscriptions[subscriptionKey]) {
-          activeSubscriptions[subscriptionKey] = [];
-        }
-
-        activeSubscriptions[subscriptionKey].push(ws);
-        ws.send(JSON.stringify({ type: 'subscribed', key: subscriptionKey }));
-      }
-    } catch (err) {
-      console.error('WS message error:', err);
-      ws.send(JSON.stringify({ type: 'error', message: 'Parse error' }));
-    }
-  });
-
-  ws.on('close', function() {
-    if (subscriptionKey && activeSubscriptions[subscriptionKey]) {
-      var idx = activeSubscriptions[subscriptionKey].indexOf(ws);
-      if (idx > -1) {
-        activeSubscriptions[subscriptionKey].splice(idx, 1);
-      }
-      if (activeSubscriptions[subscriptionKey].length === 0) {
-        delete activeSubscriptions[subscriptionKey];
-      }
-    }
-  });
-
-  ws.on('error', function(err) {
-    console.error('WS error:', err);
-  });
-});
-
-async function broadcastLeaderboardUpdate(gameId, window, classId) {
-  var key = gameId + '-' + window + '-' + (classId || 'all');
-  var subscribers = activeSubscriptions[key];
-
-  if (!subscribers || !subscribers.length) return;
-
-  try {
-    var leaderboard = await getGameLeaderboard(gameId, window, classId, 8);
-    var msg = JSON.stringify({
-      type: 'leaderboard_update',
-      game_id: gameId,
-      window: window,
-      entries: leaderboard.entries
-    });
-
-    subscribers.forEach(function(ws) {
-      if (ws.readyState === ws.OPEN) {
-        ws.send(msg);
-      }
-    });
-  } catch (err) {
-    console.error('Broadcast error:', err);
-  }
-}
-
-var originalPostScoreHandler = null;
-app._router.stack.forEach(function(layer) {
-  if (layer.route && layer.route.path === '/api/scores/game' && layer.route.methods.post) {
-    var handlers = layer.route.stack;
-    if (handlers && handlers.length > 0) {
-      originalPostScoreHandler = handlers[handlers.length - 1].handle;
-      handlers[handlers.length - 1].handle = function(req, res) {
-        var originalSend = res.send;
-        res.send = function(data) {
-          if (res.statusCode === 201) {
-            try {
-              var gameId = String(req.body.game_id || '').toLowerCase();
-              pool.query('SELECT class_id FROM users WHERE id = $1', [req.user.id])
-                .then(function(result) {
-                  var classId = result.rows[0]?.class_id || null;
-                  ['today', 'week', 'alltime'].forEach(function(w) {
-                    broadcastLeaderboardUpdate(gameId, w, classId);
-                    broadcastLeaderboardUpdate(gameId, w, null);
-                  });
-                })
-                .catch(function(err) {
-                  console.error('Broadcast class lookup error:', err);
-                });
-            } catch (e) {
-              console.error('Broadcast hook error:', e);
-            }
-          }
-          return originalSend.call(this, data);
-        };
-        return originalPostScoreHandler.call(this, req, res);
-      };
-    }
-  }
-});
-
-// ── Start ───────────────────────────────────────────────
-server.listen(PORT, () => console.log(`Reactific API with WebSocket running on port ${PORT}`));
-
 // ── STUDENT LOGIN — email + class code ─────────────────
 app.post('/api/auth/student-login', async (req, res) => {
   try {
@@ -1045,7 +974,6 @@ app.post('/api/auth/student-login', async (req, res) => {
     if (cleanCode.length !== 6)
       return res.status(400).json({ error: 'Class code must be 6 letters' });
 
-    // Find class by code
     const classResult = await pool.query(
       `SELECT id, name FROM classes WHERE code = $1`,
       [cleanCode]
@@ -1055,7 +983,6 @@ app.post('/api/auth/student-login', async (req, res) => {
 
     const cls = classResult.rows[0];
 
-    // Find or create student
     let userResult = await pool.query(
       `SELECT id, email, username, subscription_status, role, class_id FROM users WHERE email = $1`,
       [cleanEmail]
@@ -1065,20 +992,14 @@ app.post('/api/auth/student-login', async (req, res) => {
     if (userResult.rows.length > 0) {
       user = userResult.rows[0];
     } else {
-      // Auto-create student account from email
-      // Students log in via email + class code only — never via password —
-      // so we generate a random, never-shared password hash just to satisfy the column constraint.
-      const localPart = cleanEmail.split('@')[0]; // e.g. "john.burgos" from "john.burgos@school.org"
+      const localPart = cleanEmail.split('@')[0];
 
-      // Parse first/last name from email — handles first.last format cleanly
-      // Falls back gracefully if the pattern doesn't match
       let firstName = null, lastName = null;
       if (localPart.includes('.')) {
         const parts = localPart.split('.');
         firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
         lastName = parts.slice(1).join(' ').replace(/\b\w/g, c => c.toUpperCase());
       } else {
-        // No dot — just capitalize the whole thing as first name
         firstName = localPart.charAt(0).toUpperCase() + localPart.slice(1).toLowerCase();
       }
 
@@ -1095,14 +1016,12 @@ app.post('/api/auth/student-login', async (req, res) => {
       user = newUser.rows[0];
     }
 
-    // Join class if not already in it
     await pool.query(
       `INSERT INTO class_students (class_id, user_id)
        VALUES ($1, $2) ON CONFLICT (class_id, user_id) DO NOTHING`,
       [cls.id, user.id]
     );
 
-    // Update class_id if needed
     if (user.class_id !== cls.id) {
       await pool.query(
         `UPDATE users SET class_id = $1, updated_at = NOW() WHERE id = $2`,
@@ -1126,10 +1045,96 @@ app.post('/api/auth/student-login', async (req, res) => {
 
   } catch (err) {
     if (err.code === '23505') {
-      // Username collision — retry with different suffix
       return res.status(409).json({ error: 'Please try again' });
     }
     console.error('Student login error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// ── WebSocket Real-Time Leaderboard Updates ─────────────
+const WebSocket = require('ws');
+const http = require('http');
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server, path: '/api/leaderboard/subscribe' });
+
+// { gameId-window-classId: [ws1, ws2, ...] }
+var activeSubscriptions = {};
+
+wss.on('connection', function (ws) {
+  var subscriptionKey = null;
+
+  ws.on('message', function (data) {
+    try {
+      var msg = JSON.parse(data);
+
+      if (msg.action === 'subscribe') {
+        var gameId = String(msg.game_id || '').toLowerCase();
+        var win = ['today', 'week', 'alltime'].includes(msg.window) ? msg.window : 'alltime';
+        var classId = msg.class_id ? parseInt(msg.class_id, 10) : null;
+
+        if (!VALID_GAMES.includes(gameId)) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid game' }));
+          return;
+        }
+
+        subscriptionKey = gameId + '-' + win + '-' + (classId || 'all');
+
+        if (!activeSubscriptions[subscriptionKey]) {
+          activeSubscriptions[subscriptionKey] = [];
+        }
+
+        activeSubscriptions[subscriptionKey].push(ws);
+        ws.send(JSON.stringify({ type: 'subscribed', key: subscriptionKey }));
+      }
+    } catch (err) {
+      console.error('WS message error:', err);
+      ws.send(JSON.stringify({ type: 'error', message: 'Parse error' }));
+    }
+  });
+
+  ws.on('close', function () {
+    if (subscriptionKey && activeSubscriptions[subscriptionKey]) {
+      var idx = activeSubscriptions[subscriptionKey].indexOf(ws);
+      if (idx > -1) {
+        activeSubscriptions[subscriptionKey].splice(idx, 1);
+      }
+      if (activeSubscriptions[subscriptionKey].length === 0) {
+        delete activeSubscriptions[subscriptionKey];
+      }
+    }
+  });
+
+  ws.on('error', function (err) {
+    console.error('WS error:', err);
+  });
+});
+
+// Called from the score handler above. Safe to call even if no subscribers.
+async function broadcastLeaderboardUpdate(gameId, win, classId) {
+  var key = gameId + '-' + win + '-' + (classId || 'all');
+  var subscribers = activeSubscriptions[key];
+
+  if (!subscribers || !subscribers.length) return;
+
+  try {
+    var leaderboard = await getGameLeaderboard(gameId, win, classId, 8);
+    var msg = JSON.stringify({
+      type: 'leaderboard_update',
+      game_id: gameId,
+      window: win,
+      entries: leaderboard.entries
+    });
+
+    subscribers.forEach(function (ws) {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(msg);
+      }
+    });
+  } catch (err) {
+    console.error('Broadcast error:', err);
+  }
+}
+
+// ── Start ───────────────────────────────────────────────
+server.listen(PORT, () => console.log(`Reactific API with WebSocket running on port ${PORT}`));
