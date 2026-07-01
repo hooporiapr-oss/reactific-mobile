@@ -731,7 +731,7 @@ app.delete('/api/classes/:id/students/:userId', authRequired, async (req, res) =
 // ── GAME LEADERBOARD SYSTEM ──────────────────────────────
 // Five games (reaction, recovery, pattern, sequence, focus). numhunt retained
 // as a harmless legacy id. game_id must be in this list — anything else rejected.
-const VALID_GAMES = ['reaction', 'numhunt', 'recovery', 'pattern', 'sequence', 'focus'];
+const VALID_GAMES = ['reaction', 'numhunt', 'recovery', 'pattern', 'sequence', 'focus', 'orbit', 'drill'];
 
 function isValidGame(g) {
   return VALID_GAMES.includes(String(g || '').toLowerCase());
@@ -1052,7 +1052,88 @@ app.post('/api/auth/student-login', async (req, res) => {
   }
 });
 
-// ── WebSocket Real-Time Leaderboard Updates ─────────────
+// ── DAILY DRILL — teacher-controlled shared 5-minute clock ──────────
+// A teacher starts the drill for their class; every student device reads the
+// same start time so all clocks count down together. The shared start is what
+// makes "don't be late" real — the drill begins with or without you.
+// In-memory store keyed by class_id: { startAt, durationMs, startedBy }.
+// Naturally ephemeral (a drill is a moment, not a record); scores still save
+// through the normal game-score path with game_id 'drill'.
+var activeDrills = {};
+var DRILL_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
+// Teacher starts (or restarts) the drill for their class.
+app.post('/api/drill/start', authRequired, async (req, res) => {
+  try {
+    // Verify the caller teaches a class (or pass class_id they own).
+    const classId = parseInt(req.body.class_id, 10);
+    if (!classId) return res.status(400).json({ error: 'class_id required' });
+
+    const owns = await pool.query(
+      `SELECT id, name FROM classes WHERE id = $1 AND teacher_id = $2`,
+      [classId, req.user.id]
+    );
+    if (!owns.rows.length) return res.status(403).json({ error: 'Not your class' });
+
+    const startAt = Date.now() + 5000; // 5s lead-in so everyone syncs before GO
+    activeDrills[classId] = {
+      startAt,
+      durationMs: DRILL_DURATION_MS,
+      startedBy: req.user.id,
+      className: owns.rows[0].name
+    };
+    res.json({ ok: true, class_id: classId, startAt, durationMs: DRILL_DURATION_MS });
+  } catch (err) {
+    console.error('Drill start error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Teacher stops/clears the drill early.
+app.post('/api/drill/stop', authRequired, async (req, res) => {
+  try {
+    const classId = parseInt(req.body.class_id, 10);
+    const owns = await pool.query(
+      `SELECT id FROM classes WHERE id = $1 AND teacher_id = $2`,
+      [classId, req.user.id]
+    );
+    if (!owns.rows.length) return res.status(403).json({ error: 'Not your class' });
+    delete activeDrills[classId];
+    res.json({ ok: true, class_id: classId });
+  } catch (err) {
+    console.error('Drill stop error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Students poll this to sync to the class's shared clock.
+app.get('/api/drill/status/:class_id', async (req, res) => {
+  try {
+    const classId = parseInt(req.params.class_id, 10);
+    const d = activeDrills[classId];
+    if (!d) return res.json({ active: false });
+    const now = Date.now();
+    const endAt = d.startAt + d.durationMs;
+    if (now >= endAt) {
+      // drill has fully ended — auto-clear
+      delete activeDrills[classId];
+      return res.json({ active: false, ended: true });
+    }
+    res.json({
+      active: true,
+      startAt: d.startAt,
+      endAt,
+      durationMs: d.durationMs,
+      serverNow: now,          // lets clients correct for clock skew
+      className: d.className
+    });
+  } catch (err) {
+    console.error('Drill status error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 const WebSocket = require('ws');
 const http = require('http');
 const server = http.createServer(app);
