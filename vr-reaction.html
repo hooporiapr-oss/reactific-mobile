@@ -143,11 +143,13 @@ var API='https://api.reactificgaming.com';
 
 // Three levels, each a CONSTANT speed held all the way to 100 taps.
 // True reaction starts at 80 BPM — below that measures patience, not reflex.
-// No mid-game speed changes: you pick your pace and prove you can hold it.
+// mult weights each tap by difficulty so one blended leaderboard is fair:
+// 2 taps at 120 (×20 = 40) rightly beats 7 taps at 80 (×5 = 35).
+// Perfect runs: L1 = 500, L2 = 1000, L3 = 2000.
 var LEVELS={
-  '1': {bpm:80,  ms:750, color:'#00D9A5', glow:'rgba(0,217,165,1)',  size:70, tag:'Fast'},
-  '2': {bpm:100, ms:600, color:'#ff6b00', glow:'rgba(255,107,0,1)',  size:62, tag:'Elite'},
-  '3': {bpm:120, ms:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:54, tag:'Insane'}
+  '1': {bpm:80,  ms:750, color:'#00D9A5', glow:'rgba(0,217,165,1)',  size:70, tag:'Fast',   mult:5},
+  '2': {bpm:100, ms:600, color:'#ff6b00', glow:'rgba(255,107,0,1)',  size:62, tag:'Elite',  mult:10},
+  '3': {bpm:120, ms:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:54, tag:'Insane', mult:20}
 };
 var level='1';
 var MAX_TAPS=100;
@@ -421,9 +423,9 @@ function handleTap(){
   spawnRipple(targetX,targetY,c.color,false);
 
   g.taps++;g.st++;
-  g.sc=g.taps;
-  if(g.taps>best)best=g.taps;
   g.lv=parseInt(level,10);
+  g.sc=g.taps*c.mult;         // difficulty-weighted score
+  if(g.sc>best)best=g.sc;
   updateHUD();
 
   if(g.taps>=MAX_TAPS){
