@@ -348,16 +348,24 @@ function loadBoard(){
       }
       lastTopScore[key]=newTop;
 
+      // Reaction Control scores are speed-weighted — show which speed each came from.
+      var RX_SPEED={1:'80',2:'100',3:'120'};
       boardEl.innerHTML=entries.map(function(e,i){
         var rankClass=i===0?'r1':i===1?'r2':i===2?'r3':'';
         var medal=MEDALS[i]?'<div class="medal">'+MEDALS[i]+'</div>':'<div style="width:28px"></div>';
         var name=escapeHtml(e.name||e.username||'Player');
         var score=Number(e.score||0).toLocaleString();
+        var speedBadge='';
+        if(game.id==='reaction'){
+          var bpm=RX_SPEED[e.level]||'';
+          if(bpm)speedBadge='<div class="score-label" style="color:'+game.color+'">'+bpm+' BPM</div>';
+        }
+        var scoreLabel=speedBadge||'<div class="score-label">points</div>';
         return '<div class="row '+rankClass+(isRecord&&i===0?' new-record':'')+' entering" style="animation-delay:'+(i*60)+'ms">'
           +'<div class="rank">'+(i+1)+'</div>'
           +medal
           +'<div class="name">'+name+'</div>'
-          +'<div class="score-wrap"><div class="score" style="color:'+game.color+';text-shadow:0 0 20px '+game.glow+'">'+score+'</div><div class="score-label">points</div></div>'
+          +'<div class="score-wrap"><div class="score" style="color:'+game.color+';text-shadow:0 0 20px '+game.glow+'">'+score+'</div>'+scoreLabel+'</div>'
           +'</div>';
       }).join('');
     })
