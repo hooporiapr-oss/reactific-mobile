@@ -349,7 +349,7 @@ function loadBoard(){
       lastTopScore[key]=newTop;
 
       // Reaction Control scores are speed-weighted — show which speed each came from.
-      var RX_SPEED={1:'80',2:'100',3:'120'};
+      var RX_SPEED={1:'80',2:'100'};
       boardEl.innerHTML=entries.map(function(e,i){
         var rankClass=i===0?'r1':i===1?'r2':i===2?'r3':'';
         var medal=MEDALS[i]?'<div class="medal">'+MEDALS[i]+'</div>':'<div style="width:28px"></div>';
