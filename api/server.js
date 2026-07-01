@@ -82,7 +82,11 @@ app.use(express.json({ limit: '1mb' }));
 // like ONE client. Limits must be generous. Public read endpoints (leaderboards,
 // health) are exempt because the wall-mounted scoreboard polls them continuously
 // and many devices may load them at once.
-const PUBLIC_READ_PATHS = ['/api/leaderboard', '/api/health'];
+// Endpoints that are safe to read freely (no writes, no auth side effects).
+// /api/drill/status is polled every ~2s by every student waiting for the drill,
+// so a full class on one shared IP must not exhaust the general limit right as
+// the drill is about to start.
+const PUBLIC_READ_PATHS = ['/api/leaderboard', '/api/health', '/api/drill/status'];
 function isPublicRead(req) {
   return PUBLIC_READ_PATHS.some(p => req.path.startsWith(p));
 }
