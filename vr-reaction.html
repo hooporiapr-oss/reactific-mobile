@@ -10,6 +10,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 #space{position:fixed;inset:0;background:radial-gradient(ellipse at center,#05001a 0%,#000 70%);overflow:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0}
 #edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(155,89,182,.3),0 0 80px rgba(155,89,182,.1);transition:box-shadow 1s ease,border-color 1s ease}
+#beat-pulse{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at center,transparent 55%,var(--beat-color,rgba(0,217,165,.18)) 100%)}
+#beat-pulse.on{animation:beatThrob calc(60000ms / var(--beat-bpm,120)) steps(1,end) infinite}
+@keyframes beatThrob{0%{opacity:.55}18%{opacity:.12}100%{opacity:.05}}
 #flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
 #hud{position:fixed;top:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;padding:10px 16px;background:linear-gradient(180deg,rgba(0,0,0,.8),transparent)}
 .hud-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 8px;background:rgba(0,0,0,.5);border:1px solid rgba(155,89,182,.3);border-radius:10px;backdrop-filter:blur(4px)}
@@ -53,15 +56,16 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 .level-info{margin-bottom:24px;text-align:center;width:100%;max-width:420px}
 .level-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
 .level-row-3{grid-template-columns:repeat(3,1fr);gap:12px}
+.level-row-2{grid-template-columns:repeat(2,1fr);gap:14px;max-width:360px;margin:0 auto}
 .level-btn{height:60px;border:2px solid rgba(255,211,90,.35);background:rgba(255,211,90,.06);border-radius:14px;color:#fff;font-size:1rem;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .2s;letter-spacing:.02em}
-.level-row-3 .level-btn{height:92px;border-color:var(--lc);background:transparent}
+.level-row-3 .level-btn,.level-row-2 .level-btn{height:92px;border-color:var(--lc);background:transparent}
 .level-btn .lv-bpm{font-size:1.8rem;font-weight:900;line-height:1;color:var(--lc)}
 .level-btn .lv-tag{font-size:.5rem;letter-spacing:.2em;color:#8892a0;margin-top:2px}
 .level-btn small{font-size:.5rem;color:#a7adba;margin-top:6px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .level-btn.active{border-color:#ffd35a;background:rgba(255,211,90,.18);color:#ffd35a;box-shadow:0 0 24px rgba(255,211,90,.4)}
-.level-row-3 .level-btn.active{background:var(--lc);box-shadow:0 0 30px var(--lc)}
-.level-row-3 .level-btn.active .lv-bpm{color:#04121a}
-.level-row-3 .level-btn.active .lv-tag,.level-row-3 .level-btn.active small{color:rgba(0,0,0,.6)}
+.level-row-3 .level-btn.active,.level-row-2 .level-btn.active{background:var(--lc);box-shadow:0 0 30px var(--lc)}
+.level-row-3 .level-btn.active .lv-bpm,.level-row-2 .level-btn.active .lv-bpm{color:#04121a}
+.level-row-3 .level-btn.active .lv-tag,.level-row-3 .level-btn.active small,.level-row-2 .level-btn.active .lv-tag,.level-row-2 .level-btn.active small{color:rgba(0,0,0,.6)}
 .level-btn.active small{color:#ffd35a}
 .speed-info-label{font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8892a0;margin-bottom:10px}
 .speed-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
@@ -81,6 +85,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 <div id="space">
   <canvas id="stars"></canvas>
   <div id="edge-glow"></div>
+  <div id="beat-pulse"></div>
   <div id="flash"></div>
 </div>
 
@@ -121,10 +126,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 
   <div class="level-info">
     <div class="speed-info-label">Choose Your Speed</div>
-    <div class="level-row level-row-3">
+    <div class="level-row level-row-2">
       <button class="level-btn active" data-level="1" style="--lc:#00D9A5"><span class="lv-bpm">80</span><span class="lv-tag">BPM</span><small>Fast</small></button>
       <button class="level-btn" data-level="2" style="--lc:#ff6b00"><span class="lv-bpm">100</span><span class="lv-tag">BPM</span><small>Elite</small></button>
-      <button class="level-btn" data-level="3" style="--lc:#FF1493"><span class="lv-bpm">120</span><span class="lv-tag">BPM</span><small>Insane</small></button>
     </div>
   </div>
 
@@ -133,26 +137,27 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <div class="intro-info">
     <strong>TARGETS FLOAT IN SPACE</strong> — tap them instantly<br>
     <strong>ONE CONSTANT SPEED</strong> — hold your pace<br>
-    <strong>ONE MISS</strong> — space goes dark<br>
-    <strong>PERFECT SCORE</strong> — 100 taps · 100 points
+    <strong>SPACE PULSES AT 120</strong> — feel the beat<br>
+    <strong>PERFECT SCORE</strong> — 100 taps
   </div>
 </div>
 
 <script>
 var API='https://api.reactificgaming.com';
 
-// Three levels, each a CONSTANT speed held all the way to 100 taps.
+// Two levels, each a CONSTANT tap speed held all the way to 100 taps.
 // True reaction starts at 80 BPM — below that measures patience, not reflex.
-// mult weights each tap by difficulty so one blended leaderboard is fair:
-// 2 taps at 120 (×20 = 40) rightly beats 7 taps at 80 (×5 = 35).
-// Perfect runs: L1 = 500, L2 = 1000, L3 = 2000.
+// 120 was removed as a tap speed (unclearable = frustrating); it lives on
+// instead as the ambient BEAT that drives both modes — intensity without a wall.
+// mult weights each tap by difficulty so one blended leaderboard is fair.
+// Perfect runs: Fast = 500, Elite = 1000.
 var LEVELS={
-  '1': {bpm:80,  ms:750, color:'#00D9A5', glow:'rgba(0,217,165,1)',  size:70, tag:'Fast',   mult:5},
-  '2': {bpm:100, ms:600, color:'#ff6b00', glow:'rgba(255,107,0,1)',  size:62, tag:'Elite',  mult:10},
-  '3': {bpm:120, ms:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:54, tag:'Insane', mult:20}
+  '1': {bpm:80,  ms:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:70, tag:'Fast',  mult:5},
+  '2': {bpm:100, ms:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:62, tag:'Elite', mult:10}
 };
 var level='1';
 var MAX_TAPS=100;
+var BEAT_BPM=120;               // the pulse of space — ambiance, not tap speed
 
 // DEPTH (Z-axis illusion): targets approach from far to near, scaled so it
 // stays a visual flourish and never steals reaction time.
@@ -232,7 +237,7 @@ document.querySelectorAll('.level-btn').forEach(function(btn){
 });
 
 function goHome(){
-  clrT();hideTarget();
+  clrT();stopBeat();hideTarget();phase='idle';$('playBtn').disabled=false;
   $('screen-intro').style.display='flex';
 }
 
@@ -366,12 +371,54 @@ function clrT(){
   if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}
 }
 
+/* ── 120 BPM BEAT — the pulse of space. Ambiance, not tap speed. ── */
+var beatTimer=null, audioCtx=null, beatOn=false;
+function initAudio(){
+  if(audioCtx)return;
+  try{audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){audioCtx=null}
+}
+function beatTick(){
+  // soft low tick, felt more than heard
+  if(audioCtx){
+    try{
+      var o=audioCtx.createOscillator(),gn=audioCtx.createGain();
+      o.frequency.value=110; o.type='sine';
+      gn.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+      gn.gain.exponentialRampToValueAtTime(0.14,audioCtx.currentTime+0.01);
+      gn.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.12);
+      o.connect(gn);gn.connect(audioCtx.destination);
+      o.start();o.stop(audioCtx.currentTime+0.13);
+    }catch(e){}
+  }
+  // visual pulse on the beat-pulse overlay
+  var bp=$('beat-pulse');
+  bp.style.opacity='0.5';
+  setTimeout(function(){bp.style.opacity='0.06'},90);
+}
+function startBeat(){
+  if(beatOn)return;
+  beatOn=true;
+  var c=cur();
+  var bp=$('beat-pulse');
+  bp.style.setProperty('--beat-color',c.glow.replace('1)','0.16)'));
+  var interval=60000/BEAT_BPM; // 120 BPM = 500ms
+  beatTick();
+  beatTimer=setInterval(beatTick,interval);
+}
+function stopBeat(){
+  beatOn=false;
+  if(beatTimer){clearInterval(beatTimer);beatTimer=null}
+  var bp=$('beat-pulse');if(bp)bp.style.opacity='0';
+}
+
 function startGame(){
   if(phase==='playing')return;
+  initAudio();
   g={taps:0,sc:0,st:0,lv:1};
   updateHUD();
   phase='playing';
   $('playBtn').disabled=true;
+  startBeat();
   showMsg('GET READY...','watch');
   timers.push(setTimeout(function(){
     showMsg('🚀 GO!','go');
@@ -443,7 +490,7 @@ function handleTap(){
 
 function onMiss(){
   if(phase==='idle')return;
-  phase='idle';clrT();
+  phase='idle';clrT();stopBeat();
   var mx=targetX,my=targetY;
   hideTarget();
   flashScreen(null,true);
@@ -455,7 +502,7 @@ function onMiss(){
 }
 
 function finishGame(){
-  phase='idle';clrT();hideTarget();
+  phase='idle';clrT();stopBeat();hideTarget();
   $('playBtn').disabled=false;
 }
 
