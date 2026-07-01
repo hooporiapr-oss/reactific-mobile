@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Drill · 100 BPM | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#space{position:fixed;inset:0;background:radial-gradient(ellipse at center,#0a1a2e 0%,#000 70%);overflow:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+#edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(255,107,0,.28),0 0 80px rgba(255,107,0,.1)}
+#beat-pulse{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(255,107,0,.16) 100%)}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
+
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:14px 22px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+.hud-box{text-align:center}
+.hud-label{font-size:.5rem;color:#ff6b00;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.hud-val{font-size:2rem;font-weight:900;line-height:1}
+#hTime{color:#ff6b00}#hTaps{color:#fff;font-size:2.6rem}#hBest{font-size:1.3rem;color:#9fb3c8}
+
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;font-size:1.6rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
+#msg.watch{color:#ff6b00}#msg.go{color:#ffd35a}
+
+#target{position:fixed;z-index:15;border-radius:50%;cursor:pointer;transform:translate(-50%,-50%) scale(0);transition:transform .12s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;pointer-events:none;padding:22px;box-sizing:content-box}
+#target.visible{transform:translate(-50%,-50%) scale(1);pointer-events:all}
+#target-inner{width:100%;height:100%;border-radius:50%}
+.ripple{position:fixed;border-radius:50%;border:3px solid #ff6b00;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:rippleOut .5s ease-out forwards}
+@keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.5);opacity:1}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+
+#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:10px 16px 14px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
+.ctrl-btn{height:48px;flex:0 1 170px;max-width:200px;border:2px solid rgba(255,107,0,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px);text-decoration:none;display:flex;align-items:center;justify-content:center}
+
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a1a2e 0%,#000 70%);padding:20px;text-align:center}
+.vrr-logo{font-size:2.8rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 60px rgba(255,107,0,1);margin-bottom:6px}
+.vrr-logo span{color:#ff6b00}
+.vrr-sub{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#ff6b00;margin-bottom:28px}
+.rule-card{max-width:440px;border:1px solid rgba(255,107,0,.25);background:rgba(255,107,0,.04);border-radius:18px;padding:26px;margin-bottom:24px}
+.rule-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;text-align:left}
+.rule-row:last-child{margin-bottom:0}
+.rule-n{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:2px solid #ff6b00;color:#ff6b00;font-weight:900;display:flex;align-items:center;justify-content:center}
+.rule-t{font-size:.88rem;color:#cbd5e1;line-height:1.4}
+.rule-t b{color:#fff}
+.big-btn{width:100%;max-width:440px;height:72px;border:none;border-radius:20px;background:linear-gradient(135deg,#ff6b00,#e05f00);color:#04121a;font-size:1.3rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,107,0,.7);animation:btnPulse 2s ease-in-out infinite}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(255,107,0,.7)}50%{box-shadow:0 0 80px rgba(255,107,0,1)}}
+.intro-back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:60}
+.best-line{margin-top:18px;font-size:.85rem;color:#9fb3c8}
+.best-line b{color:#ff6b00}
+
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a1a2e 0%,#000 70%);text-align:center;padding:20px}
+.final-num{font-size:6rem;font-weight:900;color:#ff6b00;line-height:1;text-shadow:0 0 60px rgba(255,107,0,.9)}
+.final-label{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:#9fb3c8;margin-top:10px}
+#screen-end h2{font-size:1.8rem;font-weight:900;margin:24px 0 8px}
+#endSub{font-size:.9rem;color:#9fb3c8;line-height:1.6;max-width:400px}
+.end-btns{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* countdown overlay */
+#countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a1a2e 0%,#000 70%)}
+#bigCount{font-size:8rem;font-weight:900;color:#ff6b00;text-shadow:0 0 60px rgba(255,107,0,.9)}
+@media(max-width:420px){.vrr-logo{font-size:2.1rem}.big-btn{height:60px;font-size:1.1rem}}
+</style>
+</head>
+<body>
+
+<div id="space">
+  <canvas id="stars"></canvas>
+  <div id="edge-glow"></div>
+  <div id="beat-pulse"></div>
+  <div id="flash"></div>
+</div>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Time Left</div><div class="hud-val" id="hTime">5:00</div></div>
+  <div class="hud-box"><div class="hud-label">Your Taps</div><div class="hud-val" id="hTaps">0</div></div>
+  <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
+</div>
+
+<div id="msg" class="watch"></div>
+<div id="target"><div id="target-inner"></div></div>
+
+<div id="controls">
+  <a class="ctrl-btn" href="/vr-lab.html">← Exit</a>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro">
+  <a class="intro-back" href="/vr-lab.html">← Exit</a>
+  <div class="vrr-logo">ELITE <span>DRILL</span></div>
+  <div class="vrr-sub">100 BPM · 5-Minute Challenge · Reactific™</div>
+  <div class="rule-card">
+    <div class="rule-row"><div class="rule-n">1</div><div class="rule-t"><b>TAP FAST</b> — hit every target the moment it appears.</div></div>
+    <div class="rule-row"><div class="rule-n">2</div><div class="rule-t"><b>NO MISSES</b> — you can't lose. Just keep tapping.</div></div>
+    <div class="rule-row"><div class="rule-n">3</div><div class="rule-t"><b>FIVE MINUTES</b> — how many can you get?</div></div>
+  </div>
+  <button class="big-btn" onclick="startDrill()">🚀 START DRILL</button>
+  <div class="best-line" id="bestLine"></div>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown"><div id="bigCount">3</div></div>
+
+<!-- END -->
+<div id="screen-end">
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Taps</div>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div id="endSub">Great focus. Play again and beat your number.</div>
+  <div class="end-btns">
+    <button class="ctrl-btn" onclick="location.reload()">↻ Play Again</button>
+    <a class="ctrl-btn" href="/vr-lab.html">← Games</a>
+  </div>
+</div>
+
+<script>
+var API='https://api.reactificgaming.com';
+var DRILL_MS=5*60*1000;         // 5 minutes
+var TARGET_MS=600;              // 100 BPM window — the Elite drill
+var BEAT_BPM=120;
+var COLOR='#ff6b00',GLOW='rgba(255,107,0,1)',SIZE=66;
+
+(function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
+function $(id){return document.getElementById(id)}
+
+var phase='idle';               // idle | running | done
+var taps=0,best=0,endAt=0;
+var timers=[],beatTimer=null,fireTimer=null,audioCtx=null;
+var targetEl=$('target'),targetInner=$('target-inner');
+var targetX=0,targetY=0,fireSeq=0,tapLocked=false;
+
+/* local best (device) + server best if logged in */
+try{best=parseInt(localStorage.getItem('rct-drill100-best')||'0',10)||0}catch(e){}
+$('hBest').textContent=best;
+if(best>0)$('bestLine').innerHTML='Your best: <b>'+best+' taps</b>';
+loadServerBest();
+
+function loadServerBest(){
+  var token=localStorage.getItem('rct-token');
+  if(!token)return;
+  fetch(API+'/api/scores/personal-best/drill100',{headers:{'Authorization':'Bearer '+token}})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d&&d.score&&d.score>best){best=d.score;$('hBest').textContent=best;$('bestLine').innerHTML='Your best: <b>'+best+' taps</b>'}
+    }).catch(function(){});
+}
+
+/* star field */
+(function(){
+  var c=$('stars'),ctx=c.getContext('2d'),stars=[];
+  function size(){c.width=innerWidth;c.height=innerHeight}
+  size();addEventListener('resize',size);
+  for(var i=0;i<150;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);var t=Date.now()/1000;stars.forEach(function(s){var p=s.o+Math.sin(t*s.s)*.13;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill()});requestAnimationFrame(draw)})();
+})();
+
+function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+
+function startDrill(){
+  if(phase==='running')return;
+  initAudio();
+  $('screen-intro').style.display='none';
+  $('countdown').style.display='flex';
+  var n=3;$('bigCount').textContent=n;
+  var iv=setInterval(function(){
+    n--;
+    if(n<=0){clearInterval(iv);$('countdown').style.display='none';runDrill()}
+    else{$('bigCount').textContent=n}
+  },800);
+}
+
+function runDrill(){
+  phase='running';taps=0;$('hTaps').textContent='0';
+  endAt=Date.now()+DRILL_MS;
+  startBeat();
+  msg('GO! TAP FAST!','go');
+  timers.push(setTimeout(function(){msg('','go')},900));
+  fireTarget();
+  clock();
+}
+
+function clock(){
+  if(phase!=='running')return;
+  var left=endAt-Date.now();
+  if(left<=0){endDrill();return}
+  var s=Math.max(0,Math.floor(left/1000)),m=Math.floor(s/60),ss=s%60;
+  $('hTime').textContent=m+':'+(ss<10?'0':'')+ss;
+  requestAnimationFrame(clock);
+}
+
+function showTarget(){
+  var pad=70;
+  targetX=pad+Math.random()*(innerWidth-pad*2);
+  targetY=140+Math.random()*(innerHeight-230);
+  targetEl.style.left=targetX+'px';targetEl.style.top=targetY+'px';
+  targetEl.style.width=SIZE+'px';targetEl.style.height=SIZE+'px';
+  targetInner.style.background='radial-gradient(circle at 35% 35%,'+COLOR+','+COLOR+'88)';
+  targetInner.style.boxShadow='0 0 40px '+GLOW+',0 0 80px '+GLOW.replace('1)','0.4)');
+  targetEl.classList.add('visible');
+}
+function hideTarget(){targetEl.classList.remove('visible')}
+targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap()});
+
+function fireTarget(){
+  if(phase!=='running')return;
+  if(fireTimer){clearTimeout(fireTimer);fireTimer=null}
+  fireSeq++;var my=fireSeq;
+  hideTarget();
+  setTimeout(function(){
+    if(my!==fireSeq||phase!=='running')return;
+    showTarget();
+    fireTimer=setTimeout(function(){   // no miss — just relocate
+      if(my!==fireSeq||phase!=='running')return;
+      fireTarget();
+    },TARGET_MS+400);
+  },60);
+}
+
+function handleTap(){
+  if(phase!=='running')return;
+  if(!targetEl.classList.contains('visible'))return;
+  if(tapLocked)return;
+  tapLocked=true;setTimeout(function(){tapLocked=false},60);
+  taps++;$('hTaps').textContent=taps;
+  ripple(targetX,targetY);flash();
+  hideTarget();
+  timers.push(setTimeout(fireTarget,90));
+}
+
+function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
+function flash(){var f=$('flash');f.style.background='rgba(255,107,0,.12)';f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},100)}
+
+function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){audioCtx=null}}
+function beatTick(){
+  if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=110;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch(e){}}
+  var bp=$('beat-pulse');bp.style.opacity='.5';setTimeout(function(){bp.style.opacity='.06'},90);
+}
+function startBeat(){beatTick();beatTimer=setInterval(beatTick,60000/BEAT_BPM)}
+function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp=$('beat-pulse');if(bp)bp.style.opacity='0'}
+
+function endDrill(){
+  if(phase==='done')return;
+  phase='done';clrT();if(fireTimer)clearTimeout(fireTimer);stopBeat();hideTarget();
+  var isNew=taps>best;
+  if(isNew){best=taps;try{localStorage.setItem('rct-drill100-best',String(best))}catch(e){}}
+  submitScore(taps);
+  $('endNum').textContent=taps;
+  if(isNew&&taps>0){$('endHead').textContent='🎉 New Best!';$('endSub').textContent='You beat your record with '+taps+' taps. Amazing focus!'}
+  else{$('endHead').textContent='Drill Complete!';$('endSub').textContent='Great focus. Play again and beat your number.'}
+  $('screen-end').style.display='flex';
+}
+
+function submitScore(score){
+  var token=localStorage.getItem('rct-token');
+  if(!token||score<=0)return;   // saves only if logged in
+  fetch(API+'/api/scores/game',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({game_id:'drill100',score:score,level:1,mode:'compete'})
+  }).catch(function(e){console.error(e)});
+}
+window.addEventListener('beforeunload',function(){
+  var token=localStorage.getItem('rct-token');
+  if(token&&phase==='running'&&taps>0){
+    navigator.sendBeacon(API+'/api/scores/game',JSON.stringify({game_id:'drill100',score:taps,level:1,mode:'compete'}));
+  }
+});
+</script>
+</body>
+</html>
