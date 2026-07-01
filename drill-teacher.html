@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Start Daily Drill | REACTIFIC™ Teacher</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;font-family:Arial,sans-serif;color:#fff;background:radial-gradient(ellipse at top,#0a1a2e,#000 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.logo{font-size:2.2rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 50px rgba(0,217,165,.9);margin-bottom:4px}
+.logo span{color:#00D9A5}
+.sub{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#00D9A5;margin-bottom:34px}
+.card{width:100%;max-width:520px;border:1px solid rgba(0,217,165,.25);background:rgba(0,217,165,.04);border-radius:20px;padding:34px 30px}
+select{width:100%;padding:14px;border-radius:12px;border:2px solid rgba(0,217,165,.4);background:#08131f;color:#fff;font-size:1rem;font-weight:700;margin-bottom:22px;cursor:pointer}
+.start-btn{width:100%;height:80px;border:none;border-radius:18px;background:linear-gradient(135deg,#00D9A5,#00b88d);color:#04121a;font-size:1.4rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(0,217,165,.6);transition:transform .15s}
+.start-btn:hover{transform:translateY(-2px)}
+.start-btn:disabled{opacity:.4;cursor:default;transform:none}
+.stop-btn{width:100%;height:56px;margin-top:14px;border:2px solid rgba(255,80,120,.5);border-radius:14px;background:rgba(255,80,120,.08);color:#ff97b0;font-size:1rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:none}
+.status{margin-top:26px;font-size:1.05rem;font-weight:800;min-height:28px}
+.live-clock{font-size:4.4rem;font-weight:900;color:#00D9A5;line-height:1;margin-top:8px;text-shadow:0 0 40px rgba(0,217,165,.7);display:none}
+.hint{margin-top:20px;font-size:.82rem;color:#9fb3c8;line-height:1.6}
+.hint b{color:#fff}
+.back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none}
+</style>
+</head>
+<body>
+<a class="back" href="/vr-lab.html">← Back</a>
+<div class="logo">DAILY <span>DRILL</span></div>
+<div class="sub">Teacher Control · Reactific™</div>
+
+<div class="card">
+  <select id="classSel"><option value="">Loading your classes…</option></select>
+  <button class="start-btn" id="startBtn" onclick="startDrill()" disabled>▶ Start 5-Minute Drill</button>
+  <button class="stop-btn" id="stopBtn" onclick="stopDrill()">■ Stop Drill</button>
+  <div class="status" id="status"></div>
+  <div class="live-clock" id="liveClock">5:00</div>
+  <div class="hint">
+    Pick your class and press start. Students on their Chromebooks will sync to a shared 5-minute countdown — <b>the drill begins with or without them</b>, so everyone learns to be ready at the bell.
+  </div>
+</div>
+
+<script>
+var API='https://api.reactificgaming.com';
+(function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
+function $(id){return document.getElementById(id)}
+var token=localStorage.getItem('rct-token');
+var activeClass=null,clockTimer=null,endAt=0;
+
+if(!token){$('status').textContent='Please sign in as a teacher first.';}
+else{loadClasses()}
+
+function loadClasses(){
+  fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var sel=$('classSel');
+      if(!d.classes||!d.classes.length){sel.innerHTML='<option value="">No classes found</option>';$('status').textContent='Create a class first to run drills.';return}
+      sel.innerHTML=d.classes.map(function(c){return '<option value="'+c.id+'">'+c.name+' ('+c.code+')</option>'}).join('');
+      $('startBtn').disabled=false;
+    }).catch(function(){$('status').textContent='Could not load classes.'});
+}
+
+function startDrill(){
+  var cid=$('classSel').value;
+  if(!cid)return;
+  $('startBtn').disabled=true;
+  fetch(API+'/api/drill/start',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({class_id:parseInt(cid,10)})
+  }).then(function(r){return r.json()}).then(function(d){
+    if(d.ok){
+      activeClass=cid;
+      endAt=d.startAt+d.durationMs;
+      $('status').textContent='✅ Drill is LIVE — students are counting down!';
+      $('stopBtn').style.display='block';
+      $('liveClock').style.display='block';
+      runClock();
+    }else{$('status').textContent=d.error||'Could not start.';$('startBtn').disabled=false}
+  }).catch(function(){$('status').textContent='Connection problem.';$('startBtn').disabled=false});
+}
+
+function runClock(){
+  if(clockTimer)clearInterval(clockTimer);
+  clockTimer=setInterval(function(){
+    var left=endAt-Date.now();
+    if(left<=0){
+      clearInterval(clockTimer);
+      $('liveClock').textContent='0:00';
+      $('status').textContent='🎉 Drill complete! Scores are in.';
+      $('stopBtn').style.display='none';
+      $('startBtn').disabled=false;
+      return;
+    }
+    var s=Math.floor(left/1000),m=Math.floor(s/60),ss=s%60;
+    $('liveClock').textContent=m+':'+(ss<10?'0':'')+ss;
+  },250);
+}
+
+function stopDrill(){
+  if(!activeClass)return;
+  fetch(API+'/api/drill/stop',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({class_id:parseInt(activeClass,10)})
+  }).then(function(){
+    if(clockTimer)clearInterval(clockTimer);
+    $('status').textContent='Drill stopped.';
+    $('liveClock').style.display='none';
+    $('stopBtn').style.display='none';
+    $('startBtn').disabled=false;
+  });
+}
+</script>
+</body>
+</html>
