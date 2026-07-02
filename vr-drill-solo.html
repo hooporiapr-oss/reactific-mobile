@@ -115,7 +115,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 var API='https://api.reactificgaming.com';
 var DRILL_MS=5*60*1000;         // 5 minutes
 var TARGET_MS=750;              // 80 BPM window
-var BEAT_BPM=120;
+var BEAT_BPM=80;              // beat AND taps both at 80 — the rhythm on-ramp
 var COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72;
 
 (function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
@@ -123,9 +123,9 @@ function $(id){return document.getElementById(id)}
 
 var phase='idle';               // idle | running | done
 var taps=0,best=0,endAt=0;
-var timers=[],beatTimer=null,fireTimer=null,audioCtx=null;
+var timers=[],beatTimer=null,audioCtx=null;
 var targetEl=$('target'),targetInner=$('target-inner');
-var targetX=0,targetY=0,fireSeq=0,tapLocked=false;
+var targetX=0,targetY=0,tapLocked=false;
 
 /* local best (device) + server best if logged in */
 try{best=parseInt(localStorage.getItem('rct-drill-best')||'0',10)||0}catch(e){}
@@ -170,10 +170,9 @@ function startDrill(){
 function runDrill(){
   phase='running';taps=0;$('hTaps').textContent='0';
   endAt=Date.now()+DRILL_MS;
-  startBeat();
-  msg('GO! TAP FAST!','go');
-  timers.push(setTimeout(function(){msg('','go')},900));
-  fireTarget();
+  startBeat();               // beat drives the targets
+  msg('TAP ON THE BEAT!','go');
+  timers.push(setTimeout(function(){msg('','go')},1200));
   clock();
 }
 
@@ -199,19 +198,10 @@ function showTarget(){
 function hideTarget(){targetEl.classList.remove('visible')}
 targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap()});
 
-function fireTarget(){
+// beat-driven: each beat places a fresh target to tap in time
+function spawnOnBeat(){
   if(phase!=='running')return;
-  if(fireTimer){clearTimeout(fireTimer);fireTimer=null}
-  fireSeq++;var my=fireSeq;
-  hideTarget();
-  setTimeout(function(){
-    if(my!==fireSeq||phase!=='running')return;
-    showTarget();
-    fireTimer=setTimeout(function(){   // no miss — just relocate
-      if(my!==fireSeq||phase!=='running')return;
-      fireTarget();
-    },TARGET_MS+400);
-  },60);
+  showTarget();
 }
 
 function handleTap(){
@@ -221,8 +211,7 @@ function handleTap(){
   tapLocked=true;setTimeout(function(){tapLocked=false},60);
   taps++;$('hTaps').textContent=taps;
   ripple(targetX,targetY);flash();
-  hideTarget();
-  timers.push(setTimeout(fireTarget,90));
+  hideTarget();   // tapped — wait for the next beat
 }
 
 function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
@@ -232,13 +221,14 @@ function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||wi
 function beatTick(){
   if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=110;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch(e){}}
   var bp=$('beat-pulse');bp.style.opacity='.5';setTimeout(function(){bp.style.opacity='.06'},90);
+  spawnOnBeat();   // the beat brings the target — tap in time
 }
 function startBeat(){beatTick();beatTimer=setInterval(beatTick,60000/BEAT_BPM)}
 function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp=$('beat-pulse');if(bp)bp.style.opacity='0'}
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clrT();if(fireTimer)clearTimeout(fireTimer);stopBeat();hideTarget();
+  phase='done';clrT();stopBeat();hideTarget();
   var isNew=taps>best;
   if(isNew){best=taps;try{localStorage.setItem('rct-drill-best',String(best))}catch(e){}}
   submitScore(taps);
