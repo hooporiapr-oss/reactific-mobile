@@ -52,6 +52,9 @@ body{
   flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;
 }
 .game-card:hover{background:rgba(155,89,182,.18);border-color:#9B59B6;transform:translateY(-2px)}
+.fusion-card{background:linear-gradient(135deg,rgba(0,206,209,.14),rgba(154,205,50,.14));border:2px solid rgba(0,206,209,.5);box-shadow:0 0 24px rgba(0,206,209,.25)}
+.fusion-card:hover{background:linear-gradient(135deg,rgba(0,206,209,.24),rgba(154,205,50,.24));border-color:#00CED1;box-shadow:0 0 34px rgba(0,206,209,.45);transform:translateY(-2px)}
+.fusion-card .game-name{background:linear-gradient(120deg,#00CED1,#9ACD32);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .game-icon{font-size:1.6rem}
 .game-name{font-size:.7rem;font-weight:900;color:#fff}
 .game-skill{font-size:.55rem;color:#8892a0;text-transform:uppercase;letter-spacing:.08em}
@@ -140,20 +143,20 @@ body{
         <div class="game-name">Sequence Control</div>
         <div class="game-skill">Order + Memory</div>
       </a>
+      <a class="game-card" href="/vr-pattern.html">
+        <div class="game-icon">🧩</div>
+        <div class="game-name">Pattern Recognition</div>
+        <div class="game-skill">Snapshot Memory</div>
+      </a>
       <a class="game-card" href="/vr-echo.html">
         <div class="game-icon">👁️</div>
         <div class="game-name">Echo Recall</div>
         <div class="game-skill">Spot the Difference</div>
       </a>
-      <a class="game-card" href="/vr-orbit.html">
-        <div class="game-icon">🪐</div>
-        <div class="game-name">Orbit</div>
-        <div class="game-skill">Spatial Sequence</div>
-      </a>
-      <a class="game-card" href="/vr-reaction.html">
-        <div class="game-icon">🎯</div>
-        <div class="game-name">Reaction Control</div>
-        <div class="game-skill">Pure Reflex</div>
+      <a class="game-card fusion-card" href="/vr-fusion.html">
+        <div class="game-icon">🏆</div>
+        <div class="game-name">Fusion Challenge</div>
+        <div class="game-skill">All Four · The Gauntlet</div>
       </a>
     </div>
   </div>
