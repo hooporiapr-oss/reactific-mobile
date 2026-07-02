@@ -735,7 +735,7 @@ app.delete('/api/classes/:id/students/:userId', authRequired, async (req, res) =
 // ── GAME LEADERBOARD SYSTEM ──────────────────────────────
 // Five games (reaction, recovery, pattern, sequence, focus). numhunt retained
 // as a harmless legacy id. game_id must be in this list — anything else rejected.
-const VALID_GAMES = ['reaction', 'numhunt', 'recovery', 'pattern', 'sequence', 'focus', 'orbit', 'drill', 'drill100'];
+const VALID_GAMES = ['reaction', 'numhunt', 'recovery', 'pattern', 'sequence', 'focus', 'orbit', 'drill', 'drill100', 'drill120'];
 
 function isValidGame(g) {
   return VALID_GAMES.includes(String(g || '').toLowerCase());
