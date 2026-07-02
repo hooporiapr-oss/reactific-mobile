@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Fusion Championship | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--cy:#00CED1;--lm:#9ACD32;--cy-glow:rgba(0,206,209,.6)}
+html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(ellipse at top,#08161a,#020608 70%);color:#fff;overflow:hidden}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+.wrap{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;padding:22px 30px}
+
+.header{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding-bottom:16px;border-bottom:1px solid rgba(0,206,209,.2)}
+.brand{display:flex;align-items:center;gap:16px}
+.logo{font-size:1.9rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase}
+.logo span{color:var(--cy)}
+.title-block .t1{font-size:1.5rem;font-weight:900;letter-spacing:.03em;background:linear-gradient(120deg,var(--cy),var(--lm));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.title-block .t2{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--cy);margin-top:2px}
+.trophy{font-size:2.2rem;filter:drop-shadow(0 0 12px rgba(0,206,209,.6))}
+.header-right{text-align:right}
+.clock{font-size:1.8rem;font-weight:900;color:var(--cy);line-height:1}
+.date{font-size:.7rem;color:#5a6472;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+.controls{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding:14px 0}
+.left-ctrl{display:flex;align-items:center;gap:16px}
+.class-pick{display:flex;align-items:center;gap:10px}
+.class-pick label{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#5a6472}
+.class-pick select{padding:9px 14px;border-radius:10px;border:2px solid rgba(0,206,209,.4);background:#06141a;color:#fff;font-size:.9rem;font-weight:700;cursor:pointer}
+.windows{display:inline-flex;border:1px solid rgba(0,206,209,.3);border-radius:999px;overflow:hidden;background:#06141a}
+.windows button{background:none;border:none;cursor:pointer;font-family:inherit;font-size:.66rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#5a6472;padding:8px 16px;transition:all .2s}
+.windows button.on{background:linear-gradient(120deg,var(--cy),var(--lm));color:#04121a}
+.subtitle{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#5a6472}
+.subtitle b{color:var(--cy)}
+
+.board{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:9px;padding-top:8px}
+.row{display:flex;align-items:center;gap:18px;padding:14px 24px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);animation:slideIn .5s ease both}
+@keyframes slideIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+.r1{background:linear-gradient(90deg,rgba(0,206,209,.18),rgba(154,205,50,.05));border-color:rgba(0,206,209,.55);box-shadow:0 0 34px rgba(0,206,209,.25)}
+.r2{background:linear-gradient(90deg,rgba(200,204,212,.1),transparent);border-color:rgba(200,204,212,.3)}
+.r3{background:linear-gradient(90deg,rgba(205,138,74,.12),transparent);border-color:rgba(205,138,74,.35)}
+.rank{width:54px;text-align:center;font-size:1.9rem;font-weight:900;color:#3a4050;flex-shrink:0}
+.r1 .rank{color:var(--cy);text-shadow:0 0 20px var(--cy-glow)}
+.r2 .rank{color:#c8ccd4}.r3 .rank{color:#cd8a4a}
+.medal{font-size:1.7rem;width:32px;flex-shrink:0}
+.name{flex:1;font-size:1.55rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-wrap{text-align:right;flex-shrink:0;display:flex;align-items:baseline;gap:10px}
+.rounds{font-size:2rem;font-weight:900;background:linear-gradient(120deg,var(--cy),var(--lm));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.rounds-label{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#5a6472}
+.lvl{font-size:.68rem;color:#8ab;letter-spacing:.06em}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#5a6472;text-align:center}
+.empty-icon{font-size:4rem;margin-bottom:14px;opacity:.5}
+
+.ticker{flex-shrink:0;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(0,206,209,.2);padding-top:12px;margin-top:8px}
+.ticker-inner{display:inline-block;animation:scroll 24s linear infinite}
+.ti{display:inline-block;padding:0 38px;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#5a6472}
+.ti b{color:var(--cy)}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand">
+      <div class="logo">REACTIFIC<span>™</span></div>
+      <div class="trophy">🏆</div>
+      <div class="title-block">
+        <div class="t1">Fusion Championship</div>
+        <div class="t2">The Complete Memory Gauntlet</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="clock" id="clock">00:00</div>
+      <div class="date" id="date">—</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="left-ctrl">
+      <div class="class-pick">
+        <label>Class</label>
+        <select id="classSel"><option value="">All Classes</option></select>
+      </div>
+      <div class="windows" id="windows">
+        <button data-w="today" class="on">Today</button>
+        <button data-w="week">This Week</button>
+        <button data-w="alltime">All-Time</button>
+      </div>
+    </div>
+    <div class="subtitle">Ranked by <b>Rounds Cleared</b> · Flash → Sequence → Pattern → Echo</div>
+  </div>
+
+  <div class="board" id="board">
+    <div class="empty"><div class="empty-icon">🏆</div>Loading the championship…</div>
+  </div>
+
+  <div class="ticker">
+    <div class="ticker-inner">
+      <div class="ti">🏆 <b>Fusion</b> — Four Memory Modes · One Miss Ends It</div>
+      <div class="ti">⚡ Flash · 🎵 Sequence · 🧩 Pattern · 👁️ Echo</div>
+      <div class="ti">🔥 Train each game — then face the gauntlet</div>
+      <div class="ti">🏆 <b>Fusion</b> — Four Memory Modes · One Miss Ends It</div>
+      <div class="ti">⚡ Flash · 🎵 Sequence · 🧩 Pattern · 👁️ Echo</div>
+      <div class="ti">🔥 Train each game — then face the gauntlet</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var API='https://api.reactificgaming.com';
+var MEDALS=['🥇','🥈','🥉'];
+var classId='',windowSel='today';
+(function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
+function $(id){return document.getElementById(id)}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+/* stars */
+(function(){
+  var c=$('stars'),ctx=c.getContext('2d'),stars=[];
+  function size(){c.width=innerWidth;c.height=innerHeight}
+  size();addEventListener('resize',size);
+  for(var i=0;i<160;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.2,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);var t=Date.now()/1000;stars.forEach(function(s){var p=s.o+Math.sin(t*s.s)*.13;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill()});requestAnimationFrame(draw)})();
+})();
+
+/* clock */
+function tickClock(){var d=new Date();$('clock').textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);$('date').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})}
+setInterval(tickClock,1000);tickClock();
+
+/* window toggle */
+Array.prototype.forEach.call($('windows').children,function(btn){
+  btn.onclick=function(){
+    windowSel=btn.dataset.w;
+    Array.prototype.forEach.call($('windows').children,function(b){b.classList.remove('on')});
+    btn.classList.add('on');
+    fetchBoard();
+  };
+});
+
+/* teacher classes */
+function loadClasses(){
+  var token=localStorage.getItem('rct-token');
+  if(!token)return;
+  fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.classes&&d.classes.length){
+        var sel=$('classSel');
+        sel.innerHTML='<option value="">All Classes</option>'+d.classes.map(function(c){return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>'}).join('');
+        sel.onchange=function(){classId=sel.value;fetchBoard()};
+      }
+    }).catch(function(){});
+}
+
+function fetchBoard(){
+  var url=API+'/api/leaderboard/fusion?window='+windowSel+'&limit=12'+(classId?'&class_id='+classId:'');
+  fetch(url).then(function(r){return r.json()}).then(function(d){render(d.entries||[])})
+    .catch(function(){$('board').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>Could not load the championship.</div>'});
+}
+
+function render(entries){
+  var board=$('board');
+  if(!entries.length){
+    var when=windowSel==='today'?'today':windowSel==='week'?'this week':'yet';
+    board.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>No Fusion runs '+when+'<br><span style="font-size:1rem;color:#3a4050">Be the first to climb the gauntlet</span></div>';
+    return;
+  }
+  board.innerHTML=entries.map(function(e,i){
+    var rc=i===0?'r1':i===1?'r2':i===2?'r3':'';
+    var medal=MEDALS[i]?'<div class="medal">'+MEDALS[i]+'</div>':'<div style="width:32px"></div>';
+    var name=escapeHtml(e.name||e.username||'Player');
+    var rounds=Number(e.score||0).toLocaleString();
+    var lvl=e.level?'<span class="lvl">reached '+e.level+' cells</span>':'';
+    return '<div class="row '+rc+'" style="animation-delay:'+(i*55)+'ms">'
+      +'<div class="rank">'+(i+1)+'</div>'+medal
+      +'<div class="name">'+name+'</div>'
+      +'<div class="score-wrap">'+lvl+'<div class="rounds">'+rounds+'</div><div class="rounds-label">Rounds</div></div>'
+      +'</div>';
+  }).join('');
+}
+
+loadClasses();
+fetchBoard();
+setInterval(fetchBoard,8000);
+</script>
+</body>
+</html>
