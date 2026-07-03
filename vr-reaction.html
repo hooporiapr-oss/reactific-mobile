@@ -128,13 +128,16 @@ var DRILL_MS=5*60*1000;         // 5 minutes
 var TEMPOS={
   '80': {bpm:80,  targetMs:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:72, gid:'drill',    bestKey:'rct-drill-best'},
   '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best'},
-  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best'}
+  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best',
+         reactionTest:true, spawnMs:1000, windowMs:360}  // spaced targets, short hit-window — true reaction test
 };
 var tempo='80';                 // selected tempo key
 var BEAT_BPM=80,TARGET_MS=750,COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72,GAME_ID='drill',BEST_KEY='rct-drill-best';
+var REACTION_TEST=false,SPAWN_MS=1000,WINDOW_MS=360;
 function applyTempo(t){
   tempo=t;var c=TEMPOS[t];
   BEAT_BPM=c.bpm;TARGET_MS=c.targetMs;COLOR=c.color;GLOW=c.glow;SIZE=c.size;GAME_ID=c.gid;BEST_KEY=c.bestKey;
+  REACTION_TEST=!!c.reactionTest;SPAWN_MS=c.spawnMs||1000;WINDOW_MS=c.windowMs||360;
   // recolor edge glow + accent to the chosen tempo
   var eg=$('edge-glow');if(eg)eg.style.boxShadow='inset 0 0 80px '+GLOW.replace('1)','.28)')+',0 0 80px '+GLOW.replace('1)','.1)');
   loadBestForTempo();
@@ -201,9 +204,14 @@ function startDrill(){
 function runDrill(){
   phase='running';taps=0;$('hTaps').textContent='0';
   endAt=Date.now()+DRILL_MS;
-  startBeat();               // beat drives the targets
-  msg('TAP ON THE BEAT!','go');
-  timers.push(setTimeout(function(){msg('','go')},1200));
+  startBeat();               // beat pulses (drives targets at 80/100, urgency signal at 120)
+  if(REACTION_TEST){
+    msg('REACT FAST — TAP IN TIME!','go');
+    timers.push(setTimeout(reactionLoop,600));   // start the spaced reaction spawner
+  }else{
+    msg('TAP ON THE BEAT!','go');
+  }
+  timers.push(setTimeout(function(){msg('','go')},1400));
   clock();
 }
 
@@ -229,11 +237,28 @@ function showTarget(){
 function hideTarget(){targetEl.classList.remove('visible')}
 targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap()});
 
-// beat-driven: each beat places a fresh target to tap in time
+// beat-driven (80/100): each beat places a fresh target to tap in time
 function spawnOnBeat(){
   if(phase!=='running')return;
+  if(REACTION_TEST)return;      // 120 handles its own spaced spawning
   showTarget();
 }
+
+// reaction-test (120): spaced targets, each with a short hit-window.
+// Miss the window → it vanishes, no score, next one comes. Full 5 minutes.
+var reactionTimer=null,windowTimer=null;
+function reactionLoop(){
+  if(phase!=='running')return;
+  showTarget();
+  // target only stays for the hit-window, then vanishes (missed = no score)
+  windowTimer=setTimeout(function(){
+    if(phase!=='running')return;
+    if(targetEl.classList.contains('visible')){hideTarget()}  // reacted too slow
+  },WINDOW_MS);
+  // next target after the spaced interval
+  reactionTimer=setTimeout(reactionLoop,SPAWN_MS);
+}
+function stopReaction(){if(reactionTimer){clearTimeout(reactionTimer);reactionTimer=null}if(windowTimer){clearTimeout(windowTimer);windowTimer=null}}
 
 function handleTap(){
   if(phase!=='running')return;
@@ -242,7 +267,8 @@ function handleTap(){
   tapLocked=true;setTimeout(function(){tapLocked=false},60);
   taps++;$('hTaps').textContent=taps;
   ripple(targetX,targetY);flash();
-  hideTarget();   // tapped — wait for the next beat
+  if(REACTION_TEST&&windowTimer){clearTimeout(windowTimer);windowTimer=null}
+  hideTarget();
 }
 
 function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
@@ -259,7 +285,7 @@ function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clrT();stopBeat();hideTarget();
+  phase='done';clrT();stopBeat();stopReaction();hideTarget();
   var isNew=taps>best;
   if(isNew){best=taps;try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
   submitScore(taps);
