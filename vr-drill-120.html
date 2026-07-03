@@ -119,7 +119,7 @@ var BEAT_BPM=120;
 var COLOR='#FF1493',GLOW='rgba(255,20,147,1)',SIZE=60;
 // Reaction test: spaced targets, each with a short hit-window. React fast or
 // it vanishes (no score). Full 5 minutes, score = hits landed. Beat = urgency.
-var SPAWN_MS=1000, WINDOW_MS=360;
+var SPAWN_MS=2000, WINDOW_MS=360;
 
 (function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
 function $(id){return document.getElementById(id)}
