@@ -32,13 +32,14 @@ body{
 /* LEFT — 4 Games */
 .games-section{display:flex;flex-direction:column;gap:8px}
 .games-title{font-size:.7rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#8892a0;margin-bottom:4px}
-.games-grid{display:flex;flex-direction:column;gap:8px;flex:1}
+.games-grid{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow:hidden}
 
 .game-card{
   background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25);
-  border-radius:10px;padding:12px;text-align:center;cursor:pointer;
+  border-radius:10px;padding:8px 10px;text-align:center;cursor:pointer;
   transition:all .2s;text-decoration:none;color:inherit;display:flex;
-  flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;
+  flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  flex:1 1 0;min-height:0;
 }
 .game-card:hover{background:rgba(155,89,182,.18);border-color:#9B59B6;transform:translateY(-2px)}
 .fusion-card{background:linear-gradient(135deg,rgba(0,206,209,.14),rgba(154,205,50,.14));border:2px solid rgba(0,206,209,.5);box-shadow:0 0 24px rgba(0,206,209,.25)}
@@ -47,9 +48,9 @@ body{
 .drill-card{background:linear-gradient(135deg,rgba(0,217,165,.12),rgba(0,217,165,.04));border:2px solid rgba(0,217,165,.45)}
 .drill-card:hover{background:linear-gradient(135deg,rgba(0,217,165,.22),rgba(0,217,165,.08));border-color:#00D9A5;box-shadow:0 0 28px rgba(0,217,165,.4);transform:translateY(-2px)}
 .drill-card .game-name{color:#00D9A5}
-.game-icon{font-size:1.6rem}
-.game-name{font-size:.7rem;font-weight:900;color:#fff}
-.game-skill{font-size:.55rem;color:#8892a0;text-transform:uppercase;letter-spacing:.08em}
+.game-icon{font-size:1.35rem}
+.game-name{font-size:.68rem;font-weight:900;color:#fff;line-height:1.1}
+.game-skill{font-size:.52rem;color:#8892a0;text-transform:uppercase;letter-spacing:.06em;line-height:1.1}
 
 /* CENTER — Platform Identity */
 .center-section{
@@ -130,9 +131,9 @@ body{
         <div class="game-name">Fusion Challenge</div>
         <div class="game-skill">All Four · The Gauntlet</div>
       </a>
-      <a class="game-card drill-card" href="/vr-drill-solo.html">
+      <a class="game-card drill-card" href="/vr-reaction.html">
         <div class="game-icon">🥁</div>
-        <div class="game-name">5-Minute Drill</div>
+        <div class="game-name">Reaction · Beat Drill</div>
         <div class="game-skill">Tap to the Beat of the Rhythm</div>
       </a>
     </div>
