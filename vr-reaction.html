@@ -172,7 +172,7 @@ function loadBestForTempo(){
 var TEMPO_HINTS={
   '80':'Tap every target on the beat — hand-eye coordination.',
   '100':'Faster beat, same game — sharpen your coordination.',
-  '120':'GO / NO-GO: one target changes color. Tap ONLY on RED. True reaction.'
+  '120':'GO / NO-GO: colors flash at 120 BPM. Tap ONLY on RED. Pure reaction.'
 };
 document.querySelectorAll('.tempo-btn').forEach(function(btn){
   btn.onclick=function(){
@@ -256,7 +256,7 @@ targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap
 // beat-driven (80/100): each beat places a fresh target to tap in time
 function spawnOnBeat(){
   if(phase!=='running')return;
-  if(REACTION_TEST)return;      // 120 handles its own spaced spawning
+  if(REACTION_TEST||GO_NO_GO)return;   // 120 handles its own centered color target
   showTarget();
 }
 
@@ -276,17 +276,18 @@ function reactionLoop(){
 }
 function stopReaction(){if(reactionTimer){clearTimeout(reactionTimer);reactionTimer=null}if(windowTimer){clearTimeout(windowTimer);windowTimer=null}}
 
-/* ── GO / NO-GO (120 Reactific): one big centered target, colors change at
-   random intervals. RED = GO (tap to score). Any other color = NO-GO
-   (tapping is a false start → penalty). Score = reds hit in 5 minutes. ── */
-var GNG_COLORS=[
+/* ── GO / NO-GO (120 Reactific): one big centered target. Colors cycle at the
+   120 tempo (every 500ms). RED is one of the colors in the rotation. Tap when
+   it's RED = score. Tap on any other color = false start → penalty.
+   Pure 120: the beat drives the color changes; catch the red as it flashes by. ── */
+var GNG_WHEEL=[
+  {name:'red',   c:'#ff1e3c', g:'rgba(255,30,60,1)',  red:true},
   {name:'blue',  c:'#2f7bff', g:'rgba(47,123,255,1)'},
   {name:'green', c:'#00D9A5', g:'rgba(0,217,165,1)'},
   {name:'orange',c:'#ff9500', g:'rgba(255,149,0,1)'},
   {name:'yellow',c:'#ffd60a', g:'rgba(255,214,10,1)'},
   {name:'purple',c:'#a855f7', g:'rgba(168,85,247,1)'}
 ];
-var RED={name:'red',c:'#ff1e3c',g:'rgba(255,30,60,1)'};
 var gngTimer=null, gngIsRed=false, misses=0;
 
 function gngRenderCentered(col){
@@ -301,23 +302,20 @@ function gngRenderCentered(col){
 }
 
 function goNoGoStart(){
-  // show a neutral target immediately, then begin cycling colors
   gngIsRed=false;
-  gngRenderCentered(GNG_COLORS[0]);
-  gngNext();
+  gngRenderCentered(GNG_WHEEL[1]);   // start on a non-red
+  startBeat();                       // 120 beat pulse throbs underneath (visual + sound)
+  var interval=60000/BEAT_BPM;       // 120 BPM = 500ms — colors change ON the beat
+  gngTimer=setInterval(gngCycle,interval);
 }
-function gngNext(){
+function gngCycle(){
   if(phase!=='running')return;
-  // decide next color: ~30% chance red, else a random non-red
-  var showRed=Math.random()<0.3;
-  if(showRed){gngIsRed=true;gngRenderCentered(RED);}
-  else{gngIsRed=false;gngRenderCentered(GNG_COLORS[Math.floor(Math.random()*GNG_COLORS.length)]);}
-  // hold this color a random interval, then change again (unpredictable)
-  var hold= showRed ? (500+Math.random()*400)          // red holds briefly — react!
-                    : (700+Math.random()*1300);         // non-red varies widely
-  gngTimer=setTimeout(gngNext,hold);
+  // pick a random color from the full wheel each beat (red included, ~1 in 6)
+  var col=GNG_WHEEL[Math.floor(Math.random()*GNG_WHEEL.length)];
+  gngIsRed=!!col.red;
+  gngRenderCentered(col);
 }
-function stopGoNoGo(){if(gngTimer){clearTimeout(gngTimer);gngTimer=null}}
+function stopGoNoGo(){if(gngTimer){clearInterval(gngTimer);gngTimer=null}}
 
 function handleTap(){
   if(phase!=='running')return;
@@ -330,9 +328,7 @@ function handleTap(){
       // GO — correct hit on red
       taps++;$('hTaps').textContent=taps;
       ripple(targetX,targetY);flash();
-      gngIsRed=false;               // consume this red so you can't double-tap it
-      // immediately move off red to a non-red so it's clearly scored
-      gngRenderCentered(GNG_COLORS[Math.floor(Math.random()*GNG_COLORS.length)]);
+      gngIsRed=false;               // consume this red so you can't double-tap the same flash
     }else{
       // NO-GO violation — tapped a non-red → penalty
       misses++;
@@ -340,7 +336,7 @@ function handleTap(){
       taps=Math.max(0,taps-1);      // false start costs a point
       $('hTaps').textContent=taps;
       msg('✗ NOT RED!','miss');
-      timers.push(setTimeout(function(){if(phase==='running')msg('','go')},600));
+      timers.push(setTimeout(function(){if(phase==='running')msg('','go')},500));
     }
     return;
   }
