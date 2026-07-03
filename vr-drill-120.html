@@ -88,9 +88,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <div class="vrr-logo">INSANE <span>DRILL</span></div>
   <div class="vrr-sub">120 BPM · Tap to the Beat of the Rhythm</div>
   <div class="rule-card">
-    <div class="rule-row"><div class="rule-n">1</div><div class="rule-t"><b>TAP FAST</b> — hit every target the moment it appears.</div></div>
-    <div class="rule-row"><div class="rule-n">2</div><div class="rule-t"><b>NO MISSES</b> — you can't lose. Just keep tapping.</div></div>
-    <div class="rule-row"><div class="rule-n">3</div><div class="rule-t"><b>FIVE MINUTES</b> — how many can you get?</div></div>
+    <div class="rule-row"><div class="rule-n">1</div><div class="rule-t"><b>REACT FAST</b> — each target flashes for a split second. Hit it in time.</div></div>
+    <div class="rule-row"><div class="rule-n">2</div><div class="rule-t"><b>TAP SMART</b> — too slow and it's gone. Go for the ones you can land.</div></div>
+    <div class="rule-row"><div class="rule-n">3</div><div class="rule-t"><b>FIVE MINUTES</b> — how many can you hit?</div></div>
   </div>
   <button class="big-btn" onclick="startDrill()">🚀 START DRILL</button>
   <div class="best-line" id="bestLine"></div>
@@ -117,6 +117,9 @@ var DRILL_MS=5*60*1000;         // 5 minutes
 var TARGET_MS=500;              // 120 BPM window — the Insane drill
 var BEAT_BPM=120;
 var COLOR='#FF1493',GLOW='rgba(255,20,147,1)',SIZE=60;
+// Reaction test: spaced targets, each with a short hit-window. React fast or
+// it vanishes (no score). Full 5 minutes, score = hits landed. Beat = urgency.
+var SPAWN_MS=1000, WINDOW_MS=360;
 
 (function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
 function $(id){return document.getElementById(id)}
@@ -170,9 +173,10 @@ function startDrill(){
 function runDrill(){
   phase='running';taps=0;$('hTaps').textContent='0';
   endAt=Date.now()+DRILL_MS;
-  startBeat();               // beat drives the targets
-  msg('TAP ON THE BEAT!','go');
-  timers.push(setTimeout(function(){msg('','go')},1200));
+  startBeat();               // beat pulses as the urgency signal
+  msg('REACT FAST — TAP IN TIME!','go');
+  timers.push(setTimeout(function(){msg('','go')},1400));
+  timers.push(setTimeout(reactionLoop,600));   // start spaced reaction spawner
   clock();
 }
 
@@ -198,11 +202,19 @@ function showTarget(){
 function hideTarget(){targetEl.classList.remove('visible')}
 targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap()});
 
-// beat-driven: each beat places a fresh target to tap in time
-function spawnOnBeat(){
+// reaction test: spaced targets, each with a short hit-window.
+// Miss the window → vanishes, no score, next one comes. Full 5 minutes.
+var reactionTimer=null,windowTimer=null;
+function reactionLoop(){
   if(phase!=='running')return;
   showTarget();
+  windowTimer=setTimeout(function(){
+    if(phase!=='running')return;
+    if(targetEl.classList.contains('visible'))hideTarget();  // reacted too slow
+  },WINDOW_MS);
+  reactionTimer=setTimeout(reactionLoop,SPAWN_MS);
 }
+function stopReaction(){if(reactionTimer){clearTimeout(reactionTimer);reactionTimer=null}if(windowTimer){clearTimeout(windowTimer);windowTimer=null}}
 
 function handleTap(){
   if(phase!=='running')return;
@@ -211,7 +223,8 @@ function handleTap(){
   tapLocked=true;setTimeout(function(){tapLocked=false},60);
   taps++;$('hTaps').textContent=taps;
   ripple(targetX,targetY);flash();
-  hideTarget();   // tapped — wait for the next beat
+  if(windowTimer){clearTimeout(windowTimer);windowTimer=null}
+  hideTarget();
 }
 
 function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
@@ -221,14 +234,13 @@ function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||wi
 function beatTick(){
   if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=110;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch(e){}}
   var bp=$('beat-pulse');bp.style.opacity='.5';setTimeout(function(){bp.style.opacity='.06'},90);
-  spawnOnBeat();   // the beat brings the target — tap in time
 }
 function startBeat(){beatTick();beatTimer=setInterval(beatTick,60000/BEAT_BPM)}
 function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp=$('beat-pulse');if(bp)bp.style.opacity='0'}
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clrT();stopBeat();hideTarget();
+  phase='done';clrT();stopBeat();stopReaction();hideTarget();
   var isNew=taps>best;
   if(isNew){best=taps;try{localStorage.setItem('rct-drill120-best',String(best))}catch(e){}}
   submitScore(taps);
