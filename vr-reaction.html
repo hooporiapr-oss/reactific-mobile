@@ -330,9 +330,11 @@ function handleTap(){
   if(GO_NO_GO){
     var sn=$('gng-score-num');
     if(gngIsRed){
-      // GO — correct hit on red
-      taps++;$('hTaps').textContent=taps;
-      sn.textContent=taps;
+      // GO — correct hit on red. Any red tap clears a hidden negative back to 0 first.
+      if(taps<0)taps=0;
+      taps++;
+      $('hTaps').textContent=Math.max(0,taps);
+      sn.textContent=Math.max(0,taps);
       sn.style.transform='scale(1.35)';sn.style.color='#eafff6';
       setTimeout(function(){sn.style.transform='scale(1)';sn.style.color='#fff'},140);
       ripple(targetX,targetY);flash();
@@ -341,9 +343,15 @@ function handleTap(){
       // NO-GO violation — tapped a non-red → penalty
       misses++;
       penaltyFlash();
-      taps=Math.max(0,taps-1);      // false start costs a point
-      $('hTaps').textContent=taps;
-      sn.textContent=taps;
+      taps=taps-1;                  // false start costs a point (can go negative)
+      if(taps<=-3){                 // busted out — system ends the game (never shows -3)
+        $('hTaps').textContent=Math.max(0,taps);
+        msg('✗ NOT RED!','miss');
+        endDrill();
+        return;
+      }
+      $('hTaps').textContent=Math.max(0,taps);   // never display a negative
+      sn.textContent=Math.max(0,taps);
       sn.style.transform='scale(.8)';sn.style.color='#ffd0d8';
       setTimeout(function(){sn.style.transform='scale(1)';sn.style.color='#fff'},200);
       msg('✗ NOT RED!','miss');
@@ -376,11 +384,12 @@ function endDrill(){
   if(phase==='done')return;
   phase='done';clrT();stopBeat();stopReaction();stopGoNoGo();hideTarget();
   var gs=$('gng-score-num');if(gs)gs.classList.remove('on');
-  var isNew=taps>best;
-  if(isNew){best=taps;try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
-  submitScore(taps);
-  $('endNum').textContent=taps;
-  if(isNew&&taps>0){$('endHead').textContent='🎉 New Best!';$('endSub').textContent='You beat your record with '+taps+' taps. Amazing focus!'}
+  var finalScore=Math.max(0,taps);        // never save or show a negative
+  var isNew=finalScore>best;
+  if(isNew){best=finalScore;try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+  submitScore(finalScore);
+  $('endNum').textContent=finalScore;
+  if(isNew&&finalScore>0){$('endHead').textContent='🎉 New Best!';$('endSub').textContent='You beat your record with '+finalScore+' taps. Amazing focus!'}
   else{$('endHead').textContent='Drill Complete!';$('endSub').textContent='Great focus. Play again and beat your number.'}
   $('screen-end').style.display='flex';
 }
