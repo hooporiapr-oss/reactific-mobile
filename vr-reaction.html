@@ -20,6 +20,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 #hTime{color:#00D9A5}#hTaps{color:#fff;font-size:2.6rem}#hBest{font-size:1.3rem;color:#9fb3c8}
 
 #msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;font-size:1.6rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
+#gng-score{position:fixed;top:calc(50% - 230px);left:50%;transform:translateX(-50%);z-index:19;text-align:center;pointer-events:none;display:none}
+#gng-score-num{font-size:4rem;font-weight:900;color:#fff;line-height:1;text-shadow:0 0 40px rgba(255,30,60,.7)}
+#gng-score-label{font-size:.62rem;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#ff1e3c;margin-top:4px}
+#gng-score.on{display:block}
+@media(max-height:520px){#gng-score{top:calc(50% - 175px)}#gng-score-num{font-size:2.8rem}}
 #msg.watch{color:#00D9A5}#msg.go{color:#ffd35a}
 
 #target{position:fixed;z-index:15;border-radius:50%;cursor:pointer;transform:translate(-50%,-50%) scale(0);transition:transform .12s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;pointer-events:none;padding:22px;box-sizing:content-box}
@@ -86,6 +91,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 </div>
 
 <div id="msg" class="watch"></div>
+<div id="gng-score"><div id="gng-score-num">0</div><div id="gng-score-label">Red Hits</div></div>
 <div id="target"><div id="target-inner"></div></div>
 
 <div id="controls">
@@ -303,6 +309,8 @@ function gngRenderCentered(col){
 
 function goNoGoStart(){
   gngIsRed=false;
+  $('gng-score-num').textContent='0';
+  $('gng-score').classList.add('on');   // show centered score above the target
   gngRenderCentered(GNG_WHEEL[1]);   // start on a non-red
   startBeat();                       // 120 beat pulse throbs underneath (visual + sound)
   var interval=60000/BEAT_BPM;       // 120 BPM = 500ms — colors change ON the beat
@@ -327,6 +335,9 @@ function handleTap(){
     if(gngIsRed){
       // GO — correct hit on red
       taps++;$('hTaps').textContent=taps;
+      $('gng-score-num').textContent=taps;      // centered score updates
+      $('gng-score-num').style.color='#00D9A5';
+      setTimeout(function(){$('gng-score-num').style.color='#fff'},200);
       ripple(targetX,targetY);flash();
       gngIsRed=false;               // consume this red so you can't double-tap the same flash
     }else{
@@ -335,6 +346,9 @@ function handleTap(){
       penaltyFlash();
       taps=Math.max(0,taps-1);      // false start costs a point
       $('hTaps').textContent=taps;
+      $('gng-score-num').textContent=taps;
+      $('gng-score-num').style.color='#ff1e3c';
+      setTimeout(function(){$('gng-score-num').style.color='#fff'},250);
       msg('✗ NOT RED!','miss');
       timers.push(setTimeout(function(){if(phase==='running')msg('','go')},500));
     }
@@ -364,6 +378,7 @@ function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp
 function endDrill(){
   if(phase==='done')return;
   phase='done';clrT();stopBeat();stopReaction();stopGoNoGo();hideTarget();
+  var gs=$('gng-score');if(gs)gs.classList.remove('on');
   var isNew=taps>best;
   if(isNew){best=taps;try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
   submitScore(taps);
