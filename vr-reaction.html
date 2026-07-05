@@ -335,24 +335,13 @@ targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap
 // beat-driven (80/100): each beat places a fresh target to tap in time
 function spawnOnBeat(){
   if(phase!=='running')return;
-  if(REACTION_TEST||GO_NO_GO||COORD)return;   // those modes handle their own spawning
+  if(GO_NO_GO||COORD)return;   // those modes handle their own spawning; beat is ambiance
   showTarget();
 }
 
 // reaction-test (120): spaced targets, each with a short hit-window.
-// Miss the window → it vanishes, no score, next one comes. Full 5 minutes.
+// (legacy spaced reaction-test removed; go/no-go and coord are the live modes)
 var reactionTimer=null,windowTimer=null;
-function reactionLoop(){
-  if(phase!=='running')return;
-  showTarget();
-  // target only stays for the hit-window, then vanishes (missed = no score)
-  windowTimer=setTimeout(function(){
-    if(phase!=='running')return;
-    if(targetEl.classList.contains('visible')){hideTarget()}  // reacted too slow
-  },WINDOW_MS);
-  // next target after the spaced interval
-  reactionTimer=setTimeout(reactionLoop,SPAWN_MS);
-}
 function stopReaction(){if(reactionTimer){clearTimeout(reactionTimer);reactionTimer=null}if(windowTimer){clearTimeout(windowTimer);windowTimer=null}}
 
 /* ── GO / NO-GO (all tiers): one target, colors cycle at the tier's flash speed.
@@ -481,11 +470,7 @@ function handleTap(){
     return;
   }
 
-  // 80/100/reaction-test path
-  taps++;$('hTaps').textContent=taps;
-  ripple(targetX,targetY);flash();
-  if(REACTION_TEST&&windowTimer){clearTimeout(windowTimer);windowTimer=null}
-  hideTarget();
+  // (coord and go/no-go both return above; no other tap path)
 }
 function penaltyFlash(){var f=$('flash');f.style.background='rgba(255,20,90,.28)';f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},160)}
 
