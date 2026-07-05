@@ -3,78 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Daily Drill Board | REACTIFIC™</title>
+<title>Reaction Arena | REACTIFIC™</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--teal:#00D9A5;--teal-glow:rgba(0,217,165,.6)}
-html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(ellipse at top,#0a1a2e,#020608 70%);color:#fff;overflow:hidden}
-#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
-.wrap{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;padding:22px 28px}
+:root{--pink:#FF1493;--pink-glow:rgba(255,20,147,.65);--teal:#00D9A5;--orange:#ff6b00}
+html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(ellipse at top,#1a0616,#050208 72%);color:#fff;overflow:hidden}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+.wrap{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;padding:18px 26px}
 
 /* header */
-.header{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding-bottom:16px;border-bottom:1px solid rgba(0,217,165,.2)}
-.brand{display:flex;align-items:center;gap:16px}
-.logo{font-size:1.9rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase}
-.logo span{color:var(--teal)}
-.title-block .t1{font-size:1.5rem;font-weight:900;letter-spacing:.04em}
-.title-block .t2{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--teal);margin-top:2px}
-.live-badge{font-size:.7rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#0a1a2e;background:var(--teal);padding:5px 12px;border-radius:999px;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.55}}
-.header-right{text-align:right}
-.clock{font-size:1.9rem;font-weight:900;color:var(--teal);line-height:1}
-.date{font-size:.7rem;color:#5a6472;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.header{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding-bottom:12px;border-bottom:1px solid rgba(255,20,147,.25)}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{font-size:1.7rem;font-weight:900;font-style:italic;letter-spacing:.05em;text-transform:uppercase}
+.logo span{color:var(--pink)}
+.arena-title{font-size:1.35rem;font-weight:900;letter-spacing:.03em;background:linear-gradient(120deg,var(--pink),#ff6ab0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.arena-sub{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--pink);margin-top:2px}
+.header-right{display:flex;align-items:center;gap:18px}
+.windows{display:inline-flex;border:1px solid rgba(255,20,147,.3);border-radius:999px;overflow:hidden;background:#12060f}
+.windows button{background:none;border:none;cursor:pointer;font-family:inherit;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#7a6070;padding:7px 13px;transition:all .2s}
+.windows button.on{background:linear-gradient(120deg,var(--pink),#ff5aa0);color:#1a0410}
+.clock{font-size:1.5rem;font-weight:900;color:var(--pink);line-height:1;text-align:right}
+.date{font-size:.62rem;color:#7a6070;letter-spacing:.08em;text-transform:uppercase;margin-top:1px;text-align:right}
 
-/* class selector + window */
-.controls{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding:14px 0}
-.class-pick{display:flex;align-items:center;gap:10px}
-.class-pick label{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:#5a6472}
-.class-pick select{padding:9px 14px;border-radius:10px;border:2px solid rgba(0,217,165,.4);background:#08131f;color:#fff;font-size:.9rem;font-weight:700;cursor:pointer}
-.subtitle{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#5a6472}
-.subtitle b{color:var(--teal)}
+.controls{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding:10px 0 6px}
+.class-pick{display:flex;align-items:center;gap:9px}
+.class-pick label{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#7a6070}
+.class-pick select{padding:7px 12px;border-radius:9px;border:2px solid rgba(255,20,147,.4);background:#12060f;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer}
+.subtitle{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#7a6070}
+.subtitle b{color:var(--pink)}
 
-/* two divisions side by side */
-.divisions{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;overflow:hidden;padding-top:10px}
-.division{display:flex;flex-direction:column;overflow:hidden}
-.div-head{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-radius:12px;margin-bottom:10px;flex-shrink:0}
-.div-fast{background:linear-gradient(90deg,rgba(0,217,165,.18),rgba(0,217,165,.04));border:1px solid rgba(0,217,165,.4)}
-.div-elite{background:linear-gradient(90deg,rgba(255,107,0,.18),rgba(255,107,0,.04));border:1px solid rgba(255,107,0,.4)}
-.div-insane{background:linear-gradient(90deg,rgba(255,20,147,.18),rgba(255,20,147,.04));border:1px solid rgba(255,20,147,.4)}
-.div-name{font-size:1rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
-.div-fast .div-name{color:#00D9A5}.div-elite .div-name{color:#ff6b00}.div-insane .div-name{color:#FF1493}
-.div-bpm{font-size:.72rem;font-weight:900;letter-spacing:.14em;color:#9fb3c8}
-.board{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:7px}
-.row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:13px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);animation:slideIn .5s ease both}
-@keyframes slideIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
-/* division-specific top-rank coloring */
-.board80 .r1{background:linear-gradient(90deg,rgba(0,217,165,.16),transparent);border-color:rgba(0,217,165,.5)}
-.board100 .r1{background:linear-gradient(90deg,rgba(255,107,0,.16),transparent);border-color:rgba(255,107,0,.5)}
-.board120 .r1{background:linear-gradient(90deg,rgba(255,20,147,.16),transparent);border-color:rgba(255,20,147,.5)}
-.r2{background:linear-gradient(90deg,rgba(200,204,212,.09),transparent);border-color:rgba(200,204,212,.25)}
-.r3{background:linear-gradient(90deg,rgba(205,138,74,.1),transparent);border-color:rgba(205,138,74,.3)}
-.rank{width:38px;text-align:center;font-size:1.4rem;font-weight:900;color:#3a4050;flex-shrink:0}
-.board80 .r1 .rank{color:#00D9A5;text-shadow:0 0 16px rgba(0,217,165,.7)}
-.board100 .r1 .rank{color:#ff6b00;text-shadow:0 0 16px rgba(255,107,0,.7)}
-.board120 .r1 .rank{color:#FF1493;text-shadow:0 0 16px rgba(255,20,147,.7)}
-.r2 .rank{color:#c8ccd4}.r3 .rank{color:#cd8a4a}
-.medal{font-size:1.3rem;width:24px;flex-shrink:0}
-.name{flex:1;font-size:1.2rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.score-wrap{text-align:right;flex-shrink:0}
-.score{font-size:1.5rem;font-weight:900}
-.board80 .score{color:#00D9A5;text-shadow:0 0 16px rgba(0,217,165,.6)}
-.board100 .score{color:#ff6b00;text-shadow:0 0 16px rgba(255,107,0,.6)}
-.board120 .score{color:#FF1493;text-shadow:0 0 16px rgba(255,20,147,.6)}
-.score-label{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:#5a6472;margin-top:1px}
-.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#5a6472;text-align:center;font-size:.9rem}
-.empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
-@media(max-width:820px){.divisions{grid-template-columns:1fr;gap:14px}}
-@media(min-width:821px) and (max-width:1100px){.divisions{grid-template-columns:1fr 1fr}}
+/* main stage: hero (REACTIFIC) left, supporting divisions right */
+.stage{flex:1;display:grid;grid-template-columns:1.55fr 1fr;gap:20px;overflow:hidden;padding-top:8px}
 
-/* footer ticker */
-.ticker{flex-shrink:0;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(0,217,165,.2);padding-top:12px;margin-top:8px}
-.ticker-inner{display:inline-block;animation:scroll 26s linear infinite}
-.ticker-item{display:inline-block;padding:0 40px;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#5a6472}
-.ticker-item b{color:var(--teal)}
+/* HERO — REACTIFIC */
+.hero{display:flex;flex-direction:column;border:2px solid rgba(255,20,147,.5);border-radius:20px;background:linear-gradient(160deg,rgba(255,20,147,.12),rgba(255,20,147,.02));box-shadow:0 0 50px rgba(255,20,147,.22),inset 0 0 60px rgba(255,20,147,.04);overflow:hidden;padding:16px 18px}
+.hero-head{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:10px}
+.hero-name{font-size:1.5rem;font-weight:900;letter-spacing:.06em;color:var(--pink);text-shadow:0 0 24px var(--pink-glow)}
+.hero-tag{font-size:.58rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#ffd0e6;background:rgba(255,20,147,.2);padding:4px 12px;border-radius:999px}
+
+/* champion spotlight */
+.champion{flex-shrink:0;display:flex;align-items:center;gap:16px;padding:14px 16px;border-radius:16px;background:linear-gradient(100deg,rgba(255,20,147,.22),rgba(255,20,147,.03));border:1px solid rgba(255,20,147,.5);margin-bottom:12px;position:relative;overflow:hidden}
+.champion::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.08) 50%,transparent 60%);animation:sheen 3.5s ease-in-out infinite}
+@keyframes sheen{0%,100%{transform:translateX(-30%)}50%{transform:translateX(30%)}}
+.champ-crown{font-size:2.6rem;filter:drop-shadow(0 0 12px var(--pink-glow));flex-shrink:0;position:relative;z-index:1}
+.champ-info{flex:1;position:relative;z-index:1;min-width:0}
+.champ-label{font-size:.56rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#ff8ac4}
+.champ-name{font-size:1.7rem;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1}
+.champ-score{text-align:right;position:relative;z-index:1;flex-shrink:0}
+.champ-num{font-size:2.6rem;font-weight:900;color:var(--pink);line-height:1;text-shadow:0 0 24px var(--pink-glow)}
+.champ-acc{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#ff8ac4;margin-top:2px}
+
+.hero-list{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:6px}
+.hrow{display:flex;align-items:center;gap:14px;padding:9px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);animation:slideIn .5s ease both}
+.hrow .rank{width:34px;text-align:center;font-size:1.3rem;font-weight:900;color:#5a4050;flex-shrink:0}
+.hrow.r2 .rank{color:#d8b8c8}.hrow.r3 .rank{color:#cd8a4a}
+.hrow .medal{font-size:1.2rem;width:22px;flex-shrink:0}
+.hrow .name{flex:1;font-size:1.15rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrow .sc{font-size:1.3rem;font-weight:900;color:var(--pink);flex-shrink:0}
+.hrow .acc{font-size:.58rem;color:#7a6070;letter-spacing:.08em;margin-left:8px;flex-shrink:0}
+
+/* SUPPORTING divisions */
+.support{display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.division{flex:1;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.02);overflow:hidden;padding:12px 14px}
+.division.fast{border-color:rgba(0,217,165,.35)}
+.division.elite{border-color:rgba(255,107,0,.35)}
+.div-head{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:8px}
+.div-name{font-size:.95rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.fast .div-name{color:var(--teal)}.elite .div-name{color:var(--orange)}
+.div-bpm{font-size:.6rem;font-weight:900;letter-spacing:.12em;color:#7a6070}
+.slist{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+.srow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:9px;background:rgba(255,255,255,.03);animation:slideIn .5s ease both}
+.srow .rank{width:20px;text-align:center;font-size:.95rem;font-weight:900;color:#5a4050;flex-shrink:0}
+.srow .name{flex:1;font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .sc{font-size:1rem;font-weight:900;flex-shrink:0}
+.fast .srow .sc{color:var(--teal)}.elite .srow .sc{color:var(--orange)}
+.srow .acc{font-size:.52rem;color:#5a6070;margin-left:5px;flex-shrink:0}
+.fast .srow.r1{background:linear-gradient(90deg,rgba(0,217,165,.16),transparent)}
+.elite .srow.r1{background:linear-gradient(90deg,rgba(255,107,0,.16),transparent)}
+
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#5a4050;text-align:center;font-size:.85rem}
+.empty-icon{font-size:2.6rem;margin-bottom:8px;opacity:.5}
+.hero .empty-icon{font-size:4rem}
+
+/* ticker */
+.ticker{flex-shrink:0;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(255,20,147,.22);padding-top:10px;margin-top:8px}
+.ticker-inner{display:inline-block;animation:scroll 22s linear infinite}
+.ti{display:inline-block;padding:0 34px;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#7a6070}
+.ti b{color:var(--pink)}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:900px){.stage{grid-template-columns:1fr}.support{flex-direction:row}}
 </style>
 </head>
 <body>
@@ -84,15 +102,21 @@ html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(el
   <div class="header">
     <div class="brand">
       <div class="logo">REACTIFIC<span>™</span></div>
-      <div class="title-block">
-        <div class="t1">Daily Drill Board</div>
-        <div class="t2">Tap to the Beat of the Rhythm</div>
+      <div>
+        <div class="arena-title">Reaction Arena</div>
+        <div class="arena-sub">Tap Only on Red · 25-Red Sprint</div>
       </div>
-      <div class="live-badge">● Live</div>
     </div>
     <div class="header-right">
-      <div class="clock" id="clock">00:00</div>
-      <div class="date" id="date">—</div>
+      <div class="windows" id="windows">
+        <button data-w="today" class="on">Today</button>
+        <button data-w="week">Week</button>
+        <button data-w="alltime">All-Time</button>
+      </div>
+      <div>
+        <div class="clock" id="clock">00:00</div>
+        <div class="date" id="date">—</div>
+      </div>
     </div>
   </div>
 
@@ -101,47 +125,43 @@ html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(el
       <label>Class</label>
       <select id="classSel"><option value="">All Classes</option></select>
     </div>
-    <div class="subtitle">Today's Standings · <b>Two Divisions · Most Taps in 5 Minutes</b></div>
+    <div class="subtitle">Ranked by <b>Reds Caught</b> · out of 25 · pure reaction</div>
   </div>
 
-  <div class="divisions">
-    <div class="division">
-      <div class="div-head div-fast">
-        <span class="div-name">FAST</span>
-        <span class="div-bpm">80 BPM</span>
+  <div class="stage">
+    <!-- HERO: REACTIFIC -->
+    <div class="hero">
+      <div class="hero-head">
+        <div class="hero-name">⚡ REACTIFIC</div>
+        <div class="hero-tag">120 · Pure Reaction · Top Tier</div>
       </div>
-      <div class="board" id="board80">
-        <div class="empty"><div class="empty-icon">🎯</div>Loading…</div>
-      </div>
-    </div>
-    <div class="division">
-      <div class="div-head div-elite">
-        <span class="div-name">ELITE</span>
-        <span class="div-bpm">100 BPM</span>
-      </div>
-      <div class="board" id="board100">
-        <div class="empty"><div class="empty-icon">🔥</div>Loading…</div>
+      <div id="championWrap"></div>
+      <div class="hero-list" id="heroList">
+        <div class="empty"><div class="empty-icon">⚡</div>Loading the arena…</div>
       </div>
     </div>
-    <div class="division">
-      <div class="div-head div-insane">
-        <span class="div-name">REACTIFIC</span>
-        <span class="div-bpm">120 BPM</span>
+
+    <!-- SUPPORTING -->
+    <div class="support">
+      <div class="division fast">
+        <div class="div-head"><div class="div-name">🎯 Fast</div><div class="div-bpm">80 · Moving</div></div>
+        <div class="slist" id="board80"><div class="empty"><div class="empty-icon">🎯</div>—</div></div>
       </div>
-      <div class="board" id="board120">
-        <div class="empty"><div class="empty-icon">⚡</div>Loading…</div>
+      <div class="division elite">
+        <div class="div-head"><div class="div-name">🔥 Elite</div><div class="div-bpm">100 · Moving</div></div>
+        <div class="slist" id="board100"><div class="empty"><div class="empty-icon">🔥</div>—</div></div>
       </div>
     </div>
   </div>
 
   <div class="ticker">
     <div class="ticker-inner">
-      <div class="ticker-item">🥁 <b>Tap to the Beat of the Rhythm</b> — Five Minutes · Stay on the Beat</div>
-      <div class="ticker-item">⚡ Be at your seat when the clock starts</div>
-      <div class="ticker-item">🔥 Beat your number tomorrow</div>
-      <div class="ticker-item">🥁 <b>Tap to the Beat of the Rhythm</b> — Five Minutes · Stay on the Beat</div>
-      <div class="ticker-item">⚡ Be at your seat when the clock starts</div>
-      <div class="ticker-item">🔥 Beat your number tomorrow</div>
+      <div class="ti">⚡ <b>REACTIFIC</b> — Tap Only on Red · Pure Reaction</div>
+      <div class="ti">🎯 Fast 80 · 🔥 Elite 100 · ⚡ Reactific 120</div>
+      <div class="ti">🔴 Catch all 25 reds · miss 3 in a row = out</div>
+      <div class="ti">⚡ <b>REACTIFIC</b> — Tap Only on Red · Pure Reaction</div>
+      <div class="ti">🎯 Fast 80 · 🔥 Elite 100 · ⚡ Reactific 120</div>
+      <div class="ti">🔴 Catch all 25 reds · miss 3 in a row = out</div>
     </div>
   </div>
 
@@ -150,80 +170,87 @@ html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(el
 <script>
 var API='https://api.reactificgaming.com';
 var MEDALS=['🥇','🥈','🥉'];
-var classId='';
+var TOTAL=25;
+var classId='',windowSel='today';
 (function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
 function $(id){return document.getElementById(id)}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function acc(score){var s=Math.max(0,Math.min(TOTAL,Number(score||0)));return s+' / '+TOTAL}
 
 /* stars */
 (function(){
   var c=$('stars'),ctx=c.getContext('2d'),stars=[];
   function size(){c.width=innerWidth;c.height=innerHeight}
   size();addEventListener('resize',size);
-  for(var i=0;i<160;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.2,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
+  for(var i=0;i<170;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.2,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
   (function draw(){ctx.clearRect(0,0,c.width,c.height);var t=Date.now()/1000;stars.forEach(function(s){var p=s.o+Math.sin(t*s.s)*.13;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill()});requestAnimationFrame(draw)})();
 })();
 
-/* clock */
-function tickClock(){
-  var d=new Date();
-  $('clock').textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
-  $('date').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
-}
+function tickClock(){var d=new Date();$('clock').textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);$('date').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})}
 setInterval(tickClock,1000);tickClock();
 
-/* load teacher classes into the picker if logged in as teacher */
+Array.prototype.forEach.call($('windows').children,function(btn){
+  btn.onclick=function(){windowSel=btn.dataset.w;Array.prototype.forEach.call($('windows').children,function(b){b.classList.remove('on')});btn.classList.add('on');fetchAll()};
+});
+
 function loadClasses(){
-  var token=localStorage.getItem('rct-token');
-  if(!token)return;
-  fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}})
-    .then(function(r){return r.json()}).then(function(d){
-      if(d.classes&&d.classes.length){
-        var sel=$('classSel');
-        sel.innerHTML='<option value="">All Classes</option>'+d.classes.map(function(c){return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>'}).join('');
-        sel.onchange=function(){classId=sel.value;fetchBoard()};
-      }
-    }).catch(function(){});
+  var token=localStorage.getItem('rct-token');if(!token)return;
+  fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}}).then(function(r){return r.json()}).then(function(d){
+    if(d.classes&&d.classes.length){var sel=$('classSel');sel.innerHTML='<option value="">All Classes</option>'+d.classes.map(function(c){return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>'}).join('');sel.onchange=function(){classId=sel.value;fetchAll()}}
+  }).catch(function(){});
 }
 
-/* fetch both divisions' today leaderboards */
-function fetchBoard(){
-  fetchDivision('drill','board80','🎯');
-  fetchDivision('drill100','board100','🔥');
-  fetchDivision('drill120','board120','⚡');
-}
-function fetchDivision(gameId,elId,icon){
-  var url=API+'/api/leaderboard/'+gameId+'?window=today&limit=8'+(classId?'&class_id='+classId:'');
-  fetch(url).then(function(r){return r.json()}).then(function(d){
-    render(d.entries||[],elId,icon);
-  }).catch(function(){
-    document.getElementById(elId).innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>Could not load.</div>';
-  });
+function fetchAll(){
+  fetchHero();
+  fetchSupport('drill','board80','fast');
+  fetchSupport('drill100','board100','elite');
 }
 
-function render(entries,elId,icon){
-  var board=document.getElementById(elId);
-  board.className='board '+elId; // board80 / board100 for color scoping
+function fetchHero(){
+  var url=API+'/api/leaderboard/drill120?window='+windowSel+'&limit=10'+(classId?'&class_id='+classId:'');
+  fetch(url).then(function(r){return r.json()}).then(function(d){renderHero(d.entries||[])})
+    .catch(function(){$('heroList').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>Could not load.</div>'});
+}
+function renderHero(entries){
+  var champ=$('championWrap'),list=$('heroList');
   if(!entries.length){
-    board.innerHTML='<div class="empty"><div class="empty-icon">'+icon+'</div>No drills yet today<br><span style="font-size:.85rem;color:#3a4050">Be the first</span></div>';
+    champ.innerHTML='';
+    list.innerHTML='<div class="empty"><div class="empty-icon">⚡</div>No Reactific runs '+(windowSel==='today'?'today':windowSel==='week'?'this week':'yet')+'<br><span style="font-size:.9rem;color:#5a4050">Be the first champion</span></div>';
     return;
   }
-  board.innerHTML=entries.map(function(e,i){
-    var rc=i===0?'r1':i===1?'r2':i===2?'r3':'';
-    var medal=MEDALS[i]?'<div class="medal">'+MEDALS[i]+'</div>':'<div style="width:24px"></div>';
-    var name=escapeHtml(e.name||e.username||'Player');
-    var score=Number(e.score||0).toLocaleString();
-    return '<div class="row '+rc+'" style="animation-delay:'+(i*50)+'ms">'
-      +'<div class="rank">'+(i+1)+'</div>'+medal
-      +'<div class="name">'+name+'</div>'
-      +'<div class="score-wrap"><div class="score">'+score+'</div><div class="score-label">Taps</div></div>'
-      +'</div>';
+  var top=entries[0];
+  champ.innerHTML='<div class="champion"><div class="champ-crown">👑</div>'
+    +'<div class="champ-info"><div class="champ-label">Champion of the '+(windowSel==='today'?'Day':windowSel==='week'?'Week':'Arena')+'</div>'
+    +'<div class="champ-name">'+escapeHtml(top.name||top.username||'Player')+'</div></div>'
+    +'<div class="champ-score"><div class="champ-num">'+Number(top.score||0)+'</div><div class="champ-acc">'+acc(top.score)+' reds</div></div></div>';
+  list.innerHTML=entries.slice(1).map(function(e,i){
+    var rank=i+2;var rc=rank===2?'r2':rank===3?'r3':'';
+    var medal=MEDALS[rank-1]?'<div class="medal">'+MEDALS[rank-1]+'</div>':'<div style="width:22px"></div>';
+    return '<div class="hrow '+rc+'" style="animation-delay:'+(i*50)+'ms"><div class="rank">'+rank+'</div>'+medal
+      +'<div class="name">'+escapeHtml(e.name||e.username||'Player')+'</div>'
+      +'<div class="sc">'+Number(e.score||0)+'</div><div class="acc">'+acc(e.score)+'</div></div>';
+  }).join('')||'<div class="empty" style="font-size:.8rem;color:#5a4050">Only the champion so far</div>';
+}
+
+function fetchSupport(gid,elId,cls){
+  var url=API+'/api/leaderboard/'+gid+'?window='+windowSel+'&limit=6'+(classId?'&class_id='+classId:'');
+  fetch(url).then(function(r){return r.json()}).then(function(d){renderSupport(d.entries||[],elId)})
+    .catch(function(){$(elId).innerHTML='<div class="empty">—</div>'});
+}
+function renderSupport(entries,elId){
+  var el=$(elId);
+  if(!entries.length){el.innerHTML='<div class="empty" style="font-size:.8rem">No runs yet</div>';return}
+  el.innerHTML=entries.map(function(e,i){
+    var rc=i===0?'r1':'';
+    return '<div class="srow '+rc+'" style="animation-delay:'+(i*45)+'ms"><div class="rank">'+(i+1)+'</div>'
+      +'<div class="name">'+escapeHtml(e.name||e.username||'Player')+'</div>'
+      +'<div class="sc">'+Number(e.score||0)+'</div><div class="acc">/'+TOTAL+'</div></div>';
   }).join('');
 }
 
 loadClasses();
-fetchBoard();
-setInterval(fetchBoard,8000);   // refresh every 8s
+fetchAll();
+setInterval(fetchAll,8000);
 </script>
 </body>
 </html>
