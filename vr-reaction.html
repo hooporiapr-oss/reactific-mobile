@@ -82,7 +82,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 </div>
 
 <div id="hud">
-  <div class="hud-box"><div class="hud-label">Reds</div><div class="hud-val"><span id="hReds">0</span><span style="font-size:.7rem;color:#5a6472"> / 100</span></div></div>
+  <div class="hud-box"><div class="hud-label">Reds</div><div class="hud-val"><span id="hReds">0</span><span style="font-size:.7rem;color:#5a6472"> / <span id="hRedTotal">25</span></span></div></div>
   <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hTaps">0</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
 </div>
@@ -105,7 +105,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
     <button class="tempo-btn" data-tempo="100" style="--tc:#ff6b00"><span class="t-bpm">100</span><span class="t-unit">BPM</span><small>Elite</small></button>
     <button class="tempo-btn" data-tempo="120" style="--tc:#FF1493"><span class="t-bpm">120</span><span class="t-unit">BPM</span><small>Reactific</small></button>
   </div>
-  <div class="tempo-hint" id="tempoHint">Targets move — tap ONLY on RED. Coordination + reaction. 100 reds.</div>
+  <div class="tempo-hint" id="tempoHint">Targets move — tap ONLY on RED. Coordination + reaction. 25 reds.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">🔴 START · TAP ONLY ON RED</button>
   <div class="best-line" id="bestLine"></div>
 </div>
@@ -134,7 +134,7 @@ var TEMPOS={
   '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best', goNoGo:true, flashMs:600, bust:true, centered:false},
   '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best', goNoGo:true, flashMs:500, bust:true, centered:true}
 };
-var TOTAL_REDS=100;             // game ends after 100 reds have appeared
+var TOTAL_REDS=25;              // game ends after 25 reds have appeared — a punchy, repeatable sprint
 var tempo='80';                 // selected tempo key
 var BEAT_BPM=80,TARGET_MS=750,COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72,GAME_ID='drill',BEST_KEY='rct-drill-best';
 var REACTION_TEST=false,SPAWN_MS=1000,WINDOW_MS=360,GO_NO_GO=false,FLASH_MS=500,BUST_ON=false,CENTERED=true;
@@ -173,9 +173,9 @@ function loadBestForTempo(){
 
 /* tempo selector */
 var TEMPO_HINTS={
-  '80':'Targets move — tap ONLY on RED. Coordination + reaction. 100 reds.',
-  '100':'Faster moving targets — tap ONLY on RED. 100 reds.',
-  '120':'Centered target, colors flash fast — tap ONLY on RED. Pure reaction. 100 reds.'
+  '80':'Targets move — tap ONLY on RED. Coordination + reaction. 25 reds.',
+  '100':'Faster moving targets — tap ONLY on RED. 25 reds.',
+  '120':'Centered target, colors flash fast — tap ONLY on RED. Pure reaction. 25 reds.'
 };
 document.querySelectorAll('.tempo-btn').forEach(function(btn){
   btn.onclick=function(){
@@ -310,6 +310,8 @@ function goNoGoStart(){
   gngIsRed=false;redsSeen=0;
   $('gng-score-num').textContent='0';
   $('gng-score-num').classList.add('on');
+  var rt=$('hRedTotal');if(rt)rt.textContent=TOTAL_REDS;
+  $('hReds')&&($('hReds').textContent='0');
   gngRender(GNG_NONRED[0]);          // start on a non-red
   startBeat();                       // beat pulse throbs underneath
   gngTimer=setInterval(gngCycle,FLASH_MS);   // colors change at the tier's flash speed
