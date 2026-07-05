@@ -32,6 +32,9 @@ body{
 /* LEFT — 4 Games */
 .games-section{display:flex;flex-direction:column;gap:8px}
 .games-title{font-size:.7rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#8892a0;margin-bottom:4px}
+.arena-link{margin-top:16px;display:inline-block;padding:12px 22px;border-radius:999px;background:linear-gradient(120deg,#FF1493,#ff5aa0);color:#1a0410;font-size:.82rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;box-shadow:0 0 26px rgba(255,20,147,.5);animation:arenaPulse 2.2s ease-in-out infinite;transition:transform .15s}
+.arena-link:hover{transform:translateY(-2px) scale(1.03)}
+@keyframes arenaPulse{0%,100%{box-shadow:0 0 26px rgba(255,20,147,.45)}50%{box-shadow:0 0 44px rgba(255,20,147,.85)}}
 .games-grid{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow:hidden}
 
 .game-card{
@@ -148,6 +151,7 @@ body{
     <div class="platform-tagline" style="font-size:.65rem;color:#5a6070">
       Practice each game, then<br>test your reaction.
     </div>
+    <a class="arena-link" href="/drill-scoreboard.html">⚡ Enter the Reaction Arena →</a>
   </div>
 
   <!-- RIGHT: LEADERBOARD -->
