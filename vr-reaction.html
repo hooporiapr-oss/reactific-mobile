@@ -82,8 +82,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 </div>
 
 <div id="hud">
-  <div class="hud-box"><div class="hud-label">Time Left</div><div class="hud-val" id="hTime">5:00</div></div>
-  <div class="hud-box"><div class="hud-label">Your Taps</div><div class="hud-val" id="hTaps">0</div></div>
+  <div class="hud-box"><div class="hud-label">Reds</div><div class="hud-val"><span id="hReds">0</span><span style="font-size:.7rem;color:#5a6472"> / 100</span></div></div>
+  <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hTaps">0</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
 </div>
 
@@ -105,8 +105,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
     <button class="tempo-btn" data-tempo="100" style="--tc:#ff6b00"><span class="t-bpm">100</span><span class="t-unit">BPM</span><small>Elite</small></button>
     <button class="tempo-btn" data-tempo="120" style="--tc:#FF1493"><span class="t-bpm">120</span><span class="t-unit">BPM</span><small>Reactific</small></button>
   </div>
-  <div class="tempo-hint" id="tempoHint">Tap every target on the beat — hand-eye coordination.</div>
-  <button class="big-btn" id="bigStart" onclick="startDrill()">🥁 START · TAP TO THE BEAT</button>
+  <div class="tempo-hint" id="tempoHint">Targets move — tap ONLY on RED. Coordination + reaction. 100 reds.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">🔴 START · TAP ONLY ON RED</button>
   <div class="best-line" id="bestLine"></div>
 </div>
 
@@ -130,18 +130,19 @@ var API='https://api.reactificgaming.com';
 var DRILL_MS=5*60*1000;         // 5 minutes
 // Three tempos, each beat-synced, each saving to its own division board.
 var TEMPOS={
-  '80': {bpm:80,  targetMs:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:72, gid:'drill',    bestKey:'rct-drill-best'},
-  '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best'},
-  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best',
-         goNoGo:true}  // GO/NO-GO: one big centered target, colors change randomly, only RED scores
+  '80': {bpm:80,  targetMs:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:72, gid:'drill',    bestKey:'rct-drill-best',    goNoGo:true, flashMs:750, bust:false, centered:false},
+  '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best', goNoGo:true, flashMs:600, bust:false, centered:false},
+  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best', goNoGo:true, flashMs:500, bust:true,  centered:true}
 };
+var TOTAL_REDS=100;             // game ends after 100 reds have appeared
 var tempo='80';                 // selected tempo key
 var BEAT_BPM=80,TARGET_MS=750,COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72,GAME_ID='drill',BEST_KEY='rct-drill-best';
-var REACTION_TEST=false,SPAWN_MS=1000,WINDOW_MS=360,GO_NO_GO=false;
+var REACTION_TEST=false,SPAWN_MS=1000,WINDOW_MS=360,GO_NO_GO=false,FLASH_MS=500,BUST_ON=false,CENTERED=true;
 function applyTempo(t){
   tempo=t;var c=TEMPOS[t];
   BEAT_BPM=c.bpm;TARGET_MS=c.targetMs;COLOR=c.color;GLOW=c.glow;SIZE=c.size;GAME_ID=c.gid;BEST_KEY=c.bestKey;
   REACTION_TEST=!!c.reactionTest;SPAWN_MS=c.spawnMs||1000;WINDOW_MS=c.windowMs||360;GO_NO_GO=!!c.goNoGo;
+  FLASH_MS=c.flashMs||500;BUST_ON=!!c.bust;CENTERED=(c.centered!==false);
   // recolor edge glow + accent to the chosen tempo
   var eg=$('edge-glow');if(eg)eg.style.boxShadow='inset 0 0 80px '+GLOW.replace('1)','.28)')+',0 0 80px '+GLOW.replace('1)','.1)');
   loadBestForTempo();
@@ -172,9 +173,9 @@ function loadBestForTempo(){
 
 /* tempo selector */
 var TEMPO_HINTS={
-  '80':'Tap every target on the beat — hand-eye coordination.',
-  '100':'Faster beat, same game — sharpen your coordination.',
-  '120':'GO / NO-GO: colors flash at 120 BPM. Tap ONLY on RED. Pure reaction.'
+  '80':'Targets move — tap ONLY on RED. Coordination + reaction. 100 reds.',
+  '100':'Faster moving targets — tap ONLY on RED. 100 reds.',
+  '120':'Centered target, colors flash fast — tap ONLY on RED. Pure reaction. 100 reds.'
 };
 document.querySelectorAll('.tempo-btn').forEach(function(btn){
   btn.onclick=function(){
@@ -183,7 +184,7 @@ document.querySelectorAll('.tempo-btn').forEach(function(btn){
     applyTempo(btn.dataset.tempo);
     var t=btn.dataset.tempo;
     $('tempoHint').textContent=TEMPO_HINTS[t]||'';
-    $('bigStart').textContent = t==='120' ? '🔴 START · TAP ONLY ON RED' : '🥁 START · TAP TO THE BEAT';
+    $('bigStart').textContent = '🔴 START · TAP ONLY ON RED';
   };
 });
 applyTempo('80');   // default
@@ -215,31 +216,16 @@ function startDrill(){
 
 function runDrill(){
   phase='running';taps=0;$('hTaps').textContent='0';misses=0;
-  endAt=Date.now()+DRILL_MS;
-  if(GO_NO_GO){
-    msg('TAP ONLY ON RED!','go');
-    timers.push(setTimeout(function(){msg('','go')},1600));
-    goNoGoStart();
-  }else{
-    startBeat();
-    if(REACTION_TEST){
-      msg('REACT FAST — TAP IN TIME!','go');
-      timers.push(setTimeout(reactionLoop,600));
-    }else{
-      msg('TAP ON THE BEAT!','go');
-    }
-    timers.push(setTimeout(function(){msg('','go')},1400));
-  }
-  clock();
+  // GO/NO-GO for all tiers now — ends after 100 reds, no 5-minute timer
+  var startMsg = CENTERED ? 'TAP ONLY ON RED!' : 'MOVE & TAP ONLY ON RED!';
+  msg(startMsg,'go');
+  timers.push(setTimeout(function(){msg('','go')},1600));
+  goNoGoStart();
 }
 
 function clock(){
-  if(phase!=='running')return;
-  var left=endAt-Date.now();
-  if(left<=0){endDrill();return}
-  var s=Math.max(0,Math.floor(left/1000)),m=Math.floor(s/60),ss=s%60;
-  $('hTime').textContent=m+':'+(ss<10?'0':'')+ss;
-  requestAnimationFrame(clock);
+  // (legacy 5-minute timer — no longer used; go/no-go ends at 100 reds)
+  return;
 }
 
 function showTarget(){
@@ -278,46 +264,68 @@ function reactionLoop(){
 }
 function stopReaction(){if(reactionTimer){clearTimeout(reactionTimer);reactionTimer=null}if(windowTimer){clearTimeout(windowTimer);windowTimer=null}}
 
-/* ── GO / NO-GO (120 Reactific): one big centered target. Colors cycle at the
-   120 tempo (every 500ms). RED is one of the colors in the rotation. Tap when
-   it's RED = score. Tap on any other color = false start → penalty.
-   Pure 120: the beat drives the color changes; catch the red as it flashes by. ── */
-var GNG_WHEEL=[
-  {name:'red',   c:'#ff1e3c', g:'rgba(255,30,60,1)',  red:true},
+/* ── GO / NO-GO (all tiers): one target, colors cycle at the tier's flash speed.
+   RED is one of the colors. Tap on RED = score. Tap non-red = penalty.
+   80/100: target MOVES each color change (coordination + reaction).
+   120: target stays CENTERED (pure reaction).
+   Game ends after TOTAL_REDS (100) reds have appeared. ── */
+var GNG_NONRED=[
   {name:'blue',  c:'#2f7bff', g:'rgba(47,123,255,1)'},
   {name:'green', c:'#00D9A5', g:'rgba(0,217,165,1)'},
   {name:'orange',c:'#ff9500', g:'rgba(255,149,0,1)'},
   {name:'yellow',c:'#ffd60a', g:'rgba(255,214,10,1)'},
   {name:'purple',c:'#a855f7', g:'rgba(168,85,247,1)'}
 ];
-var gngTimer=null, gngIsRed=false, misses=0;
+var RED_COLOR={name:'red',c:'#ff1e3c',g:'rgba(255,30,60,1)',red:true};
+var gngTimer=null, gngIsRed=false, misses=0, redsSeen=0;
 
-function gngRenderCentered(col){
-  var big=Math.min(innerWidth,innerHeight)*0.42;
-  big=Math.max(160,Math.min(320,big));
-  targetX=innerWidth/2;targetY=innerHeight/2;
+// Red appears on a fully random, wandering chance — no fixed 1-in-N rate a kid
+// could count. Red may repeat, cluster, or go quiet. Truly unpredictable.
+function gngPickColor(){
+  var chance=0.14+Math.random()*0.16;   // red probability wanders ~14%–30% each flash
+  if(Math.random()<chance)return RED_COLOR;
+  return GNG_NONRED[Math.floor(Math.random()*GNG_NONRED.length)];
+}
+
+function gngRender(col){
+  var big;
+  if(CENTERED){
+    big=Math.min(innerWidth,innerHeight)*0.42;big=Math.max(160,Math.min(320,big));
+    targetX=innerWidth/2;targetY=innerHeight/2;
+  }else{
+    // moving target: coordination — random position each color change
+    big=Math.max(90,Math.min(150,Math.min(innerWidth,innerHeight)*0.20));
+    var pad=big/2+20;
+    targetX=pad+Math.random()*(innerWidth-pad*2);
+    targetY=150+Math.random()*(innerHeight-230);
+  }
   targetEl.style.left=targetX+'px';targetEl.style.top=targetY+'px';
   targetEl.style.width=big+'px';targetEl.style.height=big+'px';
   targetInner.style.background='radial-gradient(circle at 38% 35%,'+col.c+','+col.c+'aa)';
-  targetInner.style.boxShadow='0 0 60px '+col.g+',0 0 120px '+col.g.replace('1)','0.4)');
+  targetInner.style.boxShadow='0 0 50px '+col.g+',0 0 100px '+col.g.replace('1)','0.4)');
   targetEl.classList.add('visible');
 }
 
 function goNoGoStart(){
-  gngIsRed=false;
+  gngIsRed=false;redsSeen=0;
   $('gng-score-num').textContent='0';
-  $('gng-score-num').classList.add('on');   // show score inside the color target
-  gngRenderCentered(GNG_WHEEL[1]);   // start on a non-red
-  startBeat();                       // 120 beat pulse throbs underneath (visual + sound)
-  var interval=60000/BEAT_BPM;       // 120 BPM = 500ms — colors change ON the beat
-  gngTimer=setInterval(gngCycle,interval);
+  $('gng-score-num').classList.add('on');
+  gngRender(GNG_NONRED[0]);          // start on a non-red
+  startBeat();                       // beat pulse throbs underneath
+  gngTimer=setInterval(gngCycle,FLASH_MS);   // colors change at the tier's flash speed
 }
 function gngCycle(){
   if(phase!=='running')return;
-  // pick a random color from the full wheel each beat (red included, ~1 in 6)
-  var col=GNG_WHEEL[Math.floor(Math.random()*GNG_WHEEL.length)];
+  var col=gngPickColor();            // fully random red chance — no countable pattern
   gngIsRed=!!col.red;
-  gngRenderCentered(col);
+  gngRender(col);
+  if(gngIsRed){
+    redsSeen++;
+    $('hReds')&&($('hReds').textContent=redsSeen);
+    if(redsSeen>=TOTAL_REDS){        // 100 reds have appeared — end after this one shows briefly
+      timers.push(setTimeout(function(){if(phase==='running')endDrill()},FLASH_MS));
+    }
+  }
 }
 function stopGoNoGo(){if(gngTimer){clearInterval(gngTimer);gngTimer=null}}
 
@@ -343,14 +351,18 @@ function handleTap(){
       // NO-GO violation — tapped a non-red → penalty
       misses++;
       penaltyFlash();
-      taps=taps-1;                  // false start costs a point (can go negative)
-      if(taps<=-3){                 // busted out — system ends the game (never shows -3)
-        $('hTaps').textContent=Math.max(0,taps);
-        msg('✗ NOT RED!','miss');
-        endDrill();
-        return;
+      if(BUST_ON){
+        taps=taps-1;                  // 120: can go negative, -3 ends the game
+        if(taps<=-3){
+          $('hTaps').textContent=Math.max(0,taps);
+          msg('✗ NOT RED!','miss');
+          endDrill();
+          return;
+        }
+      }else{
+        taps=Math.max(0,taps-1);      // 80/100: just lose a point, floored at 0
       }
-      $('hTaps').textContent=Math.max(0,taps);   // never display a negative
+      $('hTaps').textContent=Math.max(0,taps);
       sn.textContent=Math.max(0,taps);
       sn.style.transform='scale(.8)';sn.style.color='#ffd0d8';
       setTimeout(function(){sn.style.transform='scale(1)';sn.style.color='#fff'},200);
