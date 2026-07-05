@@ -284,8 +284,7 @@ function coordStart(){
   var rt=$('hRedTotal');if(rt)rt.textContent=TOTAL_TARGETS;
   var rl=$('hRedLabel');if(rl)rl.textContent='Targets';
   $('hReds')&&($('hReds').textContent='0');
-  startBeat();
-  coordNext();
+  startBeat();          // the beat tick calls coordBeat() — targets land ON the beat
 }
 function coordRenderMoving(){
   var big=Math.max(90,Math.min(150,Math.min(innerWidth,innerHeight)*0.20));
@@ -298,20 +297,16 @@ function coordRenderMoving(){
   targetInner.style.boxShadow='0 0 45px '+GLOW+',0 0 90px '+GLOW.replace('1)','0.4)');
   targetEl.classList.add('visible');
 }
-function coordNext(){
+// called on every beat tick — one fresh target per beat, locked to the tempo
+function coordBeat(){
   if(phase!=='running')return;
   if(targetsSeen>=TOTAL_TARGETS){endDrill();return}
   targetsSeen++;
   $('hReds')&&($('hReds').textContent=targetsSeen);
   coordRenderMoving();
-  coordLive=true;
-  // target stays for the window, then expires (miss, no penalty)
-  coordWindow=setTimeout(function(){
-    if(phase!=='running')return;
-    coordLive=false;hideTarget();
-    coordTimer=setTimeout(coordNext,180);   // brief gap, next target
-  },COORD_WINDOW);
+  coordLive=true;   // previous target (if untapped) is simply replaced = a miss, no penalty
 }
+function stopCoord(){if(coordTimer){clearTimeout(coordTimer);coordTimer=null}if(coordWindow){clearTimeout(coordWindow);coordWindow=null}}
 function stopCoord(){if(coordTimer){clearTimeout(coordTimer);coordTimer=null}if(coordWindow){clearTimeout(coordWindow);coordWindow=null}}
 
 function clock(){
@@ -335,7 +330,8 @@ targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap
 // beat-driven (80/100): each beat places a fresh target to tap in time
 function spawnOnBeat(){
   if(phase!=='running')return;
-  if(GO_NO_GO||COORD)return;   // those modes handle their own spawning; beat is ambiance
+  if(COORD){coordBeat();return}   // coord spawns exactly on the beat
+  if(GO_NO_GO)return;             // go/no-go handles its own color cycling
   showTarget();
 }
 
@@ -420,16 +416,14 @@ function handleTap(){
 
   if(COORD){
     if(!coordLive)return;
-    coordLive=false;
-    if(coordWindow){clearTimeout(coordWindow);coordWindow=null}
+    coordLive=false;                // consumed — but the beat timer keeps running
     taps++;
     var sc=$('gng-score-num');
     $('hTaps').textContent=taps;sc.textContent=taps;
     sc.style.transform='scale(1.35)';sc.style.color='#eafff6';
     setTimeout(function(){sc.style.transform='scale(1)';sc.style.color='#fff'},140);
     ripple(targetX,targetY);flash();
-    hideTarget();
-    coordTimer=setTimeout(coordNext,140);   // next target
+    hideTarget();                   // next target arrives on the next beat (coordWindow timer)
     return;
   }
 
