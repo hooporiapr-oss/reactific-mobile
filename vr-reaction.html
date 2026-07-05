@@ -40,6 +40,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 .rule-card{max-width:440px;border:1px solid rgba(0,217,165,.25);background:rgba(0,217,165,.04);border-radius:18px;padding:26px;margin-bottom:24px}
 .tempo-label{font-size:.62rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#8aa;margin-bottom:14px}
 .tempo-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:440px;margin-bottom:26px}
+.mode-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%;max-width:440px;margin-bottom:22px}
+.mode-btn{height:74px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.03);border-radius:16px;color:#fff;font-size:1.05rem;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .2s}
+.mode-btn .m-ic{font-size:1.3rem}
+.mode-btn small{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:#8892a0;font-weight:700}
+.mode-btn.active{border-color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 24px rgba(255,255,255,.2)}
+.tempo-btn.hidden{display:none}
 .tempo-btn{height:96px;border:2px solid var(--tc);background:transparent;border-radius:16px;color:#fff;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .2s}
 .tempo-btn .t-bpm{font-size:1.9rem;line-height:1;color:var(--tc)}
 .tempo-btn .t-unit{font-size:.5rem;letter-spacing:.2em;color:#8892a0;margin-top:2px}
@@ -82,7 +88,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 </div>
 
 <div id="hud">
-  <div class="hud-box"><div class="hud-label">Reds</div><div class="hud-val"><span id="hReds">0</span><span style="font-size:.7rem;color:#5a6472"> / <span id="hRedTotal">50</span></span></div></div>
+  <div class="hud-box"><div class="hud-label" id="hRedLabel">Reds</div><div class="hud-val"><span id="hReds">0</span><span style="font-size:.7rem;color:#5a6472"> / <span id="hRedTotal">50</span></span></div></div>
   <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hTaps">0</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
 </div>
@@ -99,14 +105,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <a class="intro-back" href="/vr-lab.html">← Exit</a>
   <div class="vrr-logo">REACTION <span>CONTROL</span></div>
   <div class="vrr-sub">Tap to the Beat of the Rhythm · Reactific™</div>
+  <div class="tempo-label">Choose Your Game</div>
+  <div class="mode-row">
+    <button class="mode-btn active" data-mode="coord"><span class="m-ic">🎯</span>Eye-Hand<small>Tap every target</small></button>
+    <button class="mode-btn" data-mode="gng"><span class="m-ic">🔴</span>Go / No-Go<small>Tap only on red</small></button>
+  </div>
   <div class="tempo-label">Choose Your Tempo</div>
   <div class="tempo-row">
     <button class="tempo-btn active" data-tempo="80" style="--tc:#00D9A5"><span class="t-bpm">80</span><span class="t-unit">BPM</span><small>Fast</small></button>
     <button class="tempo-btn" data-tempo="100" style="--tc:#ff6b00"><span class="t-bpm">100</span><span class="t-unit">BPM</span><small>Elite</small></button>
-    <button class="tempo-btn" data-tempo="120" style="--tc:#FF1493"><span class="t-bpm">120</span><span class="t-unit">BPM</span><small>Reactific</small></button>
+    <button class="tempo-btn" data-tempo="120" id="tempo120" style="--tc:#FF1493"><span class="t-bpm">120</span><span class="t-unit">BPM</span><small>Reactific</small></button>
   </div>
-  <div class="tempo-hint" id="tempoHint">Targets move — tap ONLY on RED. Coordination + reaction. 50 reds.</div>
-  <button class="big-btn" id="bigStart" onclick="startDrill()">🔴 START · TAP ONLY ON RED</button>
+  <div class="tempo-hint" id="tempoHint">Targets pop up — tap every one, fast! Eye-hand coordination. 50 taps.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">🎯 START · TAP EVERY TARGET</button>
   <div class="best-line" id="bestLine"></div>
 </div>
 
@@ -127,22 +138,34 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 
 <script>
 var API='https://api.reactificgaming.com';
-var DRILL_MS=5*60*1000;         // 5 minutes
-// Three tempos, each beat-synced, each saving to its own division board.
-var TEMPOS={
-  '80': {bpm:80,  targetMs:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:72, gid:'drill',    bestKey:'rct-drill-best',    goNoGo:true, flashMs:750, bust:true, centered:false},
-  '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best', goNoGo:true, flashMs:600, bust:true, centered:false},
-  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best', goNoGo:true, flashMs:500, bust:true, centered:true}
+// Two game modes at 80/100, go/no-go also at 120.
+// GO/NO-GO: colors cycle, tap only on red. COORD: tap every target that pops up.
+var MODES={
+  gng:{
+    '80': {bpm:80,  color:'#00D9A5', glow:'rgba(0,217,165,1)', gid:'drill',    bestKey:'rct-drill-best',    flashMs:750, bust:true, centered:false},
+    '100':{bpm:100, color:'#ff6b00', glow:'rgba(255,107,0,1)', gid:'drill100', bestKey:'rct-drill100-best', flashMs:600, bust:true, centered:false},
+    '120':{bpm:120, color:'#FF1493', glow:'rgba(255,20,147,1)', gid:'drill120', bestKey:'rct-drill120-best', flashMs:500, bust:true, centered:true}
+  },
+  coord:{
+    '80': {bpm:80,  color:'#00D9A5', glow:'rgba(0,217,165,1)', gid:'coord80',  bestKey:'rct-coord80-best',  windowMs:1100, size:80},
+    '100':{bpm:100, color:'#ff6b00', glow:'rgba(255,107,0,1)', gid:'coord100', bestKey:'rct-coord100-best', windowMs:850,  size:72}
+  }
 };
-var TOTAL_REDS=50;              // game ends after 50 reds have appeared
-var tempo='80';                 // selected tempo key
-var BEAT_BPM=80,TARGET_MS=750,COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72,GAME_ID='drill',BEST_KEY='rct-drill-best';
-var REACTION_TEST=false,SPAWN_MS=1000,WINDOW_MS=360,GO_NO_GO=false,FLASH_MS=500,BUST_ON=false,CENTERED=true;
+var mode='coord';               // selected mode
+var TOTAL_REDS=50;              // go/no-go: ends after 50 reds
+var TOTAL_TARGETS=50;          // coord: ends after 50 targets appear
+var tempo='80';
+var BEAT_BPM=80,COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72,GAME_ID='drill',BEST_KEY='rct-drill-best';
+var GO_NO_GO=false,FLASH_MS=500,BUST_ON=false,CENTERED=true;
+var COORD=false,COORD_WINDOW=1000;
 function applyTempo(t){
-  tempo=t;var c=TEMPOS[t];
-  BEAT_BPM=c.bpm;TARGET_MS=c.targetMs;COLOR=c.color;GLOW=c.glow;SIZE=c.size;GAME_ID=c.gid;BEST_KEY=c.bestKey;
-  REACTION_TEST=!!c.reactionTest;SPAWN_MS=c.spawnMs||1000;WINDOW_MS=c.windowMs||360;GO_NO_GO=!!c.goNoGo;
-  FLASH_MS=c.flashMs||500;BUST_ON=!!c.bust;CENTERED=(c.centered!==false);
+  tempo=t;var c=MODES[mode][t];
+  if(!c){t='80';tempo='80';c=MODES[mode]['80'];}
+  BEAT_BPM=c.bpm;COLOR=c.color;GLOW=c.glow;SIZE=c.size||72;GAME_ID=c.gid;BEST_KEY=c.bestKey;
+  COORD=(mode==='coord');
+  GO_NO_GO=(mode==='gng');
+  FLASH_MS=c.flashMs||500;BUST_ON=!!c.bust;CENTERED=(c.centered!==false&&mode==='gng');
+  COORD_WINDOW=c.windowMs||1000;
   // recolor edge glow + accent to the chosen tempo
   var eg=$('edge-glow');if(eg)eg.style.boxShadow='inset 0 0 80px '+GLOW.replace('1)','.28)')+',0 0 80px '+GLOW.replace('1)','.1)');
   loadBestForTempo();
@@ -172,22 +195,45 @@ function loadBestForTempo(){
 }
 
 /* tempo selector */
-var TEMPO_HINTS={
-  '80':'Targets move — tap ONLY on RED. Coordination + reaction. 50 reds.',
-  '100':'Faster moving targets — tap ONLY on RED. 50 reds.',
-  '120':'Centered target, colors flash fast — tap ONLY on RED. Pure reaction. 50 reds.'
+var HINTS={
+  coord:{
+    '80':'Targets pop up — tap every one, fast! Eye-hand coordination. 50 taps.',
+    '100':'Faster pop-ups — tap every target! Eye-hand coordination. 50 taps.'
+  },
+  gng:{
+    '80':'Moving target — tap ONLY on RED. Coordination + reaction. 50 reds.',
+    '100':'Faster moving target — tap ONLY on RED. 50 reds.',
+    '120':'Centered, colors flash fast — tap ONLY on RED. Pure reaction. 50 reds.'
+  }
 };
-document.querySelectorAll('.tempo-btn').forEach(function(btn){
+function refreshIntro(){
+  var h=(HINTS[mode]&&HINTS[mode][tempo])||'';
+  $('tempoHint').textContent=h;
+  $('bigStart').textContent = mode==='coord' ? '🎯 START · TAP EVERY TARGET' : '🔴 START · TAP ONLY ON RED';
+  // 120 only exists in go/no-go
+  var t120=$('tempo120');
+  if(mode==='coord'){t120.classList.add('hidden');if(tempo==='120'){selectTempo('80')}}
+  else{t120.classList.remove('hidden')}
+}
+function selectTempo(t){
+  tempo=t;
+  document.querySelectorAll('.tempo-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tempo===t)});
+  applyTempo(t);
+  refreshIntro();
+}
+document.querySelectorAll('.mode-btn').forEach(function(btn){
   btn.onclick=function(){
-    document.querySelectorAll('.tempo-btn').forEach(function(b){b.classList.remove('active')});
+    mode=btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active')});
     btn.classList.add('active');
-    applyTempo(btn.dataset.tempo);
-    var t=btn.dataset.tempo;
-    $('tempoHint').textContent=TEMPO_HINTS[t]||'';
-    $('bigStart').textContent = '🔴 START · TAP ONLY ON RED';
+    applyTempo(tempo);   // re-resolve config for new mode (handles 120 fallback)
+    refreshIntro();
   };
 });
-applyTempo('80');   // default
+document.querySelectorAll('.tempo-btn').forEach(function(btn){
+  btn.onclick=function(){selectTempo(btn.dataset.tempo)};
+});
+applyTempo('80');refreshIntro();   // default
 
 /* star field */
 (function(){
@@ -216,12 +262,57 @@ function startDrill(){
 
 function runDrill(){
   phase='running';taps=0;$('hTaps').textContent='0';misses=0;
-  // GO/NO-GO for all tiers now — ends after 100 reds, no 5-minute timer
-  var startMsg = CENTERED ? 'TAP ONLY ON RED!' : 'MOVE & TAP ONLY ON RED!';
-  msg(startMsg,'go');
-  timers.push(setTimeout(function(){msg('','go')},1600));
-  goNoGoStart();
+  if(COORD){
+    msg('TAP EVERY TARGET!','go');
+    timers.push(setTimeout(function(){msg('','go')},1400));
+    coordStart();
+  }else{
+    var startMsg = CENTERED ? 'TAP ONLY ON RED!' : 'MOVE & TAP ONLY ON RED!';
+    msg(startMsg,'go');
+    timers.push(setTimeout(function(){msg('','go')},1600));
+    goNoGoStart();
+  }
 }
+
+/* ── EYE-HAND COORDINATION (80/100): targets pop up in random spots. Tap each
+   one before it expires. Hit = +1 (score shows on the circle). Miss (too slow)
+   = no score, no penalty. 50 targets appear, then done. ── */
+var coordTimer=null,coordWindow=null,targetsSeen=0,coordLive=false;
+function coordStart(){
+  targetsSeen=0;coordLive=false;
+  $('gng-score-num').textContent='0';$('gng-score-num').classList.add('on');
+  var rt=$('hRedTotal');if(rt)rt.textContent=TOTAL_TARGETS;
+  var rl=$('hRedLabel');if(rl)rl.textContent='Targets';
+  $('hReds')&&($('hReds').textContent='0');
+  startBeat();
+  coordNext();
+}
+function coordRenderMoving(){
+  var big=Math.max(90,Math.min(150,Math.min(innerWidth,innerHeight)*0.20));
+  var pad=big/2+20;
+  targetX=pad+Math.random()*(innerWidth-pad*2);
+  targetY=150+Math.random()*(innerHeight-230);
+  targetEl.style.left=targetX+'px';targetEl.style.top=targetY+'px';
+  targetEl.style.width=big+'px';targetEl.style.height=big+'px';
+  targetInner.style.background='radial-gradient(circle at 38% 35%,'+COLOR+','+COLOR+'aa)';
+  targetInner.style.boxShadow='0 0 45px '+GLOW+',0 0 90px '+GLOW.replace('1)','0.4)');
+  targetEl.classList.add('visible');
+}
+function coordNext(){
+  if(phase!=='running')return;
+  if(targetsSeen>=TOTAL_TARGETS){endDrill();return}
+  targetsSeen++;
+  $('hReds')&&($('hReds').textContent=targetsSeen);
+  coordRenderMoving();
+  coordLive=true;
+  // target stays for the window, then expires (miss, no penalty)
+  coordWindow=setTimeout(function(){
+    if(phase!=='running')return;
+    coordLive=false;hideTarget();
+    coordTimer=setTimeout(coordNext,180);   // brief gap, next target
+  },COORD_WINDOW);
+}
+function stopCoord(){if(coordTimer){clearTimeout(coordTimer);coordTimer=null}if(coordWindow){clearTimeout(coordWindow);coordWindow=null}}
 
 function clock(){
   // (legacy 5-minute timer — no longer used; go/no-go ends at 100 reds)
@@ -244,7 +335,7 @@ targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap
 // beat-driven (80/100): each beat places a fresh target to tap in time
 function spawnOnBeat(){
   if(phase!=='running')return;
-  if(REACTION_TEST||GO_NO_GO)return;   // 120 handles its own centered color target
+  if(REACTION_TEST||GO_NO_GO||COORD)return;   // those modes handle their own spawning
   showTarget();
 }
 
@@ -311,6 +402,7 @@ function goNoGoStart(){
   $('gng-score-num').textContent='0';
   $('gng-score-num').classList.add('on');
   var rt=$('hRedTotal');if(rt)rt.textContent=TOTAL_REDS;
+  var rl=$('hRedLabel');if(rl)rl.textContent='Reds';
   $('hReds')&&($('hReds').textContent='0');
   gngRender(GNG_NONRED[0]);          // start on a non-red
   startBeat();                       // beat pulse throbs underneath
@@ -336,6 +428,21 @@ function handleTap(){
   if(!targetEl.classList.contains('visible'))return;
   if(tapLocked)return;
   tapLocked=true;setTimeout(function(){tapLocked=false},60);
+
+  if(COORD){
+    if(!coordLive)return;
+    coordLive=false;
+    if(coordWindow){clearTimeout(coordWindow);coordWindow=null}
+    taps++;
+    var sc=$('gng-score-num');
+    $('hTaps').textContent=taps;sc.textContent=taps;
+    sc.style.transform='scale(1.35)';sc.style.color='#eafff6';
+    setTimeout(function(){sc.style.transform='scale(1)';sc.style.color='#fff'},140);
+    ripple(targetX,targetY);flash();
+    hideTarget();
+    coordTimer=setTimeout(coordNext,140);   // next target
+    return;
+  }
 
   if(GO_NO_GO){
     var sn=$('gng-score-num');
@@ -396,7 +503,7 @@ function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clrT();stopBeat();stopReaction();stopGoNoGo();hideTarget();
+  phase='done';clrT();stopBeat();stopReaction();stopGoNoGo();stopCoord();hideTarget();
   var gs=$('gng-score-num');if(gs)gs.classList.remove('on');
   var finalScore=Math.max(0,taps);        // never save or show a negative
   var isNew=finalScore>best;
