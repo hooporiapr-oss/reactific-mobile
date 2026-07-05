@@ -130,9 +130,9 @@ var API='https://api.reactificgaming.com';
 var DRILL_MS=5*60*1000;         // 5 minutes
 // Three tempos, each beat-synced, each saving to its own division board.
 var TEMPOS={
-  '80': {bpm:80,  targetMs:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:72, gid:'drill',    bestKey:'rct-drill-best',    goNoGo:true, flashMs:750, bust:false, centered:false},
-  '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best', goNoGo:true, flashMs:600, bust:false, centered:false},
-  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best', goNoGo:true, flashMs:500, bust:true,  centered:true}
+  '80': {bpm:80,  targetMs:750, color:'#00D9A5', glow:'rgba(0,217,165,1)', size:72, gid:'drill',    bestKey:'rct-drill-best',    goNoGo:true, flashMs:750, bust:true, centered:false},
+  '100':{bpm:100, targetMs:600, color:'#ff6b00', glow:'rgba(255,107,0,1)', size:66, gid:'drill100', bestKey:'rct-drill100-best', goNoGo:true, flashMs:600, bust:true, centered:false},
+  '120':{bpm:120, targetMs:500, color:'#FF1493', glow:'rgba(255,20,147,1)', size:60, gid:'drill120', bestKey:'rct-drill120-best', goNoGo:true, flashMs:500, bust:true, centered:true}
 };
 var TOTAL_REDS=100;             // game ends after 100 reds have appeared
 var tempo='80';                 // selected tempo key
