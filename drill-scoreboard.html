@@ -128,8 +128,8 @@ html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(el
 
   <div class="controls">
     <div class="class-pick">
-      <label>Class</label>
-      <select id="classSel"><option value="">All Classes</option></select>
+      <label>Grade</label>
+      <select id="classSel"><option value="">All Grades</option></select>
     </div>
     <div class="subtitle">Ranked by <b>Reds Caught</b> · out of 50 · pure reaction</div>
   </div>
@@ -202,7 +202,7 @@ Array.prototype.forEach.call($('windows').children,function(btn){
 function loadClasses(){
   var token=localStorage.getItem('rct-token');if(!token)return;
   fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}}).then(function(r){return r.json()}).then(function(d){
-    if(d.classes&&d.classes.length){var sel=$('classSel');sel.innerHTML='<option value="">All Classes</option>'+d.classes.map(function(c){return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>'}).join('');sel.onchange=function(){classId=sel.value;fetchAll()}}
+    if(d.classes&&d.classes.length){var sel=$('classSel');sel.innerHTML='<option value="">All Grades</option>'+d.classes.map(function(c){return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>'}).join('');sel.onchange=function(){classId=sel.value;fetchAll()}}
   }).catch(function(){});
 }
 
