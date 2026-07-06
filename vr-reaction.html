@@ -134,27 +134,26 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 <script>
 var API='https://api.reactificgaming.com';
 // Two game modes at 80/100, go/no-go also at 120.
-// 120 GO/NO-GO: colors cycle, tap only on red. 80/100 BLENDED: tap every target except red.
-// One game per tempo. 80/100 = BLENDED (tap every target on the beat EXCEPT red).
-// 120 = REACTIFIC (centered, colors flash, tap ONLY on red — pure reaction).
+// All tiers GO/NO-GO: colors cycle, tap only on red. 80/100 move, 120 centered.
+// All tiers: GO/NO-GO — colors cycle, tap ONLY on red. 80/100 move (coordination
+// + reaction), 120 is centered (pure reaction). Differ by movement and flash speed.
 var TIERS={
-  '80': {bpm:80,  color:'#00D9A5', glow:'rgba(0,217,165,1)', gid:'drill',    bestKey:'rct-drill-best',    blended:true,  centered:false},
-  '100':{bpm:100, color:'#ff6b00', glow:'rgba(255,107,0,1)', gid:'drill100', bestKey:'rct-drill100-best', blended:true,  centered:false},
-  '120':{bpm:120, color:'#FF1493', glow:'rgba(255,20,147,1)', gid:'drill120', bestKey:'rct-drill120-best', blended:false, centered:true, flashMs:500}
+  '80': {bpm:80,  color:'#00D9A5', glow:'rgba(0,217,165,1)', gid:'drill',    bestKey:'rct-drill-best',    centered:false, flashMs:750},
+  '100':{bpm:100, color:'#ff6b00', glow:'rgba(255,107,0,1)', gid:'drill100', bestKey:'rct-drill100-best', centered:false, flashMs:600},
+  '120':{bpm:120, color:'#FF1493', glow:'rgba(255,20,147,1)', gid:'drill120', bestKey:'rct-drill120-best', centered:true,  flashMs:500}
 };
-var TOTAL_REDS=50;              // 120: ends after 50 reds
-var TOTAL_TARGETS=50;          // 80/100: ends after 50 targets
+var TOTAL_REDS=50;             // ends after 50 reds have appeared
+var TOTAL_TARGETS=50;
 var tempo='80';
 var BEAT_BPM=80,COLOR='#00D9A5',GLOW='rgba(0,217,165,1)',SIZE=72,GAME_ID='drill',BEST_KEY='rct-drill-best';
-var GO_NO_GO=false,FLASH_MS=500,BUST_ON=true,CENTERED=true;
+var GO_NO_GO=true,FLASH_MS=500,BUST_ON=true,CENTERED=true;
 var BLENDED=false;
 function applyTempo(t){
-  tempo=t;var c=TIERS[t]||TIERS['80'];
-  tempo=TIERS[t]?t:'80';
+  tempo=TIERS[t]?t:'80';var c=TIERS[tempo];
   BEAT_BPM=c.bpm;COLOR=c.color;GLOW=c.glow;SIZE=c.size||72;GAME_ID=c.gid;BEST_KEY=c.bestKey;
-  BLENDED=!!c.blended;                 // 80/100: tap every target except red
-  GO_NO_GO=!c.blended;                 // 120: tap only on red
-  CENTERED=!!c.centered;
+  BLENDED=false;
+  GO_NO_GO=true;                       // every tier: tap only on red
+  CENTERED=!!c.centered;               // 80/100 move, 120 centered
   FLASH_MS=c.flashMs||500;
   BUST_ON=true;                        // -3 rule on all tiers
   // recolor edge glow + accent to the chosen tempo
@@ -187,13 +186,13 @@ function loadBestForTempo(){
 
 /* tempo selector */
 var HINTS={
-  '80':'Tap every target to the Ritnome — except RED. 50 targets.',
-  '100':'Faster Ritnome — tap every one except RED. 50 targets.',
+  '80':'Moving target, colors flash to the Ritnome — tap ONLY on RED. 50 reds.',
+  '100':'Faster moving target — tap ONLY on RED. 50 reds.',
   '120':'Centered, colors flash to the Ritnome — tap ONLY on RED. Pure reaction. 50 reds.'
 };
 function refreshIntro(){
   $('tempoHint').textContent=HINTS[tempo]||'';
-  $('bigStart').textContent = tempo==='120' ? '🔴 START · TAP ONLY ON RED' : '🎯 START · TAP EXCEPT RED';
+  $('bigStart').textContent='🔴 START · TAP ONLY ON RED';
 }
 function selectTempo(t){
   tempo=t;
@@ -233,59 +232,11 @@ function startDrill(){
 
 function runDrill(){
   phase='running';taps=0;$('hTaps').textContent='0';misses=0;
-  if(BLENDED){
-    msg('TAP EVERY TARGET — EXCEPT RED!','go');
-    timers.push(setTimeout(function(){msg('','go')},1600));
-    blendStart();
-  }else{
-    var startMsg = CENTERED ? 'TAP ONLY ON RED!' : 'MOVE & TAP ONLY ON RED!';
-    msg(startMsg,'go');
-    timers.push(setTimeout(function(){msg('','go')},1600));
-    goNoGoStart();
-  }
+  var startMsg = CENTERED ? 'TAP ONLY ON RED!' : 'MOVE & TAP ONLY ON RED!';
+  msg(startMsg,'go');
+  timers.push(setTimeout(function(){msg('','go')},1600));
+  goNoGoStart();
 }
-
-/* ── BLENDED (80/100): targets appear on the beat in random spots. Tap every
-   target (+1) EXCEPT red — red is a no-go. Tapping red = -1, and the -3 rule
-   ends the game. Missing a go-target (too slow) = no penalty. 50 targets. ── */
-var coordTimer=null,coordWindow=null,targetsSeen=0,coordLive=false,blendIsRed=false;
-var BLEND_RED={c:'#ff1e3c',g:'rgba(255,30,60,1)'};
-function blendStart(){
-  targetsSeen=0;coordLive=false;blendIsRed=false;
-  $('gng-score-num').textContent='0';$('gng-score-num').classList.add('on');
-  var rt=$('hRedTotal');if(rt)rt.textContent=TOTAL_TARGETS;
-  var rl=$('hRedLabel');if(rl)rl.textContent='Targets';
-  $('hReds')&&($('hReds').textContent='0');
-  startBeat();          // beat tick calls blendBeat() — targets land ON the beat
-}
-function blendRender(isRed){
-  var big=Math.max(90,Math.min(150,Math.min(innerWidth,innerHeight)*0.20));
-  var pad=big/2+20;
-  targetX=pad+Math.random()*(innerWidth-pad*2);
-  targetY=150+Math.random()*(innerHeight-230);
-  var col=isRed?BLEND_RED.c:COLOR, glow=isRed?BLEND_RED.g:GLOW;
-  targetEl.style.left=targetX+'px';targetEl.style.top=targetY+'px';
-  targetEl.style.width=big+'px';targetEl.style.height=big+'px';
-  targetInner.style.background='radial-gradient(circle at 38% 35%,'+col+','+col+'aa)';
-  targetInner.style.boxShadow='0 0 45px '+glow+',0 0 90px '+glow.replace('1)','0.4)');
-  targetEl.classList.add('visible');
-}
-// one fresh target per beat. ~1 in 5 is red (no-go). Red never displays the score.
-function blendBeat(){
-  if(phase!=='running')return;
-  if(targetsSeen>=TOTAL_TARGETS){endDrill();return}
-  // decide red (no-go) or go first — only GO targets count toward the 50
-  var chance=0.16+Math.random()*0.12;   // wandering red chance ~16–28%, no fixed pattern
-  blendIsRed=(Math.random()<chance);
-  if(!blendIsRed){
-    targetsSeen++;                       // count only the go-targets
-    $('hReds')&&($('hReds').textContent=targetsSeen);
-  }
-  blendRender(blendIsRed);
-  coordLive=true;   // untapped go-target is simply replaced next beat = a miss (no penalty)
-  var sn=$('gng-score-num');if(sn)sn.style.display=blendIsRed?'none':'block';   // hide score on red
-}
-function stopBlend(){if(coordTimer){clearTimeout(coordTimer);coordTimer=null}if(coordWindow){clearTimeout(coordWindow);coordWindow=null}}
 
 function clock(){
   // (legacy 5-minute timer — no longer used; go/no-go ends at 100 reds)
@@ -308,7 +259,7 @@ targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap
 // beat-driven (80/100): each beat places a fresh target to tap in time
 function spawnOnBeat(){
   if(phase!=='running')return;
-  if(BLENDED){blendBeat();return}   // 80/100 spawn exactly on the beat
+  if(GO_NO_GO)return;   // go/no-go cycles colors on its own timer
   if(GO_NO_GO)return;             // go/no-go handles its own color cycling
   showTarget();
 }
@@ -364,6 +315,7 @@ function goNoGoStart(){
   gngIsRed=false;redsSeen=0;
   $('gng-score-num').textContent='0';
   $('gng-score-num').classList.add('on');
+  $('gng-score-num').style.display='block';
   var rt=$('hRedTotal');if(rt)rt.textContent=TOTAL_REDS;
   var rl=$('hRedLabel');if(rl)rl.textContent='Reds';
   $('hReds')&&($('hReds').textContent='0');
@@ -391,34 +343,6 @@ function handleTap(){
   if(!targetEl.classList.contains('visible'))return;
   if(tapLocked)return;
   tapLocked=true;setTimeout(function(){tapLocked=false},60);
-
-  if(BLENDED){
-    if(!coordLive)return;
-    coordLive=false;                // consumed this beat's target
-    var sc=$('gng-score-num');
-    if(blendIsRed){
-      // NO-GO violation — tapped a red target → penalty, -3 bust rule
-      misses++;penaltyFlash();
-      taps=taps-1;
-      if(taps<=-3){$('hTaps').textContent=Math.max(0,taps);msg('✗ RED — OUT!','miss');hideTarget();endDrill();return}
-      $('hTaps').textContent=Math.max(0,taps);
-      sc.style.display='block';sc.textContent=Math.max(0,taps);
-      sc.style.transform='scale(.8)';sc.style.color='#ffd0d8';
-      setTimeout(function(){sc.style.transform='scale(1)';sc.style.color='#fff'},200);
-      msg('✗ NOT RED!','miss');
-      timers.push(setTimeout(function(){if(phase==='running')msg('','go')},450));
-    }else{
-      // GO — correct tap on a normal target. A good tap clears hidden negatives.
-      if(taps<0)taps=0;
-      taps++;
-      $('hTaps').textContent=taps;sc.style.display='block';sc.textContent=taps;
-      sc.style.transform='scale(1.35)';sc.style.color='#eafff6';
-      setTimeout(function(){sc.style.transform='scale(1)';sc.style.color='#fff'},140);
-      ripple(targetX,targetY);flash();
-    }
-    hideTarget();                   // next target arrives on the next beat
-    return;
-  }
 
   if(GO_NO_GO){
     var sn=$('gng-score-num');
@@ -475,7 +399,7 @@ function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp
 
 function endDrill(){
   if(phase==='done')return;
-  phase='done';clrT();stopBeat();stopReaction();stopGoNoGo();stopBlend();hideTarget();
+  phase='done';clrT();stopBeat();stopReaction();stopGoNoGo();hideTarget();
   var gs=$('gng-score-num');if(gs)gs.classList.remove('on');
   var finalScore=Math.max(0,taps);        // never save or show a negative
   var isNew=finalScore>best;
