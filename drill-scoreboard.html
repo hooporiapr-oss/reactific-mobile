@@ -149,16 +149,12 @@ html,body{height:100%;font-family:Arial,sans-serif;background:radial-gradient(el
 
     <!-- SUPPORTING -->
     <div class="support">
-      <div class="support-toggle" id="supportToggle">
-        <button data-st="gng" class="on">🔴 Go / No-Go</button>
-        <button data-st="coord">🎯 Eye-Hand</button>
-      </div>
       <div class="division fast">
-        <div class="div-head"><div class="div-name" id="d1name">🔴 Fast</div><div class="div-bpm" id="d1bpm">80 · Go/No-Go</div></div>
+        <div class="div-head"><div class="div-name">🎯 Fast</div><div class="div-bpm">80 · Tap Except Red</div></div>
         <div class="slist" id="board80"><div class="empty"><div class="empty-icon">🎯</div>—</div></div>
       </div>
       <div class="division elite">
-        <div class="div-head"><div class="div-name" id="d2name">🔥 Elite</div><div class="div-bpm" id="d2bpm">100 · Go/No-Go</div></div>
+        <div class="div-head"><div class="div-name">🔥 Elite</div><div class="div-bpm">100 · Tap Except Red</div></div>
         <div class="slist" id="board100"><div class="empty"><div class="empty-icon">🔥</div>—</div></div>
       </div>
     </div>
@@ -210,28 +206,10 @@ function loadClasses(){
   }).catch(function(){});
 }
 
-var supportMode='gng';
-var SUPPORT={
-  gng:{g1:'drill',g2:'drill100',n1:'🔴 Fast',b1:'80 · Go/No-Go',n2:'🔥 Elite',b2:'100 · Go/No-Go'},
-  coord:{g1:'coord80',g2:'coord100',n1:'🎯 Fast',b1:'80 · Eye-Hand',n2:'🎯 Elite',b2:'100 · Eye-Hand'}
-};
-Array.prototype.forEach.call($('supportToggle').children,function(btn){
-  btn.onclick=function(){
-    supportMode=btn.dataset.st;
-    Array.prototype.forEach.call($('supportToggle').children,function(b){b.classList.remove('on')});
-    btn.classList.add('on');
-    var s=SUPPORT[supportMode];
-    $('d1name').textContent=s.n1;$('d1bpm').textContent=s.b1;
-    $('d2name').textContent=s.n2;$('d2bpm').textContent=s.b2;
-    fetchAll();
-  };
-});
-
 function fetchAll(){
   fetchHero();
-  var s=SUPPORT[supportMode];
-  fetchSupport(s.g1,'board80','fast');
-  fetchSupport(s.g2,'board100','elite');
+  fetchSupport('drill','board80','fast');
+  fetchSupport('drill100','board100','elite');
 }
 
 function fetchHero(){
