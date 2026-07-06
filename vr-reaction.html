@@ -104,12 +104,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 <div id="screen-intro">
   <a class="intro-back" href="/vr-lab.html">← Exit</a>
   <div class="vrr-logo">REACTION <span>CONTROL</span></div>
-  <div class="vrr-sub">Tap to the Beat of the Rhythm · Reactific™</div>
+  <div class="vrr-sub">Cognitive Training to the Beat of the Ritnome</div>
   <div class="tempo-label">Choose Your Ritnome</div>
   <div class="tempo-row">
-    <button class="tempo-btn active" data-tempo="80" style="--tc:#00D9A5"><span class="t-bpm">80</span><span class="t-unit">BPM</span><small>Fast</small></button>
-    <button class="tempo-btn" data-tempo="100" style="--tc:#ff6b00"><span class="t-bpm">100</span><span class="t-unit">BPM</span><small>Elite</small></button>
-    <button class="tempo-btn" data-tempo="120" id="tempo120" style="--tc:#FF1493"><span class="t-bpm">120</span><span class="t-unit">BPM</span><small>Reactific</small></button>
+    <button class="tempo-btn active" data-tempo="80" style="--tc:#00D9A5"><span class="t-bpm">80</span><span class="t-unit">RITNOME</span><small>Fast</small></button>
+    <button class="tempo-btn" data-tempo="100" style="--tc:#ff6b00"><span class="t-bpm">100</span><span class="t-unit">RITNOME</span><small>Elite</small></button>
+    <button class="tempo-btn" data-tempo="120" id="tempo120" style="--tc:#FF1493"><span class="t-bpm">120</span><span class="t-unit">RITNOME</span><small>Reactific</small></button>
   </div>
   <div class="tempo-hint" id="tempoHint">Tap every target on the beat — except RED. 50 targets.</div>
   <button class="big-btn" id="bigStart" onclick="startDrill()">▶ START</button>
@@ -176,20 +176,20 @@ function loadBestForTempo(){
   best=0;
   try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
   $('hBest').textContent=best;
-  $('bestLine').innerHTML=best>0?('Your best at '+BEAT_BPM+' BPM: <b>'+best+' taps</b>'):'';
+  $('bestLine').innerHTML=best>0?('Your best on the '+BEAT_BPM+' Ritnome: <b>'+best+' taps</b>'):'';
   var token=localStorage.getItem('rct-token');
   if(!token)return;
   fetch(API+'/api/scores/personal-best/'+GAME_ID,{headers:{'Authorization':'Bearer '+token}})
     .then(function(r){return r.json()}).then(function(d){
-      if(d&&d.score&&d.score>best){best=d.score;$('hBest').textContent=best;$('bestLine').innerHTML='Your best at '+BEAT_BPM+' BPM: <b>'+best+' taps</b>'}
+      if(d&&d.score&&d.score>best){best=d.score;$('hBest').textContent=best;$('bestLine').innerHTML='Your best on the '+BEAT_BPM+' Ritnome: <b>'+best+' taps</b>'}
     }).catch(function(){});
 }
 
 /* tempo selector */
 var HINTS={
-  '80':'Tap every target on the beat — except RED. 50 targets.',
-  '100':'Faster targets — tap every one except RED. 50 targets.',
-  '120':'Centered, colors flash — tap ONLY on RED. Pure reaction. 50 reds.'
+  '80':'Tap every target to the Ritnome — except RED. 50 targets.',
+  '100':'Faster Ritnome — tap every one except RED. 50 targets.',
+  '120':'Centered, colors flash to the Ritnome — tap ONLY on RED. Pure reaction. 50 reds.'
 };
 function refreshIntro(){
   $('tempoHint').textContent=HINTS[tempo]||'';
