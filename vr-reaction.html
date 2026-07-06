@@ -274,12 +274,15 @@ function blendRender(isRed){
 function blendBeat(){
   if(phase!=='running')return;
   if(targetsSeen>=TOTAL_TARGETS){endDrill();return}
-  targetsSeen++;
-  $('hReds')&&($('hReds').textContent=targetsSeen);
+  // decide red (no-go) or go first — only GO targets count toward the 50
   var chance=0.16+Math.random()*0.12;   // wandering red chance ~16–28%, no fixed pattern
   blendIsRed=(Math.random()<chance);
+  if(!blendIsRed){
+    targetsSeen++;                       // count only the go-targets
+    $('hReds')&&($('hReds').textContent=targetsSeen);
+  }
   blendRender(blendIsRed);
-  coordLive=true;   // untapped target is simply replaced next beat = a miss (no penalty)
+  coordLive=true;   // untapped go-target is simply replaced next beat = a miss (no penalty)
   var sn=$('gng-score-num');if(sn)sn.style.display=blendIsRed?'none':'block';   // hide score on red
 }
 function stopBlend(){if(coordTimer){clearTimeout(coordTimer);coordTimer=null}if(coordWindow){clearTimeout(coordWindow);coordWindow=null}}
