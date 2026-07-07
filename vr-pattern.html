@@ -132,7 +132,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
     <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
-    <button class="bot-btn" id="restartBtn" style="display:none;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+    <button class="bot-btn" id="restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+    <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
     
   </div>
 </div>
@@ -170,6 +171,7 @@ if(cycleMode){
 
 $('menuBtn').onclick=function(){stopStrobe();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+$('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 var cells=[];
 function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i=0;i<50;i++){var c=document.createElement('div');c.className='cell';c.dataset.i=i;c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));court.appendChild(c);cells.push(c)}}
