@@ -63,9 +63,10 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .star.earned{opacity:1;filter:drop-shadow(0 0 6px #00CED1);transform:scale(1.2)}
 .court-area{flex:1;position:relative;overflow:hidden;min-height:0}
 #spatial{position:absolute;inset:0}
-.target{position:absolute;border-radius:50%;background:radial-gradient(circle at 38% 35%,#00e6e0,#00a0a0);border:3px solid #40E0D0;box-shadow:0 0 40px rgba(0,206,209,.9),0 0 80px rgba(0,206,209,.4);cursor:pointer;touch-action:manipulation;transform:translate(-50%,-50%) scale(0);transition:transform .12s ease-out;display:flex;align-items:center;justify-content:center}
-.target.show{transform:translate(-50%,-50%) scale(1)}
-.target.hit{background:radial-gradient(circle at 38% 35%,#00ffa8,#00c878)!important;border-color:#00D9A5!important;box-shadow:0 0 50px rgba(0,217,165,.9)!important;transform:translate(-50%,-50%) scale(1.2)}
+.target{position:absolute;border-radius:50%;background:radial-gradient(circle at 38% 35%,#00e6e0,#00a0a0);border:3px solid #40E0D0;box-shadow:0 0 40px rgba(0,206,209,.9),0 0 80px rgba(0,206,209,.4);cursor:pointer;touch-action:manipulation;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;animation:popIn .16s ease-out}
+@keyframes popIn{from{transform:translate(-50%,-50%) scale(.2);opacity:.3}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.target.show{transform:translate(-50%,-50%)}
+.target.hit{background:radial-gradient(circle at 38% 35%,#00ffa8,#00c878)!important;border-color:#00D9A5!important;box-shadow:0 0 50px rgba(0,217,165,.9)!important;transform:translate(-50%,-50%) scale(1.2)!important;transition:transform .12s}
 .target.miss{background:radial-gradient(circle at 38% 35%,#ff5a7a,#c02040)!important;border-color:#FF1493!important}
 .cell:hover{background:rgba(0,206,209,.2);border-color:#00CED1;transform:scale(1.05)}
 .cell.lit{background:#00CED1!important;border-color:#40E0D0!important;box-shadow:0 0 30px rgba(0,206,209,1)!important;transform:scale(1.05)}
@@ -191,13 +192,13 @@ function spawnTargets(count){
     }
     placed.push({x:x,y:y});
     var el=document.createElement('div');
-    el.className='target';
+    el.className='target show';                 // visible immediately — no rAF dependency
     el.style.width=size+'px';el.style.height=size+'px';
     el.style.left=x+'px';el.style.top=y+'px';
-    (function(elem){elem.addEventListener('pointerdown',function(e){e.preventDefault();hitTarget(elem)})})(el);
+    (function(elem){
+      elem.addEventListener('pointerdown',function(e){e.preventDefault();hitTarget(elem)});
+    })(el);
     sp.appendChild(el);
-    // pop in on the beat
-    requestAnimationFrame(function(){el.classList.add('show')});
     activeTargets.push({el:el,alive:true});
   }
 }
