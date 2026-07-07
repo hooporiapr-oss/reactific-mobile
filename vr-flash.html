@@ -45,6 +45,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   position:fixed;inset:0;display:none;flex-direction:column;
   background:radial-gradient(circle at 16% 5%,rgba(0,206,209,.15),transparent 30%),linear-gradient(180deg,#001818,#000a0a);
 }
+#strobe{position:fixed;inset:0;z-index:2;pointer-events:none;background:#00CED1;opacity:0;transition:opacity .06s ease-out}
 .topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:6px 10px 4px;flex-shrink:0}
 .top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(0,206,209,.3)}
 .top-label{font-size:.5rem;color:#00CED1;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
@@ -91,19 +92,20 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
   <div class="vrr-logo">FLASH <span>RECALL</span></div>
   <div class="vrr-sub">5×10 VR Court · Reactific™</div>
-  <div class="vrr-rule">⚡ TAP THE LIT CELLS — FAST!</div>
+  <div class="vrr-rule">⚡ TAP ALL — TO THE BEAT OF THE RITNOME</div>
   <div class="speed-row">
-    <button class="speed-btn" data-mult="1.4">EASY<small>MORE TIME</small></button>
-    <button class="speed-btn active" data-mult="1.0">TEMPO<small>BALANCED</small></button>
-    <button class="speed-btn" data-mult="0.6">ELITE<small>LESS TIME</small></button>
+    <button class="speed-btn active" data-bpm="80">80<small>RITNOME · FAST</small></button>
+    <button class="speed-btn" data-bpm="100">100<small>RITNOME · ELITE</small></button>
+    <button class="speed-btn" data-bpm="120">120<small>RITNOME · REACTIFIC</small></button>
   </div>
   <button class="big-btn" id="startBtn">👀 ENTER THE COURT</button>
   <div class="intro-info">
-    <strong>3 CELLS</strong> light up at once<br><strong>TAP ALL</strong> before the timer runs out<br><strong>CLEAR IT</strong> — next wave adds a cell<br><strong>3→4→5→6</strong> — how high can you go?
+    <strong>3 CELLS</strong> light up at once<br><strong>TAP ALL</strong> — one beat per cell<br><strong>CLEAR IT</strong> — next wave adds a cell<br><strong>THE RITNOME</strong> sets your pace
   </div>
 </div>
 
 <div id="screen-game">
+  <div id="strobe"></div>
   <div class="topbar">
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
     <div class="top-box info-box"><div class="top-label">Find</div><div class="top-val" id="hFind">5 cells</div></div>
@@ -133,12 +135,10 @@ var $=id=>document.getElementById(id);
 var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
 var NEXT_GAME='/vr-reactific.html?cycle=true';
 
-var speedMult=1.0;
-var BASE_MS_PER_CELL=300;
-
-function getFlashTime(){return Math.round(BASE_MS_PER_CELL*gcc()*speedMult)}
-
-document.querySelectorAll('[data-mult]').forEach(btn=>{btn.onclick=function(){speedMult=Number(btn.dataset.mult);document.querySelectorAll('[data-mult]').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}});
+// Ritnome tempo — drives BOTH the time limit and the screen strobe.
+var BPM=80;
+function beatMs(){return 60000/BPM;}   // one beat in ms
+document.querySelectorAll('[data-bpm]').forEach(function(btn){btn.onclick=function(){BPM=Number(btn.dataset.bpm);document.querySelectorAll('[data-bpm]').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}});
 
 // If cycle mode, skip intro and go straight to game
 if(cycleMode){
@@ -199,25 +199,36 @@ var phase='idle',timers=[],waveTimer=null,clockRAF=null;
 function clrT(){timers.forEach(clearTimeout);timers=[];if(waveTimer){clearTimeout(waveTimer);waveTimer=null}if(clockRAF){cancelAnimationFrame(clockRAF);clockRAF=null}}
 
 var START_CELLS=3;            // wave 1 lights 3 cells
-var SEC_PER_CELL=0.6;         // time limit grows ~0.6s per cell in the wave
 var wave=0, waveCells=[], toClear=0, score=0;
 
 function timeForWave(n){
-  // n = number of cells this wave. Base a little generous, scales per cell.
-  var secs = n*SEC_PER_CELL + 0.4;
-  // apply intro EASY/TEMPO/ELITE multiplier (bigger mult = more time = easier)
-  secs = secs * speedMult;
-  return Math.round(secs*1000);
+  // One beat per cell — the Ritnome IS the time limit.
+  return Math.round(n*beatMs());
 }
+
+// ── BEAT + FULL-SCREEN STROBE ──
+var beatLoop=null, audioCtx=null;
+function initAudio(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+function beatTick(){
+  // flash the whole screen to the beat
+  var st=$('strobe');
+  if(st){st.style.opacity='.22';setTimeout(function(){st.style.opacity='0'},70);}
+  // click sound on the beat
+  if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=90;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.09,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.11);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.12)}catch(e){}}
+}
+function startBeat(){stopBeat();beatTick();beatLoop=setInterval(beatTick,beatMs())}
+function stopBeat(){if(beatLoop){clearInterval(beatLoop);beatLoop=null}}
 
 function startRound(){
   if(phase==='running')return;
-  clrT();phase='running';
+  initAudio();
+  clrT();stopBeat();phase='running';
   wave=0;score=0;
   resetCells();updateHUD();
   $('actBtn').disabled=true;$('restartBtn').style.display='none';
   $('hFind').textContent='Tap All!';
-  msg('TAP ALL THE LIT CELLS!','go');
+  msg('TAP ALL — TO THE BEAT!','go');
+  startBeat();   // Ritnome starts pulsing + strobing the screen
   timers.push(setTimeout(function(){if(phase==='running')nextWave()},900));
 }
 
@@ -284,7 +295,7 @@ function updateHUD(){
 }
 
 function gameOver(){
-  phase='idle';clrT();
+  phase='idle';clrT();stopBeat();
   // show which were missed
   waveCells.forEach(function(idx){if(cells[idx].classList.contains('lit'))cellSt(idx,'missed')});
   msg('⏱ TIME! Reached Wave '+wave,'miss');
