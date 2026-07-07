@@ -100,6 +100,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 
 <div id="controls">
   <a class="ctrl-btn" href="/vr-lab.html">← Exit</a>
+  <button class="ctrl-btn" id="fsBtnGame">⛶ Full Court</button>
 </div>
 
 <!-- INTRO -->
@@ -211,6 +212,8 @@ applyTempo('80');refreshIntro();   // default
 // fullscreen toggle (matches the other games) — great for Promethean / big-screen play
 var fsb=$('fsBtn');
 if(fsb)fsb.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+var fsg=$('fsBtnGame');
+if(fsg)fsg.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 /* star field */
 (function(){
@@ -227,6 +230,9 @@ function clrT(){timers.forEach(clearTimeout);timers=[]}
 function startDrill(){
   if(phase==='running')return;
   initAudio();
+  // Auto-enter fullscreen for the big-screen / Promethean experience.
+  // Called from the Start tap, so the user-gesture requirement is satisfied.
+  try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
   $('screen-intro').style.display='none';
   $('countdown').style.display='flex';
   var n=3;$('bigCount').textContent=n;
