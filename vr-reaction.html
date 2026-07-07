@@ -61,6 +61,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 .big-btn{width:100%;max-width:440px;height:72px;border:none;border-radius:20px;background:linear-gradient(135deg,#00D9A5,#00b88d);color:#04121a;font-size:1.3rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(0,217,165,.7);animation:btnPulse 2s ease-in-out infinite}
 @keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(0,217,165,.7)}50%{box-shadow:0 0 80px rgba(0,217,165,1)}}
 .intro-back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:60}
+.intro-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(0,217,165,.4);background:rgba(0,0,0,.5);color:#00D9A5;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:60}
+@media(max-width:768px){.intro-fs{display:none}}
 .best-line{margin-top:18px;font-size:.85rem;color:#9fb3c8}
 .tempo-hint{font-size:.8rem;color:#9fb3c8;line-height:1.4;margin-bottom:20px;max-width:420px;min-height:2.4em;display:flex;align-items:center;justify-content:center;text-align:center}
 .best-line b{color:#00D9A5}
@@ -103,6 +105,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 <!-- INTRO -->
 <div id="screen-intro">
   <a class="intro-back" href="/vr-lab.html">← Exit</a>
+  <button class="intro-fs" id="fsBtn">⛶ Fullscreen</button>
   <div class="vrr-logo">REACTION <span>CONTROL</span></div>
   <div class="vrr-sub">Reaction Challenges to the Beat of the Ritnome</div>
   <div class="tempo-label">Choose Your Ritnome</div>
@@ -204,6 +207,10 @@ document.querySelectorAll('.tempo-btn').forEach(function(btn){
   btn.onclick=function(){selectTempo(btn.dataset.tempo)};
 });
 applyTempo('80');refreshIntro();   // default
+
+// fullscreen toggle (matches the other games) — great for Promethean / big-screen play
+var fsb=$('fsBtn');
+if(fsb)fsb.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 /* star field */
 (function(){
