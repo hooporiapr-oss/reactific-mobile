@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VR Flash Recall | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#001818 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;
+  padding:20px 16px 24px;
+  box-sizing:border-box;
+}
+.vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(0,206,209,1);margin-bottom:8px}
+.vrr-logo span{color:#00CED1}
+.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#00CED1;margin-bottom:8px;text-align:center}
+.vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#00CED1,#40E0D0);color:#000;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(0,206,209,.7);margin-bottom:14px}
+.big-btn:hover{transform:scale(1.03)}
+.speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(0,206,209,.4);background:rgba(0,206,209,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.speed-btn.active{border-color:#00CED1;background:rgba(0,206,209,.22);box-shadow:0 0 30px rgba(0,206,209,.6);color:#00CED1}
+.speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #screen-intro{padding:16px 12px 20px}
+  .vrr-logo{font-size:1.8rem}
+  .vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .speed-row{gap:5px}
+  .speed-btn{height:50px;font-size:.78rem}
+  .speed-btn small{font-size:.5rem}
+  .big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(0,206,209,.15),transparent 30%),linear-gradient(180deg,#001818,#000a0a);
+}
+#strobe{position:fixed;inset:0;z-index:2;pointer-events:none;background:#00CED1;opacity:0;transition:opacity .06s ease-out}
+#leadCount{position:fixed;inset:0;z-index:4;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:14rem;font-weight:900;color:#00CED1;text-shadow:0 0 60px rgba(0,206,209,.9);opacity:0;transition:opacity .15s}
+.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:6px 10px 4px;flex-shrink:0}
+.top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(0,206,209,.3)}
+.top-label{font-size:.5rem;color:#00CED1;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.info-box{border-color:#ffd35a;background:rgba(255,215,0,.06)!important}
+.info-box .top-label{color:#ffd35a}
+.info-box .top-val{color:#00CED1;font-size:1rem}
+.clockbar{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.clockbar-fill{height:100%;background:linear-gradient(90deg,#00CED1,#40E0D0);transition:width .1s linear}
+.msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.msg-bar.watch{color:#ffd35a}.msg-bar.go{color:#00CED1}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}
+.stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.star{font-size:1rem;opacity:.2;transition:all .3s}
+.star.earned{opacity:1;filter:drop-shadow(0 0 6px #00CED1);transform:scale(1.2)}
+.court-area{flex:1;position:relative;overflow:hidden;min-height:0}
+#spatial{position:absolute;inset:0}
+.target{position:absolute;border-radius:50%;background:radial-gradient(circle at 38% 35%,#00e6e0,#00a0a0);border:3px solid #40E0D0;box-shadow:0 0 40px rgba(0,206,209,.9),0 0 80px rgba(0,206,209,.4);cursor:pointer;touch-action:manipulation;transform:translate(-50%,-50%) scale(0);transition:transform .12s ease-out;display:flex;align-items:center;justify-content:center}
+.target.show{transform:translate(-50%,-50%) scale(1)}
+.target.hit{background:radial-gradient(circle at 38% 35%,#00ffa8,#00c878)!important;border-color:#00D9A5!important;box-shadow:0 0 50px rgba(0,217,165,.9)!important;transform:translate(-50%,-50%) scale(1.2)}
+.target.miss{background:radial-gradient(circle at 38% 35%,#ff5a7a,#c02040)!important;border-color:#FF1493!important}
+.cell:hover{background:rgba(0,206,209,.2);border-color:#00CED1;transform:scale(1.05)}
+.cell.lit{background:#00CED1!important;border-color:#40E0D0!important;box-shadow:0 0 30px rgba(0,206,209,1)!important;transform:scale(1.05)}
+.cell.selected{background:rgba(0,206,209,.35)!important;border-color:#00CED1!important;box-shadow:0 0 14px rgba(0,206,209,.6)!important}
+.cell.correct{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
+.cell.wrong{background:rgba(255,20,147,.35)!important;border-color:#FF1493!important;animation:shake .3s}
+.cell.missed{border:3px dashed #00CED1!important;background:rgba(0,206,209,.15)!important}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.bottombar{display:flex;justify-content:center;flex-wrap:wrap;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.bot-btn{height:48px;flex:0 1 150px;max-width:180px;border:2px solid rgba(0,206,209,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bot-btn span{display:block;color:#00CED1;font-size:.55rem;margin-top:1px}
+.start-btn{border-color:#00CED1;background:linear-gradient(180deg,#40E0D0,#00CED1);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(0,206,209,.7)}
+.start-btn:disabled{opacity:.5}
+
+@media (max-width:768px){
+  #fsBtn{display:none}
+}
+.top-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(0,206,209,.4);background:rgba(0,0,0,.5);color:#00CED1;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120}
+@media(max-width:768px){.top-fs{display:none}}
+</style>
+</head>
+<body>
+
+
+
+<div id="screen-intro">
+  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
+  <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
+  <div class="vrr-logo">FLASH <span>RECALL</span></div>
+  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-rule">⚡ TAP ALL — TO THE BEAT OF THE RITNOME</div>
+  <div class="speed-row">
+    <button class="speed-btn active" data-bpm="80">80<small>RITNOME · FAST</small></button>
+    <button class="speed-btn" data-bpm="100">100<small>RITNOME · ELITE</small></button>
+    <button class="speed-btn" data-bpm="120">120<small>RITNOME · REACTIFIC</small></button>
+  </div>
+  <button class="big-btn" id="startBtn">👀 ENTER THE COURT</button>
+  <div class="intro-info">
+    <strong>3 CELLS</strong> light up at once<br><strong>TAP ALL</strong> — one beat per cell<br><strong>CLEAR IT</strong> — next wave adds a cell<br><strong>THE RITNOME</strong> sets your pace
+  </div>
+</div>
+
+<div id="screen-game">
+  <div id="strobe"></div>
+  <div id="leadCount">3</div>
+  <div class="topbar">
+    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
+    <div class="top-box info-box"><div class="top-label">Find</div><div class="top-val" id="hFind">5 cells</div></div>
+    <div class="top-box"><div class="top-label">Round</div><div class="top-val" id="hRd">0</div></div>
+    <div class="top-box"><div class="top-label">Level</div><div class="top-val" id="hLv">1</div></div>
+    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Perfect</div><div class="top-val" id="hPf">0/2</div></div>
+  </div>
+  <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
+  <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
+  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Level</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#00CED1"></span></div>
+  <div class="court-area"><div id="spatial"></div></div>
+  <div class="bottombar">
+    <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
+    <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn" id="restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+    <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
+    
+  </div>
+</div>
+
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+
+// CYCLE MODE — two additions
+var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
+var NEXT_GAME='/vr-reactific.html?cycle=true';
+
+// Ritnome tempo — drives BOTH the time limit and the screen strobe.
+var BPM=80;
+function beatMs(){return 60000/BPM;}   // one beat in ms
+document.querySelectorAll('[data-bpm]').forEach(function(btn){btn.onclick=function(){BPM=Number(btn.dataset.bpm);document.querySelectorAll('[data-bpm]').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}});
+
+// If cycle mode, skip intro and go straight to game
+if(cycleMode){
+  $('screen-intro').style.display='none';
+  $('screen-game').style.display='flex';
+  buildCourt();
+  initGame();
+  setTimeout(startRound,1000);
+}else{
+  $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
+}
+
+$('menuBtn').onclick=function(){$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+$('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];  // (legacy, unused in spatial)
+function buildCourt(){/* spatial: nothing to prebuild — targets spawn per wave */}
+// ── SPATIAL TARGETS — free-floating, spread across the whole canvas ──
+var activeTargets=[];   // {el, alive}
+function clearTargets(){var sp=$('spatial');if(sp)sp.innerHTML='';activeTargets=[]}
+function resetCells(){clearTargets()}
+
+// spawn `count` targets spread across the play area (no overlap, full-screen spread)
+function spawnTargets(count){
+  clearTargets();
+  var sp=$('spatial');if(!sp)return;
+  var W=sp.clientWidth||window.innerWidth, H=sp.clientHeight||(window.innerHeight-200);
+  // target size scales down a bit as count grows so they fit
+  var size=Math.max(64,Math.min(130, Math.min(W,H)*0.16 - count*3));
+  var placed=[];
+  var pad=size*0.6+10;
+  var tries;
+  for(var i=0;i<count;i++){
+    var x,y,ok=false; tries=0;
+    while(!ok && tries<60){
+      tries++;
+      x=pad+Math.random()*(W-pad*2);
+      y=pad+Math.random()*(H-pad*2);
+      ok=true;
+      for(var p=0;p<placed.length;p++){
+        var dx=placed[p].x-x, dy=placed[p].y-y;
+        if(Math.sqrt(dx*dx+dy*dy) < size*1.15){ok=false;break}
+      }
+    }
+    placed.push({x:x,y:y});
+    var el=document.createElement('div');
+    el.className='target';
+    el.style.width=size+'px';el.style.height=size+'px';
+    el.style.left=x+'px';el.style.top=y+'px';
+    (function(elem){elem.addEventListener('pointerdown',function(e){e.preventDefault();hitTarget(elem)})})(el);
+    sp.appendChild(el);
+    // pop in on the beat
+    requestAnimationFrame(function(){el.classList.add('show')});
+    activeTargets.push({el:el,alive:true});
+  }
+}
+
+var g={lv:1,sc:0,rd:0,st:0,pf:0};
+function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
+function initGame(){phase='idle';wave=0;score=0;msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRound;$('restartBtn').style.display='none';updateHUD()}
+
+var API='https://api.reactificgaming.com';
+(function(){
+  var urlToken=new URLSearchParams(window.location.search).get('t');
+  if(urlToken)localStorage.setItem('rct-token',urlToken);
+})();
+
+function submitScore(score,level,mode){
+  var token=localStorage.getItem('rct-token');
+  if(!token)return;
+  fetch(API+'/api/scores/game',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({game_id:'focus',score:score,level:level,mode:mode})
+  }).catch(function(err){console.error('Score submit error:',err)});
+}
+
+window.addEventListener('beforeunload',function(){
+  var token=localStorage.getItem('rct-token');
+  if(token && g && g.sc>0){
+    navigator.sendBeacon(API+'/api/scores/game',
+      JSON.stringify({game_id:'focus',score:g.sc,level:g.lv,mode:'progression'})
+    );
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// FLASH REACTION — escalating wave whack-a-mole. PURE REACTION.
+// Wave 1 lights 3 cells at once. Tap ALL of them before the timer runs out.
+// Success → next wave adds a cell (3→4→5→6…). Time limit scales ~0.6s per cell.
+// Miss the timer (didn't clear the wave) → GAME OVER.
+// ═══════════════════════════════════════════════════════════
+var phase='idle',timers=[],waveTimer=null,clockRAF=null,leadTimer=null;
+function clrT(){timers.forEach(clearTimeout);timers=[];if(waveTimer){clearTimeout(waveTimer);waveTimer=null}if(clockRAF){cancelAnimationFrame(clockRAF);clockRAF=null}if(leadTimer){clearTimeout(leadTimer);leadTimer=null}}
+
+var START_CELLS=3;            // wave 1 lights 3 cells
+var wave=0, waveCells=[], toClear=0, score=0;
+
+function timeForWave(n){
+  // One beat per cell — the Ritnome IS the time limit.
+  return Math.round(n*beatMs());
+}
+
+// ── BEAT + FULL-SCREEN STROBE ──
+var beatLoop=null, audioCtx=null;
+function initAudio(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+function beatTick(){
+  // flash the whole screen to the beat
+  var st=$('strobe');
+  if(st){st.style.opacity='.22';setTimeout(function(){st.style.opacity='0'},70);}
+  // click sound on the beat
+  if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=90;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.09,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.11);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.12)}catch(e){}}
+}
+function startBeat(){stopBeat();beatTick();beatLoop=setInterval(beatTick,beatMs())}
+function stopBeat(){if(beatLoop){clearInterval(beatLoop);beatLoop=null}}
+
+function startRound(){
+  if(phase==='running')return;
+  initAudio();
+  clrT();stopBeat();phase='running';
+  wave=0;score=0;
+  resetCells();updateHUD();
+  $('actBtn').disabled=true;$('restartBtn').style.display='none';
+  $('hFind').textContent='Tap All!';
+  msg('FEEL THE BEAT…','go');
+  // brief pause, then the first wave's strobe lead-in begins
+  timers.push(setTimeout(function(){if(phase==='running')nextWave()},700));
+}
+
+function nextWave(){
+  if(phase!=='running')return;
+  wave++;
+  var count=START_CELLS + (wave-1);          // 3,4,5,6,...
+  resetCells();
+  updateHUD();
+  toClear=count;
+
+  // ── STROBE LEAD-IN: always 5 beats (consistent every wave), then targets appear on the next beat ──
+  stopBeat();
+  var bm=beatMs();
+  var LEAD_BEATS=5;                 // fixed 5-strobe countdown, start to finish
+  var beatsLeft=LEAD_BEATS;
+  msg('GET READY','watch');
+  (function leadBeat(){
+    if(phase!=='running')return;
+    // strobe + click on this beat, and show the countdown number
+    beatTick();
+    var lc=$('leadCount');if(lc){lc.textContent=beatsLeft;lc.style.opacity='1';setTimeout(function(){lc.style.opacity='0'},bm*0.7)}
+    beatsLeft--;
+    if(beatsLeft>0){
+      leadTimer=setTimeout(leadBeat,bm);
+    }else{
+      // next beat: reveal the targets and resume the running beat
+      leadTimer=setTimeout(function(){
+        if(phase!=='running')return;
+        revealWave(count);
+      },bm);
+    }
+  })();
+}
+
+function revealWave(count){
+  if(phase!=='running')return;
+  // targets appear ON the beat, spread across the whole canvas
+  beatTick();
+  spawnTargets(count);
+  updateHUD();
+  msg('TAP ALL '+count+'!','go');
+  timers.push(setTimeout(function(){if(phase==='running')msg('','go')},beatMs()*0.8));
+  // resume the free-running beat/strobe for the tap window
+  startBeat();
+  // start the countdown clock for this wave
+  var limit=timeForWave(count);
+  runClock(limit);
+  waveTimer=setTimeout(function(){ if(phase==='running') gameOver(); }, limit);
+}
+
+function runClock(limit){
+  var start=performance.now();
+  var fill=$('clockFill');
+  (function tick(){
+    if(phase!=='running'){return}
+    var elapsed=performance.now()-start;
+    var pct=Math.max(0,100-(elapsed/limit*100));
+    if(fill)fill.style.width=pct+'%';
+    if(pct<=0)return;
+    clockRAF=requestAnimationFrame(tick);
+  })();
+}
+
+function hitTarget(el){
+  if(phase!=='running')return;
+  // find this target and make sure it's still alive
+  var rec=null;for(var i=0;i<activeTargets.length;i++){if(activeTargets[i].el===el){rec=activeTargets[i];break}}
+  if(!rec||!rec.alive)return;
+  rec.alive=false;
+  el.classList.add('hit');
+  toClear--;
+  score+=10;
+  updateHUD();
+  // remove the hit target shortly after
+  setTimeout(function(){if(el&&el.parentNode)el.parentNode.removeChild(el)},160);
+  if(toClear<=0){
+    // wave cleared! stop the timer, celebrate, next wave
+    if(waveTimer){clearTimeout(waveTimer);waveTimer=null}
+    if(clockRAF){cancelAnimationFrame(clockRAF);clockRAF=null}
+    score+=wave*5;                             // wave-clear bonus
+    updateHUD();
+    msg('✅ CLEAR!','perfect');
+    var fill=$('clockFill');if(fill)fill.style.width='100%';
+    timers.push(setTimeout(function(){if(phase==='running')nextWave()},550));
+  }
+}
+
+function updateHUD(){
+  $('hSc').textContent=score;
+  $('hRd').textContent=wave;
+  $('hLv').textContent=(START_CELLS+Math.max(0,wave-1))+' cells';
+  $('hSt').textContent=wave>0?wave:0;
+  $('hPf').textContent=toClear>0?toClear:0;
+  var ps=$('ps1');if(ps)ps.textContent=wave;
+}
+
+function gameOver(){
+  phase='idle';clrT();stopBeat();
+  // show which were missed
+  // show which targets were left unhit (missed)
+  activeTargets.forEach(function(rec){if(rec.alive&&rec.el){rec.el.classList.add('miss')}});
+  msg('⏱ TIME! Reached Wave '+wave,'miss');
+  submitScore(score,wave,'reaction');
+  if(cycleMode){
+    timers.push(setTimeout(function(){msg('NEXT GAME...','watch');timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200))},1800));
+  }else{
+    $('actBtn').textContent='↻ Play Again';$('actBtn').onclick=startRound;$('actBtn').disabled=false;
+  }
+}
+
+function restartGame(){clrT();phase='idle';resetCells();wave=0;score=0;updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false}
+
+$('actBtn').onclick=startRound;
+buildCourt();
+})();
+</script>
+</body>
+</html>
