@@ -125,7 +125,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 <!-- END -->
 <div id="screen-end">
   <div class="final-num" id="endNum">0</div>
-  <div class="final-label">Taps</div>
+  <div class="final-label">Reds Caught</div>
   <h2 id="endHead">Drill Complete!</h2>
   <div id="endSub">Great focus. Play again and beat your number.</div>
   <div class="end-btns">
@@ -413,7 +413,7 @@ function endDrill(){
   if(isNew){best=finalScore;try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
   submitScore(finalScore);
   $('endNum').textContent=finalScore;
-  if(isNew&&finalScore>0){$('endHead').textContent='🎉 New Best!';$('endSub').textContent='You beat your record with '+finalScore+' taps. Amazing focus!'}
+  if(isNew&&finalScore>0){$('endHead').textContent='🎉 New Best!';$('endSub').textContent='You beat your record with '+finalScore+' reds. Amazing focus!'}
   else{$('endHead').textContent='Drill Complete!';$('endSub').textContent='Great focus. Play again and beat your number.'}
   $('screen-end').style.display='flex';
 }
