@@ -3,535 +3,438 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>REACTIFIC™ Reaction Curriculum | Gostar Digital</title>
+<title>Reactific™ Teacher Guide</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  font-family:'Segoe UI',Arial,sans-serif;
-  background:#050810;
-  color:#fff;
-  line-height:1.6;
-}
+html,body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7fb;color:#1a2332;line-height:1.6}
+.topbar{background:#0B1F3A;color:#fff;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.logo{font-size:1.5rem;font-weight:900;font-style:italic;letter-spacing:.08em}
+.logo span{color:#008cff}
+.lang-toggle{display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px;gap:2px}
+.lang-btn{padding:6px 18px;border-radius:999px;border:none;font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,.6)}
+.lang-btn.active{background:#008cff;color:#fff}
 
-/* ── HERO ── */
-.hero{
-  min-height:100vh;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;
-  padding:60px 24px;
-  background:
-    radial-gradient(ellipse at 20% 30%,rgba(0,140,255,.2),transparent 50%),
-    radial-gradient(ellipse at 80% 70%,rgba(155,89,182,.15),transparent 50%),
-    linear-gradient(180deg,#050810,#020510);
-  position:relative;overflow:hidden;
-}
-.hero::before{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:40%;
-  background:
-    repeating-linear-gradient(90deg,rgba(0,140,255,.06) 0,rgba(0,140,255,.06) 1px,transparent 1px,transparent 60px),
-    repeating-linear-gradient(0deg,rgba(0,140,255,.06) 0,rgba(0,140,255,.06) 1px,transparent 1px,transparent 60px);
-  transform:perspective(400px) rotateX(60deg);
-  transform-origin:bottom center;
-  pointer-events:none;
-}
-.hero-badge{
-  display:inline-block;
-  background:rgba(0,140,255,.15);
-  border:1px solid rgba(0,140,255,.4);
-  border-radius:999px;
-  padding:6px 20px;
-  font-size:.7rem;
-  font-weight:700;
-  letter-spacing:.25em;
-  text-transform:uppercase;
-  color:#008cff;
-  margin-bottom:20px;
-}
-.hero-logo{
-  font-size:clamp(3rem,10vw,7rem);
-  font-weight:900;
-  font-style:italic;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  line-height:1;
-  text-shadow:0 0 80px rgba(0,140,255,.6);
-  margin-bottom:8px;
-}
-.hero-logo span{color:#008cff}
-.hero-tagline{
-  font-size:clamp(1rem,3vw,1.8rem);
-  font-weight:300;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:#a7adba;
-  margin-bottom:30px;
-}
-.hero-tagline strong{color:#ffd35a;font-weight:700}
-.hero-desc{
-  max-width:700px;
-  font-size:clamp(1rem,2vw,1.2rem);
-  color:#c8d0dc;
-  line-height:1.8;
-  margin-bottom:40px;
-}
-.hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
-.btn-primary{
-  padding:16px 36px;
-  background:linear-gradient(135deg,#008cff,#00b7ff);
-  border:none;border-radius:999px;
-  color:#fff;font-size:1rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;
-  cursor:pointer;text-decoration:none;
-  box-shadow:0 0 40px rgba(0,140,255,.5);
-  transition:transform .2s,box-shadow .2s;
-}
-.btn-primary:hover{transform:scale(1.04);box-shadow:0 0 60px rgba(0,140,255,.7)}
-.btn-secondary{
-  padding:16px 36px;
-  background:transparent;
-  border:2px solid rgba(255,255,255,.25);
-  border-radius:999px;
-  color:#fff;font-size:1rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;
-  cursor:pointer;text-decoration:none;
-  transition:border-color .2s;
-}
-.btn-secondary:hover{border-color:#fff}
+.hero{background:linear-gradient(135deg,#0B1F3A,#1a3a6b);color:#fff;padding:48px 32px 40px;text-align:center}
+.hero h1{font-size:2.2rem;font-weight:900;margin-bottom:8px}
+.hero p{font-size:1rem;color:rgba(255,255,255,.75);max-width:600px;margin:0 auto}
 
-/* ── SECTIONS ── */
-section{padding:80px 24px;max-width:1100px;margin:0 auto}
-.section-badge{
-  display:inline-block;
-  font-size:.65rem;font-weight:700;
-  letter-spacing:.25em;text-transform:uppercase;
-  color:#008cff;margin-bottom:12px;
-}
-.section-title{
-  font-size:clamp(1.8rem,4vw,3rem);
-  font-weight:900;line-height:1.1;
-  margin-bottom:16px;
-}
-.section-title span{color:#008cff}
-.section-sub{
-  font-size:1.05rem;color:#a7adba;
-  max-width:650px;line-height:1.7;
-  margin-bottom:50px;
-}
+.container{max-width:860px;margin:0 auto;padding:32px 24px 60px}
 
-/* ── DEVICE GRID ── */
-.device-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
-}
-.device-card{
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:20px;
-  padding:28px 24px;
-  text-align:center;
-  transition:transform .2s,border-color .2s;
-}
-.device-card:hover{transform:translateY(-4px);border-color:rgba(0,140,255,.4)}
-.device-icon{font-size:2.8rem;margin-bottom:14px}
-.device-name{font-size:1.1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;color:#fff}
-.device-desc{font-size:.85rem;color:#8892a0;line-height:1.6}
-.device-tag{
-  display:inline-block;margin-top:12px;
-  background:rgba(0,140,255,.15);
-  border:1px solid rgba(0,140,255,.3);
-  border-radius:999px;padding:3px 12px;
-  font-size:.6rem;font-weight:700;
-  letter-spacing:.15em;text-transform:uppercase;color:#008cff;
-}
+.section{background:#fff;border-radius:16px;padding:32px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e8edf4}
+.section h2{font-size:1.3rem;font-weight:900;color:#0B1F3A;margin-bottom:16px;padding-bottom:10px;border-bottom:3px solid #008cff;display:flex;align-items:center;gap:10px}
+.section h3{font-size:1rem;font-weight:800;color:#008cff;margin:20px 0 8px}
+.section p{color:#334155;margin-bottom:14px;font-size:.95rem}
+.section ul{margin:0 0 14px 20px}
+.section ul li{color:#334155;font-size:.95rem;margin-bottom:6px}
+.section ol{margin:0 0 14px 20px}
+.section ol li{color:#334155;font-size:.95rem;margin-bottom:8px}
 
-/* ── GAMES ── */
-.games-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:20px;
-}
-.game-card{
-  background:rgba(255,255,255,.03);
-  border:2px solid rgba(255,255,255,.08);
-  border-radius:20px;
-  padding:28px 24px;
-  position:relative;overflow:hidden;
-  transition:transform .2s,box-shadow .2s;
-}
-.game-card::before{content:'';position:absolute;inset:0;background:var(--gc);opacity:.05}
-.game-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.game-number{
-  font-size:.65rem;font-weight:700;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--gc);margin-bottom:8px;
-}
-.game-icon{font-size:2rem;margin-bottom:10px}
-.game-name{font-size:1.2rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#fff;margin-bottom:6px}
-.game-skill{
-  display:inline-block;
-  background:rgba(255,255,255,.08);
-  border-radius:999px;padding:3px 12px;
-  font-size:.6rem;font-weight:700;
-  letter-spacing:.15em;text-transform:uppercase;
-  color:var(--gc);margin-bottom:12px;
-}
-.game-desc{font-size:.88rem;color:#a7adba;line-height:1.65}
-.game-mechanic{
-  margin-top:14px;padding-top:14px;
-  border-top:1px solid rgba(255,255,255,.08);
-  font-size:.8rem;color:#6b7280;
-}
-.game-mechanic strong{color:#fff}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.col-box{background:#f4f7fb;border-radius:12px;padding:20px;border:1px solid #e0e8f0}
+.col-box h4{font-size:.85rem;font-weight:800;color:#0B1F3A;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.col-box ul{margin:0 0 0 16px}
+.col-box ul li{font-size:.88rem;color:#334155;margin-bottom:6px}
 
-/* ── PROGRESSION ── */
-.progression{
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:24px;
-  padding:40px;
-}
-.prog-steps{display:flex;flex-direction:column;gap:0}
-.prog-step{
-  display:flex;gap:20px;align-items:flex-start;
-  padding:20px 0;
-  border-bottom:1px solid rgba(255,255,255,.06);
-}
-.prog-step:last-child{border-bottom:none}
-.prog-num{
-  width:44px;height:44px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#008cff,#00b7ff);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;font-weight:900;
-  flex-shrink:0;
-}
-.prog-title{font-size:1rem;font-weight:700;color:#fff;margin-bottom:4px}
-.prog-desc{font-size:.85rem;color:#8892a0;line-height:1.6}
+.tip{background:#EDF7F1;border-left:4px solid #00A36C;border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0;font-size:.88rem;color:#1a4a2e}
+.tip strong{color:#00A36C}
+.note{background:#FFF4EC;border-left:4px solid #FF6B00;border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0;font-size:.88rem;color:#4a2a0e}
+.note strong{color:#FF6B00}
 
-/* ── OUTCOMES ── */
-.outcomes-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:16px;
-}
-.outcome-card{
-  background:rgba(0,140,255,.06);
-  border:1px solid rgba(0,140,255,.2);
-  border-radius:16px;padding:24px 20px;text-align:center;
-}
-.outcome-icon{font-size:2rem;margin-bottom:10px}
-.outcome-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:6px}
-.outcome-desc{font-size:.8rem;color:#8892a0;line-height:1.5}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.88rem}
+th{background:#0B1F3A;color:#fff;padding:10px 14px;text-align:left;font-weight:700}
+td{padding:10px 14px;border-bottom:1px solid #e8edf4;vertical-align:top}
+tr:nth-child(even) td{background:#f8fafc}
+tr:hover td{background:#f0f4ff}
 
-/* ── SETUP ── */
-.setup-steps{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:16px;
-}
-.setup-step{
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;padding:24px;
-  display:flex;flex-direction:column;align-items:flex-start;
-}
-.setup-num{
-  font-size:2rem;font-weight:900;color:#008cff;
-  margin-bottom:10px;line-height:1;
-}
-.setup-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:6px}
-.setup-desc{font-size:.82rem;color:#8892a0;line-height:1.5}
+.quick-ref td:first-child{font-weight:700;color:#0B1F3A;white-space:nowrap}
 
-/* ── CTA ── */
-.cta{
-  text-align:center;
-  padding:80px 24px;
-  background:radial-gradient(ellipse at center,rgba(0,140,255,.12),transparent 60%);
-}
-.cta-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:16px}
-.cta-title span{color:#008cff}
-.cta-sub{font-size:1.05rem;color:#a7adba;margin-bottom:36px;max-width:600px;margin-left:auto;margin-right:auto}
-.cta-contact{
-  display:inline-flex;flex-direction:column;align-items:center;gap:6px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:20px;padding:28px 40px;
-  margin-top:20px;
-}
-.cta-contact-name{font-size:1.2rem;font-weight:700;color:#fff}
-.cta-contact-title{font-size:.8rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase}
-.cta-contact-email{font-size:1rem;color:#008cff;font-weight:600;margin-top:6px}
+.step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start}
+.step-num{width:36px;height:36px;border-radius:50%;background:#008cff;color:#fff;font-size:1rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-content h4{font-size:.95rem;font-weight:800;color:#0B1F3A;margin-bottom:4px}
+.step-content p{font-size:.88rem;color:#334155;margin:0}
 
-/* ── DIVIDER ── */
-.divider{height:1px;background:rgba(255,255,255,.06);max-width:1100px;margin:0 auto}
+.footer{text-align:center;padding:24px;color:#8892a0;font-size:.8rem}
+.footer span{color:#008cff;font-weight:700}
 
-/* ── FOOTER ── */
-footer{
-  text-align:center;padding:30px 24px;
-  font-size:.75rem;color:#3a4250;letter-spacing:.1em;text-transform:uppercase;
-}
-footer span{color:#008cff}
-
-/* ── RESPONSIVE ── */
 @media(max-width:600px){
-  .hero-btns{flex-direction:column;align-items:center}
-  .progression{padding:24px}
-  .prog-step{flex-direction:column;gap:12px}
+  .two-col{grid-template-columns:1fr}
+  .hero h1{font-size:1.6rem}
+  .topbar{padding:12px 16px}
+  .container{padding:16px 12px 40px}
+  .section{padding:20px}
+  table{font-size:.78rem}
+  th,td{padding:8px 10px}
 }
+
+.es{display:none}
+.lang-es .es{display:block}
+.lang-es .en{display:none}
+.lang-es .es-inline{display:inline}
+.lang-es .en-inline{display:none}
+.es-inline{display:none}
 </style>
 </head>
 <body>
 
-<!-- HERO -->
+<div class="topbar">
+  <div class="logo">REACTIFIC<span>™</span></div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')" id="btn-en">English</button>
+    <button class="lang-btn" onclick="setLang('es')" id="btn-es">Español</button>
+  </div>
+</div>
+
 <div class="hero">
-  <div class="hero-badge">🥽 Reaction Drills & Challenges · Gostar Digital LLC</div>
-  <div class="hero-logo">REACTIFIC<span>™</span></div>
-  <div class="hero-tagline">The <strong>Virtual Reaction Reality</strong> Platform</div>
-  <p class="hero-desc">
-    A complete set of reaction drills and challenges designed for K-12 schools and youth development programs.
-    Six progressive games. Four device types. One URL. Zero installation.
-  </p>
-  <div class="hero-btns">
-    <a href="#games" class="btn-primary">Explore the Curriculum</a>
-    <a href="#contact" class="btn-secondary">Schedule a Demo</a>
-  </div>
+  <h1 class="en">Teacher Guide</h1>
+  <h1 class="es">Guía del Maestro</h1>
+  <p class="en">Everything you need to run Reactific in your classroom — from first login to reading the leaderboard.</p>
+  <p class="es">Todo lo que necesita para usar Reactific en su salón — desde el primer inicio de sesión hasta leer el marcador.</p>
 </div>
 
-<!-- DEVICES -->
-<div class="divider"></div>
-<section id="devices">
-  <div class="section-badge">Platform</div>
-  <h2 class="section-title">One Platform. <span>Every Device.</span></h2>
-  <p class="section-sub">
-    Reactific runs on every device your school already owns. No new hardware required. No app installation. Just a URL.
-  </p>
-  <div class="device-grid">
-    <div class="device-card">
-      <div class="device-icon">📱</div>
-      <div class="device-name">Mobile</div>
-      <div class="device-desc">5×5 practice court. Students train on their own phones. Touch optimized. Works on any smartphone browser.</div>
-      <div class="device-tag">Practice · Free</div>
-    </div>
-    <div class="device-card">
-      <div class="device-icon">💻</div>
-      <div class="device-name">Chromebook</div>
-      <div class="device-desc">1,300 devices. Browser based. No installation. Students open Chrome and start training in seconds.</div>
-      <div class="device-tag">Classroom · Free</div>
-    </div>
-    <div class="device-card">
-      <div class="device-icon">📺</div>
-      <div class="device-name">Promethean</div>
-      <div class="device-desc">5×10 competitive court on the big screen. Whole class competes. Teacher sees all scores live.</div>
-      <div class="device-tag">Competitive · Live</div>
-    </div>
-    <div class="device-card">
-      <div class="device-icon">🥽</div>
-      <div class="device-name">VR Headset</div>
-      <div class="device-desc">Full 5×10 immersive court. Pico VR ready. Controller precision adds a motor skill layer no other platform offers.</div>
-      <div class="device-tag">Immersive · VR</div>
-    </div>
-  </div>
-</section>
+<div class="container">
 
-<!-- GAMES -->
-<div class="divider"></div>
-<section id="games">
-  <div class="section-badge">Curriculum</div>
-  <h2 class="section-title">Six Games. <span>Six Skills.</span></h2>
-  <p class="section-sub">
-    Each game targets a specific skill. Together they form a progressive set of drills and challenges that build reaction speed, memory, focus and adaptability.
-  </p>
-  <div class="games-grid">
-
-    <div class="game-card" style="--gc:#9B59B6">
-      <div class="game-number">Game 01</div>
-      <div class="game-icon">⚡</div>
-      <div class="game-name">Reaction Control</div>
-      <div class="game-skill">Eye-Hand Reflex</div>
-      <div class="game-desc">A cell lights up on the court. The student must point and trigger before it disappears. Speed and precision are everything. The controller adds a motor coordination layer that touchscreen cannot replicate.</div>
-      <div class="game-mechanic"><strong>Skill:</strong> Response time · Controller precision · Motor coordination</div>
-    </div>
-
-    <div class="game-card" style="--gc:#FF6B35">
-      <div class="game-number">Game 02</div>
-      <div class="game-icon">🧩</div>
-      <div class="game-name">Pattern Recognition</div>
-      <div class="game-skill">Sequential Memory</div>
-      <div class="game-desc">Numbered cells light up one by one across the 5×10 court. The student memorizes the positions, then the cells go dark and they tap them back in exact order. Difficulty scales from 5 cells to 20.</div>
-      <div class="game-mechanic"><strong>Skill:</strong> Short-term memory · Spatial recall · Sequential accuracy</div>
-    </div>
-
-    <div class="game-card" style="--gc:#00CED1">
-      <div class="game-number">Game 03</div>
-      <div class="game-icon">🔢</div>
-      <div class="game-name">Flash Recall</div>
-      <div class="game-skill">Multi-Target Memory</div>
-      <div class="game-desc">Multiple cells flash simultaneously across 50 positions. The student has fractions of a second to register all lit cells, then must find and tap every one in any order. Demands full court awareness.</div>
-      <div class="game-mechanic"><strong>Skill:</strong> Peripheral awareness · Multi-target memory · Visual scanning</div>
-    </div>
-
-    <div class="game-card" style="--gc:#00D9A5">
-      <div class="game-number">Game 04</div>
-      <div class="game-icon">🎵</div>
-      <div class="game-name">Sequence Control</div>
-      <div class="game-skill">Working Memory</div>
-      <div class="game-desc">Cells light up one by one in gold with musical notes. The student watches the full sequence across the court, then replays it in the exact same order. Each correct tap plays its note. Wrong order reveals the pattern.</div>
-      <div class="game-mechanic"><strong>Skill:</strong> Working memory · Order retention · Motor replay</div>
-    </div>
-
-    <div class="game-card" style="--gc:#9ACD32">
-      <div class="game-number">Game 05</div>
-      <div class="game-icon">🌱</div>
-      <div class="game-name">Echo Recall</div>
-      <div class="game-skill">Change Detection</div>
-      <div class="game-desc">The original pattern flashes in gold. Then the echo pattern flashes in lime — identical except for one cell that has moved. The student must identify and tap the changed cell before the timer runs out.</div>
-      <div class="game-mechanic"><strong>Skill:</strong> Comparative memory · Change detection · Mental flexibility</div>
-    </div>
-
-    <div class="game-card" style="--gc:#ff6b00">
-      <div class="game-number">Game 06</div>
-      <div class="game-icon">🎯</div>
-      <div class="game-name">VR Number Hunt</div>
-      <div class="game-skill">Visual Target Search</div>
-      <div class="game-desc">50 numbers fill the VR court. A target number appears. The student scans the full court and triggers before the shot clock expires. The flagship experience — pure eye-hand reaction under time pressure.</div>
-      <div class="game-mechanic"><strong>Skill:</strong> Visual scanning · Target recognition · Speed under pressure</div>
-    </div>
-
-  </div>
-</section>
-
-<!-- PROGRESSION -->
-<div class="divider"></div>
-<section id="progression">
-  <div class="section-badge">Learning Path</div>
-  <h2 class="section-title">A Progressive <span>Training Journey</span></h2>
-  <p class="section-sub">Students advance through a structured four-stage path — from free practice to immersive VR competition.</p>
-  <div class="progression">
-    <div class="prog-steps">
-      <div class="prog-step">
-        <div class="prog-num">1</div>
-        <div>
-          <div class="prog-title">Practice — Mobile & Chromebook</div>
-          <div class="prog-desc">Students begin on the free 5×5 court on their phone or school Chromebook. Low pressure, self-paced. They learn the mechanics of each game and build baseline reaction skills at their own speed.</div>
-        </div>
+  <!-- SECTION 1 -->
+  <div class="section">
+    <h2>
+      <span class="en">1. What Is Reactific?</span>
+      <span class="es">1. ¿Qué es Reactific?</span>
+    </h2>
+    <p class="en">Reactific is a 5-minute-a-day set of drills and challenges that runs directly on your students' school Chromebooks. Six games sharpen reaction speed, visual memory, pattern recognition, and sequential recall — skills that support academic performance, focus, and athletic development.</p>
+    <p class="es">Reactific es un conjunto de ejercicios y desafíos de 5 minutos al día que funciona directamente en los Chromebooks escolares de sus estudiantes. Seis juegos afinan la velocidad de reacción, la memoria visual, el reconocimiento de patrones y la memoria secuencial — habilidades que apoyan el rendimiento académico, la concentración y el desarrollo atlético.</p>
+    <p class="en">The platform lives at <strong>vreaction.com</strong>. Students log in with their school email and a class code you provide. No app installation needed — it runs entirely in the browser.</p>
+    <p class="es">La plataforma está en <strong>vreaction.com</strong>. Los estudiantes inician sesión con su correo escolar y un código de clase que usted proporciona. No se necesita instalar ninguna aplicación — funciona completamente en el navegador.</p>
+    <div class="two-col">
+      <div class="col-box">
+        <h4 class="en">What students do</h4>
+        <h4 class="es">Lo que hacen los estudiantes</h4>
+        <ul>
+          <li class="en">Log in with school email + class code</li>
+          <li class="es">Iniciar sesión con correo escolar + código de clase</li>
+          <li class="en">Choose a game from the hub</li>
+          <li class="es">Elegir un juego desde el hub</li>
+          <li class="en">Play 1–3 rounds (about 5 minutes)</li>
+          <li class="es">Jugar 1–3 rondas (aproximadamente 5 minutos)</li>
+          <li class="en">Scores post automatically to the leaderboard</li>
+          <li class="es">Los puntajes se publican automáticamente en el marcador</li>
+        </ul>
       </div>
-      <div class="prog-step">
-        <div class="prog-num">2</div>
-        <div>
-          <div class="prog-title">Class Competition — Promethean Board</div>
-          <div class="prog-desc">The teacher launches the 5×10 competitive court on the Promethean board. The whole class plays simultaneously — students on Chromebooks, scores displayed live on the big screen. Class-wide competition drives engagement.</div>
-        </div>
-      </div>
-      <div class="prog-step">
-        <div class="prog-num">3</div>
-        <div>
-          <div class="prog-title">VR Immersion — Pico Headset</div>
-          <div class="prog-desc">Students put on a Pico VR headset and enter the full 5×10 court in virtual reality. The controller adds a precision layer that elevates every game. The same skills — harder execution. The most immersive training experience available in K-12.</div>
-        </div>
-      </div>
-      <div class="prog-step">
-        <div class="prog-num">4</div>
-        <div>
-          <div class="prog-title">Tournament & Leaderboard</div>
-          <div class="prog-desc">All scores post to the Reactific leaderboard in real time — daily, weekly and all-time rankings. Students compete across classes, campuses and programs. Teachers track progress. Winners are recognized. The data never lies.</div>
-        </div>
+      <div class="col-box">
+        <h4 class="en">What teachers do</h4>
+        <h4 class="es">Lo que hacen los maestros</h4>
+        <ul>
+          <li class="en">Open the platform at the start or end of class</li>
+          <li class="es">Abrir la plataforma al inicio o al final de la clase</li>
+          <li class="en">Share your class code with students once</li>
+          <li class="es">Compartir el código de clase con los estudiantes una vez</li>
+          <li class="en">Check the dashboard to monitor progress</li>
+          <li class="es">Revisar el panel para monitorear el progreso</li>
+          <li class="en">Let the leaderboard do the motivating</li>
+          <li class="es">Dejar que el marcador motive a los estudiantes</li>
+        </ul>
       </div>
     </div>
   </div>
-</section>
 
-<!-- OUTCOMES -->
-<div class="divider"></div>
-<section id="outcomes">
-  <div class="section-badge">Learning Outcomes</div>
-  <h2 class="section-title">What Students <span>Develop</span></h2>
-  <p class="section-sub">Six measurable skills sharpened through drills and challenges — not worksheets.</p>
-  <div class="outcomes-grid">
-    <div class="outcome-card">
-      <div class="outcome-icon">⚡</div>
-      <div class="outcome-title">Reaction Speed</div>
-      <div class="outcome-desc">Students measurably reduce their response time through repeated deliberate practice under pressure.</div>
-    </div>
-    <div class="outcome-card">
-      <div class="outcome-icon">🧠</div>
-      <div class="outcome-title">Working Memory</div>
-      <div class="outcome-desc">Holding and manipulating multiple items in memory simultaneously — a foundational academic skill.</div>
-    </div>
-    <div class="outcome-card">
-      <div class="outcome-icon">👁️</div>
-      <div class="outcome-title">Visual Scanning</div>
-      <div class="outcome-desc">Rapid and accurate searching across a wide field — critical for reading, sports and real-world navigation.</div>
-    </div>
-    <div class="outcome-card">
-      <div class="outcome-icon">🎯</div>
-      <div class="outcome-title">Focus Under Pressure</div>
-      <div class="outcome-desc">Maintaining concentration and accuracy when a clock is counting down and stakes are visible.</div>
-    </div>
-    <div class="outcome-card">
-      <div class="outcome-icon">🔄</div>
-      <div class="outcome-title">Mental Flexibility</div>
-      <div class="outcome-desc">Detecting change, adapting quickly and updating mental models in real time — the definition of adaptability.</div>
-    </div>
-    <div class="outcome-card">
-      <div class="outcome-icon">🕹️</div>
-      <div class="outcome-title">Motor Coordination</div>
-      <div class="outcome-desc">VR controller precision training develops fine motor control and eye-hand coordination beyond what touchscreen offers.</div>
+  <!-- SECTION 2 -->
+  <div class="section">
+    <h2>
+      <span class="en">2. Why It Works</span>
+      <span class="es">2. Por Qué Funciona</span>
+    </h2>
+    <p class="en">Reactific sharpens the mind the same way athletes train their bodies — through short, repeated, progressively harder drills. The research behind this approach is well established:</p>
+    <p class="es">Reactific afina la mente de la misma manera que los atletas entrenan el cuerpo — mediante ejercicios cortos, repetidos y progresivamente más difíciles. La investigación detrás de este enfoque está bien establecida:</p>
+    <ul>
+      <li class="en"><strong>Processing speed:</strong> Reaction speed and working memory improve with consistent short-burst practice — not long sessions.</li>
+      <li class="es"><strong>Velocidad de procesamiento:</strong> La velocidad de reacción y la memoria de trabajo mejoran con práctica corta y consistente — no con sesiones largas.</li>
+      <li class="en"><strong>Daily habit:</strong> Spaced repetition (a little every day) outperforms massed practice (a lot once a week) for skill development.</li>
+      <li class="es"><strong>Hábito diario:</strong> La repetición espaciada (un poco cada día) supera la práctica masiva (mucho una vez a la semana) para el desarrollo de habilidades.</li>
+      <li class="en"><strong>Motivation:</strong> Visible progress and competition motivate continued engagement beyond what homework or tests can achieve.</li>
+      <li class="es"><strong>Motivación:</strong> El progreso visible y la competencia motivan el compromiso continuo más allá de lo que pueden lograr las tareas o los exámenes.</li>
+      <li class="en"><strong>Multiple intelligences:</strong> Each game is different — students who struggle with one often excel at another.</li>
+      <li class="es"><strong>Inteligencias múltiples:</strong> Cada juego es diferente — los estudiantes que tienen dificultades con uno a menudo sobresalen en otro.</li>
+    </ul>
+    <div class="tip">
+      <strong class="en">✅ TIP</strong><strong class="es">✅ CONSEJO</strong>
+      <span class="en"> Frame it for students as daily drills and challenges, not a game. Ask them: "How fast was your reaction time today? Did you beat yesterday?"</span>
+      <span class="es"> Preséntelo a los estudiantes como entrenamiento cerebral, no como un juego. Pregúnteles: "¿Qué tan rápido fue tu tiempo de reacción hoy? ¿Superaste el de ayer?"</span>
     </div>
   </div>
-</section>
 
-<!-- SETUP -->
-<div class="divider"></div>
-<section id="setup">
-  <div class="section-badge">Deployment</div>
-  <h2 class="section-title">Up and Running <span>in Minutes</span></h2>
-  <p class="section-sub">No app store. No installation. No IT project. Reactific is live the moment your network allows the URL.</p>
-  <div class="setup-steps">
-    <div class="setup-step">
-      <div class="setup-num">01</div>
-      <div class="setup-title">Whitelist the URL</div>
-      <div class="setup-desc">IT director adds reactificgaming.com to the approved list. One step. Five minutes.</div>
-    </div>
-    <div class="setup-step">
-      <div class="setup-num">02</div>
-      <div class="setup-title">Share the Link</div>
-      <div class="setup-desc">Teacher shares the URL with students. They open Chrome on any Chromebook. Done.</div>
-    </div>
-    <div class="setup-step">
-      <div class="setup-num">03</div>
-      <div class="setup-title">Bookmark VR Home</div>
-      <div class="setup-desc">On each VR headset, bookmark reactificgaming.com/vr-home.html. Students tap one icon to enter the VR lab.</div>
-    </div>
-    <div class="setup-step">
-      <div class="setup-num">04</div>
-      <div class="setup-title">Launch the Session</div>
-      <div class="setup-desc">Teacher opens the Promethean board, launches the 5×10 court and watches class-wide scores update live.</div>
-    </div>
+  <!-- SECTION 3 -->
+  <div class="section">
+    <h2>
+      <span class="en">3. The Six Games</span>
+      <span class="es">3. Los Seis Juegos</span>
+    </h2>
+    <p class="en">Each game sharpens a different skill:</p>
+    <p class="es">Cada juego afina una habilidad diferente:</p>
+    <table>
+      <tr>
+        <th class="en">Game</th><th class="es">Juego</th>
+        <th class="en">Skill Trained</th><th class="es">Habilidad</th>
+        <th class="en">How It Works</th><th class="es">Cómo Funciona</th>
+      </tr>
+      <tr>
+        <td>⚡ Reaction Control</td>
+        <td class="en">Processing speed · Reflex</td><td class="es">Velocidad de procesamiento · Reflejos</td>
+        <td class="en">A cell lights up on the court. Tap it before it disappears. Speed increases each level.</td>
+        <td class="es">Una celda se ilumina en la cancha. Tócala antes de que desaparezca. La velocidad aumenta cada nivel.</td>
+      </tr>
+      <tr>
+        <td>🎯 Number Hunt</td>
+        <td class="en">Visual scanning · Working memory</td><td class="es">Exploración visual · Memoria de trabajo</td>
+        <td class="en">Find target numbers hidden among active cells. More numbers and cells each level.</td>
+        <td class="es">Encuentra números objetivo ocultos entre las celdas activas. Más números y celdas cada nivel.</td>
+      </tr>
+      <tr>
+        <td>🌱 Echo Recall</td>
+        <td class="en">Change detection · Visual memory</td><td class="es">Detección de cambios · Memoria visual</td>
+        <td class="en">Watch a pattern, then the same pattern with ONE cell changed. Tap the changed cell.</td>
+        <td class="es">Observa un patrón, luego el mismo patrón con UNA celda cambiada. Toca la celda que cambió.</td>
+      </tr>
+      <tr>
+        <td>🧩 Pattern Recognition</td>
+        <td class="en">Spatial memory · Sequential recall</td><td class="es">Memoria espacial · Memoria secuencial</td>
+        <td class="en">Numbered cells light up in order. Memorize them, then tap back in the same order.</td>
+        <td class="es">Las celdas numeradas se iluminan en orden. Memorízalas y tócalas en el mismo orden.</td>
+      </tr>
+      <tr>
+        <td>🔢 Flash Recall</td>
+        <td class="en">Short-term visual memory</td><td class="es">Memoria visual a corto plazo</td>
+        <td class="en">Multiple cells flash at once. Remember them all, then tap every one in any order.</td>
+        <td class="es">Varias celdas destellan a la vez. Recuérdalas todas y tócalas en cualquier orden.</td>
+      </tr>
+      <tr>
+        <td>🎵 Sequence Control</td>
+        <td class="en">Sequential memory · Rhythm</td><td class="es">Memoria secuencial · Ritmo</td>
+        <td class="en">Cells light up one by one with sound. Replay the exact same sequence.</td>
+        <td class="es">Las celdas se iluminan una por una con sonido. Repite exactamente la misma secuencia.</td>
+      </tr>
+    </table>
   </div>
-</section>
 
-<!-- CTA -->
-<div class="divider"></div>
-<div class="cta" id="contact">
-  <div class="section-badge">Get Started</div>
-  <h2 class="cta-title">Ready to Bring <span>Reactific</span> to Your School?</h2>
-  <p class="cta-sub">We set everything up. You distribute the link. Your students train from day one.</p>
-  <div class="hero-btns">
-    <a href="mailto:info@vreaction.com" class="btn-primary">Schedule a Demo</a>
-    <a href="https://reactificgaming.com" class="btn-secondary">Try It Now</a>
+  <!-- SECTION 4 -->
+  <div class="section">
+    <h2>
+      <span class="en">4. Getting Started</span>
+      <span class="es">4. Cómo Comenzar</span>
+    </h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4 class="en">Share Your Class Code</h4>
+        <h4 class="es">Comparta Su Código de Clase</h4>
+        <p class="en">Your unique class code is visible in your teacher dashboard at vreaction.com/teacher.html. Share it with students once — they only need it on their first login.</p>
+        <p class="es">Su código de clase único es visible en su panel de maestro en vreaction.com/teacher.html. Compártalo con los estudiantes una vez — solo lo necesitan en su primer inicio de sesión.</p>
+      </div>
+    </div>
+    <div class="note">
+      <strong class="en">📌 NOTE</strong><strong class="es">📌 NOTA</strong>
+      <span class="en"> Write the class code on the board on Day 1. Students who miss the first day can join anytime using the same code.</span>
+      <span class="es"> Escriba el código de clase en la pizarra el Día 1. Los estudiantes que no estén el primer día pueden unirse en cualquier momento usando el mismo código.</span>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4 class="en">First Student Login</h4>
+        <h4 class="es">Primer Inicio de Sesión del Estudiante</h4>
+        <p class="en">Students go to vreaction.com, enter their school email and your class code. An account is created automatically — no password needed. Their name appears on the leaderboard as First Name + Last Initial (e.g. John B.).</p>
+        <p class="es">Los estudiantes van a vreaction.com, ingresan su correo escolar y su código de clase. Se crea una cuenta automáticamente — no se necesita contraseña. Su nombre aparece en el marcador como Nombre + Inicial del Apellido (ej. Juan B.).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4 class="en">First Play Session</h4>
+        <h4 class="es">Primera Sesión de Juego</h4>
+        <p class="en">After logging in, students land on the hub and choose a game. Recommend Reaction Control for the first session — fastest to learn, immediate feedback.</p>
+        <p class="es">Después de iniciar sesión, los estudiantes llegan al hub y eligen un juego. Recomiende Reaction Control para la primera sesión — el más rápido de aprender, retroalimentación inmediata.</p>
+      </div>
+    </div>
+    <div class="tip">
+      <strong class="en">✅ TIP</strong><strong class="es">✅ CONSEJO</strong>
+      <span class="en"> Walk the first login together as a class. It takes about 60 seconds per student once they have the class code.</span>
+      <span class="es"> Realice el primer inicio de sesión juntos como clase. Toma aproximadamente 60 segundos por estudiante una vez que tienen el código de clase.</span>
+    </div>
   </div>
-  <div class="cta-contact">
-    <div class="cta-contact-name">Gostar Digital LLC</div>
-    <div class="cta-contact-title">San Juan, Puerto Rico</div>
-    <div class="cta-contact-email">reactificgaming.com</div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <h2>
+      <span class="en">5. Fitting It Into Your Day</span>
+      <span class="es">5. Cómo Integrarlo en Su Día</span>
+    </h2>
+    <p class="en">Reactific is designed for the 5 minutes that would otherwise be wasted — not for curriculum time.</p>
+    <p class="es">Reactific está diseñado para los 5 minutos que de otro modo se desperdiciarían — no para el tiempo curricular.</p>
+
+    <h3 class="en">First 5 Minutes — Settling In</h3>
+    <h3 class="es">Primeros 5 Minutos — Llegada al Salón</h3>
+    <p class="en">Students are arriving, attendance is being taken. Open the platform, say "Get your scores in before we start," and let the leaderboard run. Students who arrive early get more time — a natural incentive to be punctual.</p>
+    <p class="es">Los estudiantes están llegando, se pasa lista. Abra la plataforma, diga "Pongan sus puntajes antes de que empecemos" y deje que el marcador corra. Los estudiantes que llegan temprano tienen más tiempo — un incentivo natural para ser puntuales.</p>
+
+    <h3 class="en">Last 5 Minutes — Early Finishers</h3>
+    <h3 class="es">Últimos 5 Minutos — Quienes Terminan Primero</h3>
+    <p class="en">Work is done, students are waiting for the bell. The last 5 minutes becomes a COMPETE session. The student who gets the highest score earns bragging rights until tomorrow.</p>
+    <p class="es">El trabajo está hecho, los estudiantes esperan el timbre. Los últimos 5 minutos se convierten en una sesión COMPETE. El estudiante con el puntaje más alto tiene derechos de fanfarronear hasta mañana.</p>
+
+    <h3 class="en">Suggested Weekly Schedule</h3>
+    <h3 class="es">Horario Semanal Sugerido</h3>
+    <table>
+      <tr>
+        <th class="en">Day</th><th class="es">Día</th>
+        <th class="en">Game</th><th class="es">Juego</th>
+        <th class="en">Focus</th><th class="es">Enfoque</th>
+      </tr>
+      <tr>
+        <td class="en">Monday</td><td class="es">Lunes</td>
+        <td>⚡ Reaction Control</td>
+        <td class="en">COMPETE mode — push your BPM ceiling</td><td class="es">Modo COMPETE — supera tu límite de BPM</td>
+      </tr>
+      <tr>
+        <td class="en">Tuesday</td><td class="es">Martes</td>
+        <td>🎯 Number Hunt</td>
+        <td class="en">Work through levels — how many can you complete?</td><td class="es">Avanza por los niveles — ¿cuántos puedes completar?</td>
+      </tr>
+      <tr>
+        <td class="en">Wednesday</td><td class="es">Miércoles</td>
+        <td>🧩 Pattern / 🎵 Sequence</td>
+        <td class="en">Memory day — focus and quiet</td><td class="es">Día de memoria — concentración y silencio</td>
+      </tr>
+      <tr>
+        <td class="en">Thursday</td><td class="es">Jueves</td>
+        <td>🌱 Echo / 🔢 Flash</td>
+        <td class="en">Change detection and visual memory</td><td class="es">Detección de cambios y memoria visual</td>
+      </tr>
+      <tr>
+        <td class="en">Friday</td><td class="es">Viernes</td>
+        <td class="en">Student's choice</td><td class="es">Elección del estudiante</td>
+        <td class="en">Free play — chase your personal best</td><td class="es">Juego libre — supera tu mejor marca personal</td>
+      </tr>
+    </table>
   </div>
+
+  <!-- SECTION 6 -->
+  <div class="section">
+    <h2>
+      <span class="en">6. The Promethean Scoreboard</span>
+      <span class="es">6. El Marcador Promethean</span>
+    </h2>
+    <p class="en">Open <strong>vreaction.com/drill-scoreboard.html</strong> in a browser on your Promethean board and leave it running full-screen. No interaction needed — it shows the live Daily Drill standings in two divisions (Fast 80 BPM and Elite 100 BPM), refreshing as students post their scores and resetting fresh each day.</p>
+    <p class="es">Abra <strong>vreaction.com/drill-scoreboard.html</strong> en un navegador en su pizarra Promethean y déjelo corriendo en pantalla completa. No se necesita interacción — muestra la clasificación en vivo del Reto Diario en dos divisiones (Rápido 80 BPM y Élite 100 BPM), actualizándose mientras los estudiantes registran sus puntajes y reiniciándose cada día.</p>
+    <ul>
+      <li class="en">Shows the top 8 students per game, school-wide</li>
+      <li class="es">Muestra los 8 mejores estudiantes por juego, a nivel escolar</li>
+      <li class="en">Gold, silver, and bronze medals for the top 3</li>
+      <li class="es">Medallas de oro, plata y bronce para los 3 primeros</li>
+      <li class="en">Live refresh — scores update within seconds</li>
+      <li class="es">Actualización en vivo — los puntajes se actualizan en segundos</li>
+    </ul>
+    <div class="tip">
+      <strong class="en">✅ TIP</strong><strong class="es">✅ CONSEJO</strong>
+      <span class="en"> Leave the scoreboard running even when students aren't playing. Students walking past between classes will stop to check their rank.</span>
+      <span class="es"> Deje el marcador corriendo incluso cuando los estudiantes no están jugando. Los estudiantes que pasan entre clases se detendrán a revisar su posición.</span>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section">
+    <h2>
+      <span class="en">7. Using the Leaderboard as a Teaching Moment</span>
+      <span class="es">7. Usando el Marcador como Momento de Enseñanza</span>
+    </h2>
+    <h3 class="en">Celebrate personal bests, not just rank</h3>
+    <h3 class="es">Celebre las mejores marcas personales, no solo la posición</h3>
+    <p class="en">A student who moved from Level 3 to Level 5 did something real, even if they're not in the top 10. The personal best on the student leaderboard page tracks this.</p>
+    <p class="es">Un estudiante que pasó del Nivel 3 al Nivel 5 logró algo real, aunque no esté en el top 10. La mejor marca personal en la página del marcador del estudiante registra esto.</p>
+    <h3 class="en">Acknowledge different strengths</h3>
+    <h3 class="es">Reconozca las diferentes fortalezas</h3>
+    <p class="en">Six separate leaderboards mean six different champions. The student who dominates Reaction Control might struggle with Pattern Recognition — a natural conversation about different types of intelligence.</p>
+    <p class="es">Seis marcadores separados significan seis campeones diferentes. El estudiante que domina Reaction Control podría tener dificultades con Pattern Recognition — una conversación natural sobre los diferentes tipos de inteligencia.</p>
+    <h3 class="en">Frame competition as self-competition first</h3>
+    <h3 class="es">Enmarque la competencia como auto-competencia primero</h3>
+    <p class="en">"Did you beat your score from yesterday?" is more motivating than "Why aren't you ranked higher?" The leaderboard works best when students are chasing their own record.</p>
+    <p class="es">"¿Superaste tu puntaje de ayer?" es más motivador que "¿Por qué no tienes una posición más alta?" El marcador funciona mejor cuando los estudiantes están persiguiendo su propio récord.</p>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section">
+    <h2>
+      <span class="en">8. Frequently Asked Questions</span>
+      <span class="es">8. Preguntas Frecuentes</span>
+    </h2>
+    <h3 class="en">What if a student doesn't want to play?</h3>
+    <h3 class="es">¿Qué pasa si un estudiante no quiere jugar?</h3>
+    <p class="en">Don't force it. Students who watch classmates improve and climb the leaderboard usually opt in within a week without prompting.</p>
+    <p class="es">No lo fuerce. Los estudiantes que ven a sus compañeros mejorar y escalar en el marcador generalmente se unen en una semana sin necesidad de presión.</p>
+    <h3 class="en">What if a student forgets their login?</h3>
+    <h3 class="es">¿Qué pasa si un estudiante olvida su inicio de sesión?</h3>
+    <p class="en">Students don't have passwords — they log in with their school email and class code every time. If they've lost the code, give it to them again.</p>
+    <p class="es">Los estudiantes no tienen contraseñas — inician sesión con su correo escolar y código de clase cada vez. Si perdieron el código, dáselo nuevamente.</p>
+    <h3 class="en">Can students play at home?</h3>
+    <h3 class="es">¿Pueden los estudiantes jugar en casa?</h3>
+    <p class="en">Yes — vreaction.com works on any device with a browser. Students who practice at home will show up on the leaderboard the next morning.</p>
+    <p class="es">Sí — vreaction.com funciona en cualquier dispositivo con navegador. Los estudiantes que practican en casa aparecerán en el marcador a la mañana siguiente.</p>
+    <h3 class="en">What if the Chromebook is slow?</h3>
+    <h3 class="es">¿Qué pasa si el Chromebook es lento?</h3>
+    <p class="en">Try a hard refresh (Ctrl+Shift+R) or a different browser tab. The games require no downloads and run on any school-managed Chromebook.</p>
+    <p class="es">Intente una actualización forzada (Ctrl+Shift+R) o una pestaña diferente del navegador. Los juegos no requieren descargas y funcionan en cualquier Chromebook administrado por la escuela.</p>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section">
+    <h2>
+      <span class="en">9. Quick Reference</span>
+      <span class="es">9. Referencia Rápida</span>
+    </h2>
+    <table class="quick-ref">
+      <tr>
+        <th class="en">What you need</th><th class="es">Lo que necesita</th>
+        <th class="en">Where to find it</th><th class="es">Dónde encontrarlo</th>
+      </tr>
+      <tr>
+        <td class="en">Student hub</td><td class="es">Hub del estudiante</td>
+        <td>vreaction.com</td>
+      </tr>
+      <tr>
+        <td class="en">Teacher dashboard</td><td class="es">Panel del maestro</td>
+        <td>vreaction.com/teacher.html</td>
+      </tr>
+      <tr>
+        <td class="en">Live scoreboard (Promethean)</td><td class="es">Marcador en vivo (Promethean)</td>
+        <td>vreaction.com/drill-scoreboard.html</td>
+      </tr>
+      <tr>
+        <td class="en">Student leaderboard</td><td class="es">Marcador del estudiante</td>
+        <td>vreaction.com/leaderboard.html</td>
+      </tr>
+      <tr>
+        <td class="en">VR lab games</td><td class="es">Juegos del laboratorio VR</td>
+        <td class="en">gostar.digital (access code from administrator)</td>
+        <td class="es">gostar.digital (código de acceso del administrador)</td>
+      </tr>
+      <tr>
+        <td class="en">Your class code</td><td class="es">Su código de clase</td>
+        <td class="en">Teacher dashboard → your class card</td>
+        <td class="es">Panel del maestro → tarjeta de su clase</td>
+      </tr>
+    </table>
+  </div>
+
 </div>
 
-<footer>
-  REACTIFIC™ · <span>Virtual Reaction Reality</span> · Gostar Digital LLC · San Juan, Puerto Rico · All Rights Reserved
-</footer>
+<div class="footer">
+  REACTIFIC™ · <span>Virtual Reaction</span> · Gostar Digital LLC · vreaction.com
+</div>
 
+<script>
+function setLang(lang) {
+  document.body.className = 'lang-' + lang;
+  document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
+  document.getElementById('btn-es').className = 'lang-btn' + (lang === 'es' ? ' active' : '');
+  document.documentElement.lang = lang;
+}
+// Init
+document.body.className = 'lang-en';
+</script>
 </body>
 </html>
