@@ -11,6 +11,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0}
 #edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(0,217,165,.28),0 0 80px rgba(0,217,165,.1)}
 #beat-pulse{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,217,165,.16) 100%)}
+.beat-dot{position:absolute;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff6ab0,#FF1493);box-shadow:0 0 24px rgba(255,20,147,.9),0 0 48px rgba(255,20,147,.5);pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.4)}
+@keyframes beatDotFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
 #flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
 
 #hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:14px 22px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
@@ -86,6 +88,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
   <canvas id="stars"></canvas>
   <div id="edge-glow"></div>
   <div id="beat-pulse"></div>
+  <div id="beat-dots" style="position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden"></div>
   <div id="flash"></div>
 </div>
 
@@ -405,10 +408,24 @@ function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||wi
 function beatTick(){
   if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=110;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch(e){}}
   var bp=$('beat-pulse');bp.style.opacity='.5';setTimeout(function(){bp.style.opacity='.06'},90);
+  if(BEAT_BPM===120)spawnBeatDot();   // 120 flagship hype: ambient dot flies in on each beat
   spawnOnBeat();   // the beat brings the target — tap in time
 }
+
+// Ambient decorative dot — one per beat, random spot, flies in and fades. 120 only. Non-clickable.
+function spawnBeatDot(){
+  var layer=$('beat-dots');if(!layer)return;
+  var d=document.createElement('div');
+  d.className='beat-dot';
+  d.style.left=(8+Math.random()*84)+'%';
+  d.style.top=(12+Math.random()*76)+'%';
+  var dur=Math.round(60000/BEAT_BPM*0.95);   // fades within the beat
+  d.style.animation='beatDotFly '+dur+'ms ease-out forwards';
+  layer.appendChild(d);
+  setTimeout(function(){if(d&&d.parentNode)d.parentNode.removeChild(d)},dur+60);
+}
 function startBeat(){beatTick();beatTimer=setInterval(beatTick,60000/BEAT_BPM)}
-function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp=$('beat-pulse');if(bp)bp.style.opacity='0'}
+function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}var bp=$('beat-pulse');if(bp)bp.style.opacity='0';var bd=$('beat-dots');if(bd)bd.innerHTML='';}
 
 function endDrill(){
   if(phase==='done')return;
