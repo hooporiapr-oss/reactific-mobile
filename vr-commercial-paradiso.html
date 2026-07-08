@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>PARADISO · Reaction Arena | REACTIFIC™</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#000;color:#fff;user-select:none;-webkit-user-select:none;cursor:none}
+
+  /* full-screen layers */
+  #strobe{position:fixed;inset:0;z-index:1;pointer-events:none;background:#ff1e3c;opacity:0;transition:opacity .07s ease-out}
+  #beat-pulse{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 50%,rgba(255,30,60,.20) 100%)}
+  #dots{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+  .beat-dot{position:absolute;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff6b7f,#ff1e3c);box-shadow:0 0 40px rgba(255,30,60,.9),0 0 80px rgba(255,30,60,.5);pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.4)}
+  @keyframes beatDotFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
+
+  /* center brand */
+  #center{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+  .kicker{font-size:1.1rem;font-weight:900;letter-spacing:.5em;text-transform:uppercase;color:#ff1e3c;margin-bottom:18px;text-shadow:0 0 30px rgba(255,30,60,.9);opacity:.95}
+  .paradiso{font-size:9rem;font-weight:900;font-style:italic;letter-spacing:.04em;text-transform:uppercase;line-height:.9;color:#fff;text-shadow:0 0 60px rgba(255,30,60,.9),0 0 120px rgba(255,30,60,.5);animation:brandPulse 1s ease-in-out infinite}
+  @keyframes brandPulse{0%,100%{transform:scale(1);text-shadow:0 0 60px rgba(255,30,60,.9),0 0 120px rgba(255,30,60,.5)}50%{transform:scale(1.03);text-shadow:0 0 90px rgba(255,30,60,1),0 0 160px rgba(255,30,60,.7)}}
+  .sub{margin-top:22px;font-size:1.6rem;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#fff;opacity:.92}
+  .rit{margin-top:14px;font-size:1rem;font-weight:900;letter-spacing:.35em;text-transform:uppercase;color:#ff6b7f}
+  .brandmark{margin-top:40px;font-size:.85rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#6a7078}
+  .brandmark b{color:#fff;font-style:italic}
+
+  /* rotating hype lines */
+  #hype{position:fixed;left:0;right:0;bottom:7%;z-index:3;text-align:center;pointer-events:none}
+  .hype-line{font-size:1.5rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#ffd35a;text-shadow:0 0 30px rgba(255,211,90,.6);opacity:0;transition:opacity .4s}
+  .hype-line.on{opacity:1}
+
+  /* tap-to-start hint (since audio needs a gesture) */
+  #tapstart{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;cursor:pointer}
+  #tapstart .p{font-size:7rem;font-weight:900;font-style:italic;letter-spacing:.04em;text-transform:uppercase;color:#fff;text-shadow:0 0 50px rgba(255,30,60,.8)}
+  #tapstart .k{font-size:1rem;font-weight:900;letter-spacing:.5em;text-transform:uppercase;color:#ff1e3c;margin-bottom:16px}
+  #tapstart .go{margin-top:40px;font-size:1.2rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#ffd35a;animation:blink 1.2s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .fs-btn{position:fixed;top:16px;right:16px;z-index:10;padding:8px 16px;border:2px solid rgba(255,30,60,.5);background:rgba(0,0,0,.5);color:#ff1e3c;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer}
+  .exit-btn{position:fixed;top:16px;left:16px;z-index:10;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none}
+
+  @media(max-width:900px){
+    .paradiso{font-size:5rem}
+    #tapstart .p{font-size:4rem}
+    .sub{font-size:1.1rem}
+    .hype-line{font-size:1.1rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- TAP TO START (needed so audio can play) -->
+<div id="tapstart">
+  <div class="k">Reaction Arena</div>
+  <div class="p">PARADISO</div>
+  <div class="go">▶ Tap to Start the Show</div>
+</div>
+
+<!-- attract screen -->
+<div id="strobe"></div>
+<div id="beat-pulse"></div>
+<div id="dots"></div>
+
+<div id="center">
+  <div class="kicker">Reaction Arena</div>
+  <div class="paradiso">PARADISO</div>
+  <div class="sub">Pure Reaction</div>
+  <div class="rit">120 Ritnome · To the Beat</div>
+  <div class="brandmark">Powered by <b>Reactific™</b></div>
+</div>
+
+<div id="hype">
+  <div class="hype-line" id="hypeLine">FEEL THE BEAT</div>
+</div>
+
+<a class="exit-btn" href="/vr-lab.html">← Exit</a>
+<button class="fs-btn" id="fsBtn">⛶ Full Court</button>
+
+<script>
+var $=function(id){return document.getElementById(id)};
+var BPM=120, beatMs=60000/BPM;
+var beatTimer=null, audioCtx=null, running=false;
+
+function initAudio(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+
+// ── BEAT: strobe + pulse + click + flying dot, all on the 120 beat ──
+function beatTick(){
+  // strobe
+  var st=$('strobe');if(st){st.style.opacity='.22';setTimeout(function(){st.style.opacity='0'},70)}
+  // radial pulse
+  var bp=$('beat-pulse');if(bp){bp.style.opacity='.7';setTimeout(function(){bp.style.opacity='.1'},90)}
+  // beat click
+  if(audioCtx){try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=110;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.12,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.13)}catch(e){}}
+  // flying red dot (one per beat)
+  spawnDot();
+}
+
+function spawnDot(){
+  var layer=$('dots');if(!layer)return;
+  var d=document.createElement('div');
+  d.className='beat-dot';
+  d.style.left=(8+Math.random()*84)+'%';
+  d.style.top=(10+Math.random()*80)+'%';
+  var dur=Math.round(beatMs*0.95);
+  d.style.animation='beatDotFly '+dur+'ms ease-out forwards';
+  layer.appendChild(d);
+  setTimeout(function(){if(d&&d.parentNode)d.parentNode.removeChild(d)},dur+60);
+}
+
+// ── rotating hype lines (change every 4 beats) ──
+var HYPE=['FEEL THE BEAT','TAP ONLY ON RED','RACE THE RITNOME','HOW HIGH CAN YOU GO?','PURE REACTION','120 · REACTIFIC','PARADISO REACTS'];
+var hypeIdx=0, beatCount=0;
+function cycleHype(){
+  var el=$('hypeLine');if(!el)return;
+  el.classList.remove('on');
+  setTimeout(function(){
+    hypeIdx=(hypeIdx+1)%HYPE.length;
+    el.textContent=HYPE[hypeIdx];
+    el.classList.add('on');
+  },400);
+}
+
+function start(){
+  if(running)return;running=true;
+  initAudio();
+  $('tapstart').style.display='none';
+  $('hypeLine').classList.add('on');
+  // auto-fullscreen for the Promethean
+  try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(function(){})}}catch(e){}
+  // run the beat
+  beatTick();
+  beatTimer=setInterval(function(){
+    beatTick();
+    beatCount++;
+    if(beatCount%4===0)cycleHype();   // new hype line every 4 beats (~2s at 120)
+  },beatMs);
+}
+
+$('tapstart').onclick=start;
+$('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+</script>
+</body>
+</html>
