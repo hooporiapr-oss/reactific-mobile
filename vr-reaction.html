@@ -168,7 +168,6 @@ function applyTempo(t){
   loadBestForTempo();
 }
 
-(function(){var t=new URLSearchParams(location.search).get('t');if(t)localStorage.setItem('rct-token',t)})();
 function $(id){return document.getElementById(id)}
 
 var phase='idle';               // idle | running | done
@@ -177,18 +176,12 @@ var timers=[],beatTimer=null,audioCtx=null;
 var targetEl=$('target'),targetInner=$('target-inner');
 var targetX=0,targetY=0,tapLocked=false;
 
-/* tempo-aware best (device + server) */
+/* tempo-aware best (device only — on-screen, no backend) */
 function loadBestForTempo(){
   best=0;
   try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
   $('hBest').textContent=best;
   $('bestLine').innerHTML=best>0?('Your best on the '+BEAT_BPM+' Ritnome: <b>'+best+' taps</b>'):'';
-  var token=localStorage.getItem('rct-token');
-  if(!token)return;
-  fetch(API+'/api/scores/personal-best/'+GAME_ID,{headers:{'Authorization':'Bearer '+token}})
-    .then(function(r){return r.json()}).then(function(d){
-      if(d&&d.score&&d.score>best){best=d.score;$('hBest').textContent=best;$('bestLine').innerHTML='Your best on the '+BEAT_BPM+' Ritnome: <b>'+best+' taps</b>'}
-    }).catch(function(){});
 }
 
 /* tempo selector */
@@ -442,20 +435,8 @@ function endDrill(){
 }
 
 function submitScore(score){
-  var token=localStorage.getItem('rct-token');
-  if(!token||score<=0)return;   // saves only if logged in
-  fetch(API+'/api/scores/game',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:GAME_ID,score:score,level:1,mode:'compete'})
-  }).catch(function(e){console.error(e)});
+  /* scores are on-screen only now — best is saved to localStorage in endDrill() */
 }
-window.addEventListener('beforeunload',function(){
-  var token=localStorage.getItem('rct-token');
-  if(token&&phase==='running'&&taps>0){
-    navigator.sendBeacon(API+'/api/scores/game',JSON.stringify({game_id:GAME_ID,score:taps,level:1,mode:'compete'}));
-  }
-});
 </script>
 </body>
 </html>
