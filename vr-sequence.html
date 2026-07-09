@@ -194,29 +194,13 @@ function beatPulse(){
 }
 
 var API='https://api.reactificgaming.com';
-(function(){
-  var urlToken=new URLSearchParams(window.location.search).get('t');
-  if(urlToken)localStorage.setItem('rct-token',urlToken);
-})();
+
 
 function submitScore(score,level,mode){
-  var token=localStorage.getItem('rct-token');
-  if(!token)return;
-  fetch(API+'/api/scores/game',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'sequence',score:score,level:level,mode:mode})
-  }).catch(function(err){console.error('Score submit error:',err)});
+  /* on-screen scoring only — no backend */
 }
 
-window.addEventListener('beforeunload',function(){
-  var token=localStorage.getItem('rct-token');
-  if(token && g && g.sc>0){
-    navigator.sendBeacon(API+'/api/scores/game',
-      JSON.stringify({game_id:'sequence',score:g.sc,level:g.lv,mode:'progression'})
-    );
-  }
-});
+
 
 var phase='idle',sequence=[],playerIdx=0,timers=[];
 function clrT(){timers.forEach(clearTimeout);timers=[]}
