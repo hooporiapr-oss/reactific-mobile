@@ -62,24 +62,61 @@
 var $=function(id){return document.getElementById(id)};
 
 // ══════════════════════════════════════════════════════
-//  SET YOUR ACCESS CODE HERE — change this one word,
-//  then re-deploy. It works on every device (Chromebooks,
-//  Promethean, phones — anywhere the page loads).
+//  LICENSE SYSTEM — codes are checked against Supabase.
+//  To issue / expire / revoke licenses, use the Supabase
+//  dashboard (Table Editor → licenses). No file edits needed.
 // ══════════════════════════════════════════════════════
-var ACCESS_CODE = 'PARADISO';
+var SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
 // ══════════════════════════════════════════════════════
 
 function tryEnter(){
-  var input = $('gate-code').value.trim().toUpperCase();
-  if (input && input === ACCESS_CODE.toUpperCase()){
+  var input = $('gate-code').value.trim();
+  if (!input){ return; }
+  $('gate-err').style.color = '';
+  $('gate-err').textContent = 'Checking…';
+
+  // Query Supabase: does a row exist with this code (case-insensitive), active = true?
+  var url = SUPABASE_URL + '/rest/v1/licenses'
+    + '?select=code,expires_at,active'
+    + '&code=ilike.' + encodeURIComponent(input)
+    + '&active=eq.true';
+
+  fetch(url, {
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+    }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(rows){
+    var lic = (rows && rows.length) ? rows[0] : null;
+
+    // not found or inactive
+    if (!lic){ return reject('Invalid code — check with your administrator'); }
+
+    // expired?
+    if (lic.expires_at){
+      var exp = new Date(lic.expires_at + 'T23:59:59');
+      if (new Date() > exp){ return reject('This license has expired'); }
+    }
+
+    // valid → enter
     sessionStorage.setItem('rct-gate-pass','1');
+    sessionStorage.setItem('rct-license', input.toUpperCase());
     window.location.href = '/vr-lab.html';
-  } else {
-    $('gate-err').textContent = 'Incorrect code — try again';
-    var box = $('gate-code');
-    box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-    box.value=''; box.focus();
-  }
+  })
+  .catch(function(){
+    reject('Connection problem — please try again');
+  });
+}
+
+function reject(msg){
+  $('gate-err').style.color = '#ff8888';
+  $('gate-err').textContent = msg;
+  var box = $('gate-code');
+  box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+  box.value=''; box.focus();
 }
 
 // ── ambient beat (gentle) ──
