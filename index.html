@@ -269,7 +269,7 @@ async function studentLogin(){
     if(!res.ok)throw new Error(data.error||'Login failed');
     localStorage.setItem('rct-token',data.token);
     localStorage.setItem('rct-user',JSON.stringify(data.user));
-    window.location.href='/hub.html';
+    window.location.href='/vr-home.html';
   }catch(e){hideLoading();showError(e.message)}
 }
 
