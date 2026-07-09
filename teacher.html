@@ -1,165 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reactific Teacher Dashboard</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #0B1F3A 0%, #1a3a52 100%); color: #333; min-height: 100vh; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,.1); }
-    .header h1 { color: #fff; font-size: 2rem; }
-    .header-info { display: flex; gap: 20px; align-items: center; }
-    #uname { color: #fff; font-size: 1rem; }
-    .btn-signout { padding: 10px 20px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; border-radius: 8px; cursor: pointer; }
-    .btn-signout:hover { background: rgba(255,255,255,.2); }
-    .create-class { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 24px; margin-bottom: 32px; backdrop-filter: blur(10px); }
-    .field-label { color: #8892a0; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
-    .input { width: 100%; max-width: 400px; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08); color: #333; font-size: 1rem; margin-bottom: 16px; }
-    .btn { padding: 12px 32px; background: linear-gradient(135deg, #008CFF 0%, #0066cc 100%); border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,140,255,.3); }
-    .btn:disabled { opacity: 0.6; }
-    .btn-danger { background: rgba(197,48,48,.2); border: 1px solid rgba(197,48,48,.3); color: #ff6b6b; padding: 8px 12px; font-size: 0.85rem; }
-    .error { color: #c53030; font-size: 0.9rem; margin-top: 8px; }
-    .classes-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin: 32px 0 20px 0; }
-    #classSearch { width: 100%; max-width: 560px; padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #fff; font-size: 0.9rem; margin-bottom: 16px; }
-    #classes-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .class-card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px); }
-    .card-header { margin-bottom: 16px; }
-    .class-name { color: #fff; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
-    .card-actions { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .mode-btn, .refresh-btn, .edit-btn, .delete-btn { padding: 8px 12px; background: rgba(0,140,255,.2); border: 1px solid rgba(0,140,255,.3); color: #00a8ff; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
-    .edit-btn { background: rgba(0,150,136,.2); border-color: rgba(0,150,136,.3); color: #00d9c4; }
-    .delete-btn { background: rgba(197,48,48,.2); border-color: rgba(197,48,48,.3); color: #ff6b6b; }
-    .empty-state { text-align: center; padding: 40px; color: #8892a0; }
-    .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,.2); border-top: 3px solid #008CFF; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard | REACTIFIC™</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #0B1F3A 0%, #1a3a52 100%);
+    color: #e8eef5; min-height: 100vh; padding: 24px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .brand h1 { color: #fff; font-size: 1.6rem; font-style: italic; }
+  .brand p { color: #00a8ff; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+  .logout { padding: 8px 16px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.05); color: #e8eef5; border-radius: 8px; cursor: pointer; font-size: .85rem; font-weight: 600; }
+  .section-title { font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #8892a0; margin: 8px 0 14px; }
+  .create-card {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px; padding: 20px; margin-bottom: 28px;
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .create-card .fld { flex: 1; min-width: 200px; }
+  .create-card label { display:block; font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8892a0; margin-bottom:6px; }
+  .create-card input {
+    width: 100%; padding: 11px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.95); color: #222; font-size: 1rem;
+  }
+  .btn {
+    padding: 11px 20px; background: linear-gradient(135deg, #008CFF 0%, #0066cc 100%);
+    border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: .95rem; white-space: nowrap;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,140,255,.3); }
+  .btn.small { padding: 7px 14px; font-size: .82rem; }
+  .btn.ghost { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); }
+  .btn.danger { background: rgba(197,48,48,.85); }
+  .class-card {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px; padding: 22px; margin-bottom: 18px;
+  }
+  .class-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .class-name { font-size: 1.3rem; font-weight: 800; color: #fff; }
+  .class-meta { font-size: .8rem; color: #8892a0; margin-top: 3px; }
+  .code-box {
+    margin: 16px 0; padding: 16px 20px; border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0,140,255,.16), rgba(0,102,204,.10));
+    border: 1px solid rgba(0,168,255,.4); display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .code-label { font-size:.7rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#00a8ff; }
+  .code-value {
+    font-size: 2.4rem; font-weight: 900; letter-spacing: .22em; color: #fff;
+    font-family: 'Courier New', monospace; text-shadow: 0 0 24px rgba(0,168,255,.6);
+  }
+  .copy-btn {
+    padding: 9px 18px; border-radius: 8px; border: 1px solid rgba(0,168,255,.5);
+    background: rgba(0,168,255,.14); color: #fff; font-weight: 700; cursor: pointer; font-size: .85rem;
+  }
+  .copy-btn.copied { background: rgba(0,217,165,.25); border-color: rgba(0,217,165,.6); color: #7dffd0; }
+  .class-actions { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .mode-row { margin-top:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .mode-row .lbl { font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8892a0; }
+  .mode-btn { padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.05); color:#8892a0; cursor:pointer; font-size:.8rem; font-weight:600; }
+  .mode-btn.active { background:rgba(0,140,255,.2); border-color:#008CFF; color:#fff; }
+  .empty { text-align:center; color:#8892a0; padding: 40px 20px; font-size:.95rem; }
+  .error { background: rgba(197,48,48,.2); border:1px solid rgba(197,48,48,.35); color:#ff8888; padding:12px 16px; border-radius:10px; margin-bottom:16px; font-size:.9rem; display:none; }
+  .students { margin-top:16px; border-top:1px solid rgba(255,255,255,.08); padding-top:14px; display:none; }
+  .students.show { display:block; }
+  .student-row { display:flex; justify-content:space-between; padding:8px 10px; border-radius:6px; font-size:.9rem; }
+  .student-row:nth-child(odd){ background:rgba(255,255,255,.03); }
+  .student-row .sc { color:#00a8ff; font-weight:700; }
+</style>
 </head>
 <body>
-
-<div class="container">
-  <div class="header">
-    <h1>REACTIFIC™</h1>
-    <div class="header-info">
-      <div id="uname">Teacher</div>
-      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <h1>REACTIFIC<span style="font-size:.6em">™</span></h1>
+      <p>Teacher Dashboard</p>
     </div>
+    <button class="logout" onclick="logout()">Log Out</button>
   </div>
-
-  <div class="create-class">
-    <div class="field-label">Create a New Class</div>
-    <input class="input" id="class-name" placeholder="Grade 6 Science" autocomplete="off">
-    <button class="btn" id="create-btn" onclick="createClass()">Create Class</button>
-    <div class="error" id="create-error"></div>
+  <div class="error" id="error-msg"></div>
+  <div class="section-title">Create a Class</div>
+  <div class="create-card">
+    <div class="fld">
+      <label>Class Name</label>
+      <input id="new-class-name" type="text" placeholder="e.g. PE Period 1" onkeydown="if(event.key==='Enter')createClass()">
+    </div>
+    <button class="btn" onclick="createClass()">+ Create Class</button>
   </div>
-
-  <div class="classes-title">MY CLASSES</div>
-  <input type="text" id="classSearch" placeholder="🔍 Search classes..." oninput="filterClasses(this.value)">
-  <div id="classes-wrap">
-    <div class="empty-state"><div class="spinner"></div></div>
+  <div class="section-title">My Classes</div>
+  <div id="classes-list">
+    <div class="empty">Loading your classes…</div>
   </div>
 </div>
-
 <script>
-var API='https://api.reactificgaming.com';
-var token=localStorage.getItem('rct-token');
-var user=JSON.parse(localStorage.getItem('rct-user')||'null');
+var API = 'https://api.reactificgaming.com';
+var token = localStorage.getItem('rct-token');
+var user = JSON.parse(localStorage.getItem('rct-user') || 'null');
 
-if(!token||!user){
-  window.location.href='/index.html';
-  throw new Error('Not logged in');
+if (!token || !user) { window.location.href = '/index.html'; }
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
 }
-
-document.getElementById('uname').textContent=user.username||'Teacher';
-
-function signOut(){
+function showError(msg) {
+  var e = document.getElementById('error-msg');
+  e.textContent = msg; e.style.display = 'block';
+  setTimeout(function(){ e.style.display = 'none'; }, 5000);
+}
+function logout() {
   localStorage.removeItem('rct-token');
   localStorage.removeItem('rct-user');
-  window.location.href='/index.html';
+  window.location.href = '/index.html';
 }
-
-async function createClass(){
-  var name=document.getElementById('class-name').value.trim();
-  if(!name){document.getElementById('create-error').textContent='Enter a class name';return}
-  var btn=document.getElementById('create-btn');
-  btn.disabled=true;btn.textContent='Creating...';
-  document.getElementById('create-error').textContent='';
-  try{
-    var res=await fetch(API+'/api/classes/create',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name})});
-    var data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Error');
-    document.getElementById('class-name').value='';
-    loadClasses();
-  }catch(e){document.getElementById('create-error').textContent=e.message}
-  btn.disabled=false;btn.textContent='Create Class';
+async function loadClasses() {
+  try {
+    var res = await fetch(API + '/api/classes/teaching', { headers: authHeaders() });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not load classes');
+    renderClasses(data.classes || []);
+  } catch (e) {
+    showError(e.message);
+    document.getElementById('classes-list').innerHTML = '<div class="empty">Could not load classes. ' + e.message + '</div>';
+  }
 }
-
-function filterClasses(query){
-  var q=query.toLowerCase().trim();
-  document.querySelectorAll('.class-card').forEach(function(card){
-    var name=card.querySelector('.class-name');
-    card.style.display=(!q||name.textContent.toLowerCase().includes(q))?'':'none';
+function renderClasses(classes) {
+  var list = document.getElementById('classes-list');
+  if (!classes.length) {
+    list.innerHTML = '<div class="empty">No classes yet. Create your first class above — you\'ll get a code to share with students.</div>';
+    return;
+  }
+  list.innerHTML = classes.map(function(c) {
+    var mode = c.display_mode || 'initials';
+    return ''
+      + '<div class="class-card" data-id="' + c.id + '">'
+      +   '<div class="class-head">'
+      +     '<div>'
+      +       '<div class="class-name">' + escapeHtml(c.name) + '</div>'
+      +       '<div class="class-meta">' + (c.student_count || 0) + ' student' + ((c.student_count == 1) ? '' : 's') + '</div>'
+      +     '</div>'
+      +   '</div>'
+      +   '<div class="code-box">'
+      +     '<div><div class="code-label">Class Code — students use this to join</div>'
+      +     '<div class="code-value" id="code-' + c.id + '">' + c.code + '</div></div>'
+      +     '<button class="copy-btn" id="copy-' + c.id + '" onclick="copyCode(\'' + c.code + '\',' + c.id + ')">Copy</button>'
+      +   '</div>'
+      +   '<div class="mode-row">'
+      +     '<span class="lbl">Leaderboard shows:</span>'
+      +     '<button class="mode-btn ' + (mode==='initials'?'active':'') + '" onclick="setMode(' + c.id + ',\'initials\')">First L.</button>'
+      +     '<button class="mode-btn ' + (mode==='full_name'?'active':'') + '" onclick="setMode(' + c.id + ',\'full_name\')">Full Name</button>'
+      +     '<button class="mode-btn ' + (mode==='username'?'active':'') + '" onclick="setMode(' + c.id + ',\'username\')">Username</button>'
+      +   '</div>'
+      +   '<div class="class-actions">'
+      +     '<button class="btn small ghost" onclick="viewScores(' + c.id + ')">View Scores</button>'
+      +     '<button class="btn small ghost" onclick="renameClass(' + c.id + ',\'' + escapeAttr(c.name) + '\')">Rename</button>'
+      +     '<button class="btn small danger" onclick="deleteClass(' + c.id + ',\'' + escapeAttr(c.name) + '\')">Delete</button>'
+      +   '</div>'
+      +   '<div class="students" id="students-' + c.id + '"></div>'
+      + '</div>';
+  }).join('');
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+function escapeAttr(s){ return String(s).replace(/'/g, "\\'").replace(/"/g,'&quot;'); }
+function copyCode(code, id) {
+  navigator.clipboard.writeText(code).then(function(){
+    var btn = document.getElementById('copy-' + id);
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  }).catch(function(){
+    showError('Code is: ' + code);
   });
 }
-
-async function loadClasses(){
-  var wrap=document.getElementById('classes-wrap');
-  wrap.innerHTML='<div class="empty-state"><div class="spinner"></div></div>';
-  try{
-    var res=await fetch(API+'/api/classes/teaching',{headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok){wrap.innerHTML='<div class="empty-state">Could not load</div>';return}
-    var data=await res.json();
-    var classes=data.classes||[];
-    if(!classes.length){wrap.innerHTML='<div class="empty-state">No classes</div>';return}
-    wrap.innerHTML=classes.map(function(cls){return '<div class="class-card"><div class="card-header"><div class="class-name">'+cls.name+'</div><div style="font-size:.7rem;color:#8892a0">'+cls.student_count+' students</div></div><div class="card-actions"><button class="refresh-btn" onclick="loadDashboard('+cls.id+')">Scores</button><button class="edit-btn" onclick="renameClass('+cls.id+')">Edit</button><button class="delete-btn" onclick="deleteClass('+cls.id+')">Delete</button></div><div id="dash-'+cls.id+'"><div style="text-align:center;padding:12px;color:#8892a0;font-size:.8rem">Click Scores</div></div></div>'}).join('');
-  }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>'}
-}
-
-async function loadDashboard(classId){
-  var dash=document.getElementById('dash-'+classId);
-  dash.innerHTML='<div style="text-align:center;padding:8px"><div class="spinner"></div></div>';
-  try{
-    var res=await fetch(API+'/api/classes/'+classId+'/dashboard',{headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok){dash.innerHTML='<div style="color:#c53030">Error</div>';return}
-    var data=await res.json();
-    var students=data.students||[];
-    if(!students.length){dash.innerHTML='<div style="color:#8892a0">No scores</div>';return}
-    dash.innerHTML='<div style="font-size:.75rem">'+students.map(function(s){return '<div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 0.5fr;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,.08);color:#fff"><div>'+s.username+'</div><div style="text-align:center">'+s.score+'</div><div style="text-align:center">L'+s.level+'</div><div style="text-align:center"><button class="btn-danger" onclick="removeStudent('+classId+',\''+s.id+'\')">✕</button></div></div>'}).join('')+'</div>';
-  }catch(e){dash.innerHTML='<div style="color:#c53030">Error</div>'}
-}
-
-async function renameClass(classId){
-  var newName=prompt('New class name:');
-  if(!newName||!newName.trim())return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name:newName.trim()})});
-    if(!res.ok)throw new Error('Error');
+async function createClass() {
+  var name = document.getElementById('new-class-name').value.trim();
+  if (!name) { showError('Enter a class name'); return; }
+  try {
+    var res = await fetch(API + '/api/classes/create', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify({ name: name })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not create class');
+    document.getElementById('new-class-name').value = '';
     loadClasses();
-  }catch(e){alert('Could not rename')}
+  } catch (e) { showError(e.message); }
 }
-
-async function deleteClass(classId){
-  if(!confirm('Delete this class?'))return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok)throw new Error('Error');
+async function setMode(id, mode) {
+  try {
+    var res = await fetch(API + '/api/classes/' + id + '/display-mode', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify({ display_mode: mode })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not update');
     loadClasses();
-  }catch(e){alert('Could not delete')}
+  } catch (e) { showError(e.message); }
 }
-
-async function removeStudent(classId,userId){
-  if(!confirm('Remove student?'))return;
-  try{
-    var res=await fetch(API+'/api/classes/'+classId+'/students/'+userId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-    if(!res.ok)throw new Error('Error');
-    loadDashboard(classId);
-  }catch(e){alert('Could not remove')}
+async function renameClass(id, current) {
+  var name = prompt('Rename class:', current);
+  if (!name || !name.trim()) return;
+  try {
+    var res = await fetch(API + '/api/classes/' + id, {
+      method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ name: name.trim() })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not rename');
+    loadClasses();
+  } catch (e) { showError(e.message); }
 }
-
+async function deleteClass(id, name) {
+  if (!confirm('Delete "' + name + '"? This removes the class and its code. Students\' scores are kept but the class is gone.')) return;
+  try {
+    var res = await fetch(API + '/api/classes/' + id, { method: 'DELETE', headers: authHeaders() });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not delete');
+    loadClasses();
+  } catch (e) { showError(e.message); }
+}
+async function viewScores(id) {
+  var panel = document.getElementById('students-' + id);
+  if (panel.classList.contains('show')) { panel.classList.remove('show'); return; }
+  panel.innerHTML = '<div class="student-row">Loading…</div>';
+  panel.classList.add('show');
+  try {
+    var res = await fetch(API + '/api/classes/' + id + '/dashboard', { headers: authHeaders() });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not load scores');
+    var students = data.students || [];
+    if (!students.length) { panel.innerHTML = '<div class="student-row">No students have joined or played yet.</div>'; return; }
+    panel.innerHTML = students.map(function(s){
+      return '<div class="student-row"><span>' + escapeHtml(s.username || '—') + '</span>'
+           + '<span class="sc">' + (s.score != null ? s.score : '—') + '</span></div>';
+    }).join('');
+  } catch (e) { panel.innerHTML = '<div class="student-row">' + e.message + '</div>'; }
+}
 loadClasses();
 </script>
-
 </body>
 </html>
