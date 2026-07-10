@@ -125,6 +125,12 @@ async function checkSession(){
   const { data } = await sb.auth.getSession();
   if (data.session) showDash(); else showLogin();
 }
+
+// Reliably react to login/logout — fires loadLicenses whenever signed in
+sb.auth.onAuthStateChange(function(event, session){
+  if (session) showDash(); else showLogin();
+});
+
 function showLogin(){ $('login').style.display='block'; $('dash').style.display='none'; $('signout-btn').style.display='none'; }
 function showDash(){ $('login').style.display='none'; $('dash').style.display='block'; $('signout-btn').style.display='inline-block'; loadLicenses(); }
 
@@ -141,12 +147,28 @@ window.signOut = async function(){ await sb.auth.signOut(); showLogin(); };
 
 // ── licenses ──
 window.loadLicenses = async function(){
-  const { data, error } = await sb.from('licenses').select('*').order('expires_at', { ascending: true });
   const tbody = $('rows');
-  if (error){ tbody.innerHTML = '<tr><td colspan="6" class="empty">Error: '+error.message+'</td></tr>'; return; }
-  if (!data.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
-  $('count').textContent = '('+data.length+')';
+  tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
+  try {
+    const { data, error } = await sb.from('licenses').select('*');
+    if (error){ console.error('loadLicenses error:', error); tbody.innerHTML = '<tr><td colspan="6" class="empty">Error: '+error.message+'</td></tr>'; return; }
+    const rows = (data || []).slice().sort(function(a,b){
+      // sort by expires_at ascending, nulls last
+      if (!a.expires_at && !b.expires_at) return 0;
+      if (!a.expires_at) return 1;
+      if (!b.expires_at) return -1;
+      return a.expires_at < b.expires_at ? -1 : 1;
+    });
+    if (!rows.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
+    $('count').textContent = '('+rows.length+')';
+    renderRows(rows, tbody);
+  } catch(e){
+    console.error('loadLicenses exception:', e);
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Load failed: '+e.message+'</td></tr>';
+  }
+};
 
+function renderRows(data, tbody){
   const today = new Date();
   tbody.innerHTML = data.map(function(r){
     let statusPill, expText='';
@@ -175,7 +197,7 @@ window.loadLicenses = async function(){
       + '</div></td>'
       + '</tr>';
   }).join('');
-};
+}
 
 window.addLicense = async function(){
   const code = $('a-code').value.trim().toUpperCase();
