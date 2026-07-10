@@ -119,11 +119,45 @@ function reject(msg){
   box.value=''; box.focus();
 }
 
-// ── ambient beat (gentle) ──
-var BPM = 100, beatMs = 60000/BPM;
+// ── 120 beat: visual (strobe + flying red dots) + audio click ──
+var BPM = 120, beatMs = 60000/BPM;
+var audioCtx = null, audioReady = false;
+
+// Audio can only start after a user gesture (browser rule).
+// We arm it on the first tap/keypress/click anywhere on the page.
+function initAudio(){
+  if (audioReady) return;
+  try{
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioReady = true;
+  }catch(e){}
+}
+['pointerdown','keydown','touchstart'].forEach(function(evt){
+  window.addEventListener(evt, initAudio, { once:false });
+});
+
+// The 120 beat "click" — a short, punchy low tone on every beat,
+// matching the flying red target that spawns on the same beat.
+function beatClick(){
+  if(!audioCtx) return;
+  try{
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = 120;                 // low, felt-in-the-chest pulse
+    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.14);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.15);
+  }catch(e){}
+}
+
 function beatTick(){
   var st=$('strobe'); if(st){st.style.opacity='.10'; setTimeout(function(){st.style.opacity='0'},80)}
   spawnDot();
+  beatClick();          // audio fires in sync with the red dot
 }
 function spawnDot(){
   var layer=$('dots'); if(!layer) return;
