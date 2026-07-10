@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARADISO · License Admin</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#0a0a0f;color:#e8eef5;min-height:100vh;padding:24px}
+  .wrap{max-width:1100px;margin:0 auto}
+
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px}
+  .brand .kick{font-size:.62rem;font-weight:900;letter-spacing:.34em;text-transform:uppercase;color:#ff1e3c}
+  .brand .name{font-size:1.8rem;font-weight:900;font-style:italic;letter-spacing:.03em;text-transform:uppercase;color:#fff;line-height:1}
+  .brand .sub{font-size:.64rem;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#8892a0;margin-top:2px}
+  .signout{padding:8px 16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#e8eef5;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer}
+
+  /* login */
+  #login{max-width:380px;margin:80px auto 0;background:rgba(255,255,255,.04);border:1px solid rgba(255,30,60,.25);border-radius:14px;padding:32px}
+  #login h2{font-size:.8rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#ff1e3c;text-align:center;margin-bottom:20px}
+  .fld{margin-bottom:14px}
+  .fld label{display:block;font-size:.66rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8892a0;margin-bottom:6px}
+  .fld input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:1rem}
+  .btn{width:100%;padding:13px;border:none;border-radius:8px;background:linear-gradient(135deg,#ff1e3c,#c8102e);color:#fff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-size:.9rem}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,30,60,.3)}
+  .msg{text-align:center;font-size:.82rem;margin-top:12px;min-height:18px}
+  .msg.bad{color:#ff8888}.msg.ok{color:#00d9a5}
+
+  /* dashboard */
+  #dash{display:none}
+  .add-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:18px 20px;margin-bottom:22px}
+  .add-title{font-size:.7rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#8892a0;margin-bottom:14px}
+  .add-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .af{display:flex;flex-direction:column;gap:5px}
+  .af label{font-size:.6rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#8892a0}
+  .af input{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.92);color:#222;font-size:.95rem;font-weight:600}
+  .af input#a-code{width:200px;text-transform:uppercase}
+  .af input#a-school{width:220px}
+  .add-btn{padding:11px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#00d9a5,#00a884);color:#062;font-weight:900;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;font-size:.85rem}
+
+  .list-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .list-title{font-size:.7rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#8892a0}
+  .refresh{background:none;border:1px solid rgba(255,255,255,.15);color:#8892a0;border-radius:8px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer}
+
+  table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.02);border-radius:12px;overflow:hidden}
+  th{text-align:left;font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#ff8896;padding:12px 14px;background:rgba(255,30,60,.1)}
+  td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.9rem}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .code-cell{font-family:'Courier New',monospace;font-weight:900;color:#fff}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.66rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+  .pill.active{background:rgba(0,217,165,.18);color:#00d9a5}
+  .pill.inactive{background:rgba(255,107,107,.18);color:#ff8888}
+  .pill.expired{background:rgba(255,180,80,.18);color:#ffb450}
+  .exp-soon{color:#ffb450;font-weight:700}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .mini{padding:5px 10px;border-radius:6px;font-size:.7rem;font-weight:800;cursor:pointer;border:1px solid transparent}
+  .mini.renew{background:rgba(0,140,255,.15);border-color:rgba(0,140,255,.3);color:#4db8ff}
+  .mini.toggle{background:rgba(255,180,80,.15);border-color:rgba(255,180,80,.3);color:#ffb450}
+  .mini.del{background:rgba(255,60,60,.15);border-color:rgba(255,60,60,.3);color:#ff6b6b}
+  .empty{text-align:center;color:#5a6070;padding:30px}
+  .count{font-size:.7rem;color:#8892a0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <div class="kick">⚡ Reactific</div>
+      <div class="name">License Admin</div>
+      <div class="sub">Manage School Access</div>
+    </div>
+    <button class="signout" id="signout-btn" onclick="signOut()" style="display:none">Sign Out</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login">
+    <h2>🔒 Admin Login</h2>
+    <div class="fld"><label>Email</label><input id="l-email" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')login()"></div>
+    <div class="fld"><label>Password</label><input id="l-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="btn" onclick="login()">Sign In</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash">
+    <div class="add-card">
+      <div class="add-title">➕ Add a License</div>
+      <div class="add-row">
+        <div class="af"><label>Code</label><input id="a-code" placeholder="LINCOLN-PREP-2026" maxlength="40"></div>
+        <div class="af"><label>School Name</label><input id="a-school" placeholder="Lincoln Prep Academy" maxlength="60"></div>
+        <div class="af"><label>Expires</label><input id="a-expires" type="date"></div>
+        <div class="af"><label>Notes (optional)</label><input id="a-notes" placeholder="Paid annual" maxlength="80"></div>
+        <button class="add-btn" onclick="addLicense()">+ Add</button>
+      </div>
+      <div class="msg" id="add-msg"></div>
+    </div>
+
+    <div class="list-head">
+      <div class="list-title">Licensed Schools <span class="count" id="count"></span></div>
+      <button class="refresh" onclick="loadLicenses()">↻ Refresh</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Code</th><th>School</th><th>Expires</th><th>Status</th><th>Notes</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = (id) => document.getElementById(id);
+
+// ── auth ──
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  if (data.session) showDash(); else showLogin();
+}
+function showLogin(){ $('login').style.display='block'; $('dash').style.display='none'; $('signout-btn').style.display='none'; }
+function showDash(){ $('login').style.display='none'; $('dash').style.display='block'; $('signout-btn').style.display='inline-block'; loadLicenses(); }
+
+window.login = async function(){
+  const email = $('l-email').value.trim();
+  const password = $('l-pass').value;
+  $('login-msg').className='msg'; $('login-msg').textContent='Signing in…';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error){ $('login-msg').className='msg bad'; $('login-msg').textContent = error.message; }
+  else { $('login-msg').textContent=''; showDash(); }
+};
+
+window.signOut = async function(){ await sb.auth.signOut(); showLogin(); };
+
+// ── licenses ──
+window.loadLicenses = async function(){
+  const { data, error } = await sb.from('licenses').select('*').order('expires_at', { ascending: true });
+  const tbody = $('rows');
+  if (error){ tbody.innerHTML = '<tr><td colspan="6" class="empty">Error: '+error.message+'</td></tr>'; return; }
+  if (!data.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
+  $('count').textContent = '('+data.length+')';
+
+  const today = new Date();
+  tbody.innerHTML = data.map(function(r){
+    let statusPill, expText='';
+    const expired = r.expires_at && new Date(r.expires_at+'T23:59:59') < today;
+    if (!r.active) statusPill = '<span class="pill inactive">Revoked</span>';
+    else if (expired) statusPill = '<span class="pill expired">Expired</span>';
+    else statusPill = '<span class="pill active">Active</span>';
+
+    if (r.expires_at){
+      const days = Math.ceil((new Date(r.expires_at+'T23:59:59') - today)/86400000);
+      if (days < 0) expText = r.expires_at;
+      else if (days <= 30) expText = '<span class="exp-soon">'+r.expires_at+' ('+days+'d)</span>';
+      else expText = r.expires_at;
+    } else expText = '<span style="color:#5a6070">never</span>';
+
+    return '<tr>'
+      + '<td class="code-cell">'+esc(r.code)+'</td>'
+      + '<td>'+esc(r.school_name||'')+'</td>'
+      + '<td>'+expText+'</td>'
+      + '<td>'+statusPill+'</td>'
+      + '<td style="color:#8892a0;font-size:.82rem">'+esc(r.notes||'')+'</td>'
+      + '<td><div class="row-actions">'
+        + '<button class="mini renew" onclick="renew(\''+r.id+'\')">+1yr</button>'
+        + '<button class="mini toggle" onclick="toggle(\''+r.id+'\','+(r.active?'false':'true')+')">'+(r.active?'Revoke':'Enable')+'</button>'
+        + '<button class="mini del" onclick="del(\''+r.id+'\',\''+esc(r.code)+'\')">Delete</button>'
+      + '</div></td>'
+      + '</tr>';
+  }).join('');
+};
+
+window.addLicense = async function(){
+  const code = $('a-code').value.trim().toUpperCase();
+  const school = $('a-school').value.trim();
+  const expires = $('a-expires').value || null;
+  const notes = $('a-notes').value.trim() || null;
+  if (!code){ setAddMsg('Enter a code','bad'); return; }
+  if (!school){ setAddMsg('Enter a school name','bad'); return; }
+  const { error } = await sb.from('licenses').insert({ code, school_name: school, expires_at: expires, notes, active: true });
+  if (error){ setAddMsg(error.code==='23505' ? 'That code already exists' : error.message, 'bad'); return; }
+  $('a-code').value=''; $('a-school').value=''; $('a-expires').value=''; $('a-notes').value='';
+  setAddMsg('✓ License added','ok');
+  loadLicenses();
+};
+function setAddMsg(m,c){ $('add-msg').className='msg '+c; $('add-msg').textContent=m; setTimeout(function(){ if($('add-msg').textContent===m) $('add-msg').textContent=''; }, 4000); }
+
+window.renew = async function(id){
+  const d = new Date(); d.setFullYear(d.getFullYear()+1);
+  const newDate = d.toISOString().slice(0,10);
+  const { error } = await sb.from('licenses').update({ expires_at: newDate, active: true }).eq('id', id);
+  if (error) alert('Error: '+error.message); else loadLicenses();
+};
+
+window.toggle = async function(id, makeActive){
+  const { error } = await sb.from('licenses').update({ active: makeActive }).eq('id', id);
+  if (error) alert('Error: '+error.message); else loadLicenses();
+};
+
+window.del = async function(id, code){
+  if (!confirm('Delete license "'+code+'"? This permanently removes it and locks out that school.')) return;
+  const { error } = await sb.from('licenses').delete().eq('id', id);
+  if (error) alert('Error: '+error.message); else loadLicenses();
+};
+
+function esc(s){ return String(s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]}); }
+
+checkSession();
+</script>
+</body>
+</html>
