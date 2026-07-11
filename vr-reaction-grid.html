@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VR Reaction Grid | REACTIFIC™</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#180000 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;
+  padding:20px 16px 24px;
+  box-sizing:border-box;
+}
+.vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(255,30,60,1);margin-bottom:8px}
+.vrr-logo span{color:#ff1e3c}
+.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#ff1e3c;margin-bottom:8px;text-align:center}
+.vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#ff1e3c,#ff6b7f);color:#fff;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,30,60,.7);margin-bottom:14px}
+.big-btn:hover{transform:scale(1.03)}
+.speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(255,30,60,.4);background:rgba(255,30,60,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.speed-btn.active{border-color:#ff1e3c;background:rgba(255,30,60,.22);box-shadow:0 0 30px rgba(255,30,60,.6);color:#ff6b7f}
+.speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #screen-intro{padding:16px 12px 20px}
+  .vrr-logo{font-size:1.8rem}
+  .vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .speed-row{gap:5px}
+  .speed-btn{height:50px;font-size:.78rem}
+  .speed-btn small{font-size:.5rem}
+  .big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(255,30,60,.15),transparent 30%),linear-gradient(180deg,#180000,#0a0000);
+}
+.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:6px 10px 4px;flex-shrink:0}
+.top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(255,30,60,.3)}
+.top-label{font-size:.5rem;color:#ff1e3c;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.info-box{border-color:#ffd35a;background:rgba(255,215,0,.06)!important}
+.info-box .top-label{color:#ffd35a}
+.info-box .top-val{color:#ff1e3c;font-size:1rem}
+.clockbar{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.clockbar-fill{height:100%;background:linear-gradient(90deg,#ff1e3c,#ff6b7f);transition:none}
+.clockbar-fill.warning{background:linear-gradient(90deg,#ffd35a,#ffe28a)}
+.clockbar-fill.danger{background:linear-gradient(90deg,#ff1e3c,#c8102e)}
+.msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.msg-bar.watch{color:#ffd35a}.msg-bar.go{color:#ff1e3c}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}
+.stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.star{font-size:1rem;opacity:.2;transition:all .3s}
+.star.earned{opacity:1;filter:drop-shadow(0 0 6px #ff1e3c);transform:scale(1.2)}
+.court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
+.court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,30,60,.25);border-radius:14px;padding:6px;background:rgba(15,0,0,.85);box-shadow:0 0 60px rgba(255,30,60,.3),inset 0 0 40px rgba(255,30,60,.04),0 20px 60px rgba(0,0,0,.8)}
+.cell{border-radius:8px;background:rgba(255,30,60,.08);border:2px solid rgba(255,30,60,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.cell:hover{background:rgba(255,30,60,.2);border-color:#ff1e3c;transform:scale(1.05)}
+.cell.target{background:#ff1e3c!important;border-color:#ff6b7f!important;box-shadow:0 0 30px rgba(255,30,60,1)!important;transform:scale(1.08)}
+.cell.hit{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
+.cell.missed{background:rgba(255,20,147,.3)!important;border-color:#FF1493!important;animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.bottombar{display:flex;justify-content:center;flex-wrap:wrap;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.bot-btn{height:48px;flex:0 1 150px;max-width:180px;border:2px solid rgba(255,30,60,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bot-btn span{display:block;color:#ff1e3c;font-size:.55rem;margin-top:1px}
+.start-btn{border-color:#ff1e3c;background:linear-gradient(180deg,#ff6b7f,#ff1e3c);color:#fff;font-size:1.1rem;box-shadow:0 0 18px rgba(255,30,60,.7)}
+.start-btn:disabled{opacity:.5}
+
+@media (max-width:768px){
+  #fsBtn{display:none}
+}
+.top-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(255,30,60,.4);background:rgba(0,0,0,.5);color:#ff1e3c;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120}
+@media(max-width:768px){.top-fs{display:none}}
+</style>
+</head>
+<body>
+
+<div id="screen-intro">
+  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
+  <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
+  <div class="vrr-logo">REACTION <span>GRID</span></div>
+  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-rule">⚡ TAP THE LIT CELL — ON THE BEAT</div>
+  <div class="speed-row">
+    <button class="speed-btn" data-bpm="80">80<small>TRAINING</small></button>
+    <button class="speed-btn active" data-bpm="100">100<small>TEMPO</small></button>
+    <button class="speed-btn" data-bpm="120">120<small>ELITE</small></button>
+  </div>
+  <button class="big-btn" id="startBtn">⚡ ENTER THE COURT</button>
+  <div class="intro-info">
+    <strong>WATCH</strong> — a cell lights up red<br>
+    <strong>TAP</strong> — hit it before the beat passes<br>
+    <strong>5 IN A ROW</strong> — perfect round<br>
+    <strong>2 PERFECT</strong> — level up
+  </div>
+</div>
+
+<div id="screen-game">
+  <div class="topbar">
+    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
+    <div class="top-box info-box"><div class="top-label">BPM</div><div class="top-val" id="hBpm">100</div></div>
+    <div class="top-box"><div class="top-label">Round</div><div class="top-val" id="hRd">0/5</div></div>
+    <div class="top-box"><div class="top-label">Level</div><div class="top-val" id="hLv">1</div></div>
+    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Perfect</div><div class="top-val" id="hPf">0/2</div></div>
+  </div>
+  <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
+  <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
+  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Level</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#ff1e3c"></span></div>
+  <div class="court-area"><div class="court" id="court"></div></div>
+  <div class="bottombar">
+    <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
+    <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
+  </div>
+</div>
+
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+
+var BPM=100;
+document.querySelectorAll('[data-bpm]').forEach(btn=>{
+  btn.onclick=function(){
+    BPM=Number(btn.dataset.bpm);
+    document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+});
+
+$('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
+$('menuBtn').onclick=function(){$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+$('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];
+function buildCourt(){
+  var court=$('court');court.innerHTML='';cells=[];
+  for(var i=0;i<50;i++){
+    var c=document.createElement('div');c.className='cell';c.dataset.i=i;
+    c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));
+    court.appendChild(c);cells.push(c);
+  }
+}
+function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
+function resetCells(){cells.forEach((_,i)=>cellSt(i))}
+
+var ROUND_LEN=5;
+var g={lv:1,sc:0,rd:0,st:0,pf:0,hits:0};
+function getInterval(){var base=60000/BPM;var tighten=1-((g.lv-1)*0.03);return Math.max(base*0.55,base*tighten)}
+function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.hits+'/'+ROUND_LEN;$('hLv').textContent=g.lv;$('hSt').textContent=g.st;$('hPf').textContent=g.pf+'/2';$('hBpm').textContent=BPM;$('ps1').textContent=g.lv}
+function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
+function initGame(){g={lv:1,sc:0,rd:0,st:0,pf:0,hits:0};updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRound;hideClock()}
+
+var phase='idle',currentTarget=-1,timers=[],clockRAF=null,clockStart=0,clockDur=0;
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+
+function showClock(dur){
+  clockDur=dur;clockStart=performance.now();
+  $('clockFill').style.width='100%';$('clockFill').className='clockbar-fill';
+  function tick(){
+    var pct=Math.max(0,1-(performance.now()-clockStart)/clockDur);
+    $('clockFill').style.width=(pct*100)+'%';
+    if(pct<0.3)$('clockFill').className='clockbar-fill danger';
+    else if(pct<0.5)$('clockFill').className='clockbar-fill warning';
+    if(pct>0&&phase==='waiting-tap')clockRAF=requestAnimationFrame(tick);
+  }
+  clockRAF=requestAnimationFrame(tick);
+}
+function hideClock(){if(clockRAF)cancelAnimationFrame(clockRAF);clockRAF=null;$('clockFill').style.width='0%';$('clockFill').className='clockbar-fill'}
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();g.rd++;g.hits=0;$('actBtn').disabled=true;resetCells();updateHUD();
+  msg('GET READY...','watch');
+  timers.push(setTimeout(nextBeat,600));
+}
+
+function nextBeat(){
+  if(g.hits>=ROUND_LEN){finishRound(true);return;}
+  resetCells();
+  currentTarget=Math.floor(Math.random()*50);
+  cellSt(currentTarget,'target');
+  phase='waiting-tap';
+  msg('⚡ TAP!','go');
+  var interval=getInterval();
+  showClock(interval);
+  timers.push(setTimeout(function(){
+    if(phase!=='waiting-tap')return;
+    phase='idle';hideClock();
+    cellSt(currentTarget,'missed');
+    g.st=0;updateHUD();
+    finishRound(false);
+  },interval));
+}
+
+function handleTap(idx){
+  if(phase!=='waiting-tap')return;
+  if(idx!==currentTarget)return;
+  phase='idle';hideClock();clrT();
+  cellSt(idx,'hit');
+  g.hits++;g.st++;g.sc+=g.lv*10;
+  updateHUD();
+  timers.push(setTimeout(nextBeat,180));
+}
+
+function finishRound(success){
+  phase='idle';hideClock();clrT();
+  if(success){
+    g.pf++;updateHUD();
+    msg('✅ PERFECT ROUND!','perfect');
+    if(g.pf>=2){
+      timers.push(setTimeout(function(){
+        if(g.lv<10){g.lv++;g.pf=0}
+        updateHUD();resetCells();msg('🔥 LEVEL UP! L'+g.lv,'perfect');
+        timers.push(setTimeout(resetForNextRound,900));
+      },1000));
+    }else{
+      timers.push(setTimeout(resetForNextRound,900));
+    }
+  }else{
+    g.pf=0;updateHUD();
+    msg('MISSED — TRY AGAIN','miss');
+    timers.push(setTimeout(resetForNextRound,1400));
+  }
+}
+
+function resetForNextRound(){
+  resetCells();$('actBtn').disabled=false;
+  msg("TAP LET'S GO!",'watch');
+}
+
+$('actBtn').onclick=startRound;
+buildCourt();
+})();
+</script>
+</body>
+</html>
