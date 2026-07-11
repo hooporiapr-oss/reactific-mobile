@@ -175,31 +175,6 @@ function setPhase(txt){$('hPhase').textContent=txt}
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function initGame(){g={lv:1,sc:0,rd:0,st:0,pf:0};updateHUD();setPhase('READY');msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRound;$('restartBtn').style.display='none';stopTimer()}
 
-var API='https://api.reactificgaming.com';
-(function(){
-  var urlToken=new URLSearchParams(window.location.search).get('t');
-  if(urlToken)localStorage.setItem('rct-token',urlToken);
-})();
-
-function submitScore(score,level,mode){
-  var token=localStorage.getItem('rct-token');
-  if(!token)return;
-  fetch(API+'/api/scores/game',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'recovery',score:score,level:level,mode:mode})
-  }).catch(function(err){console.error('Score submit error:',err)});
-}
-
-window.addEventListener('beforeunload',function(){
-  var token=localStorage.getItem('rct-token');
-  if(token && g && g.sc>0){
-    navigator.sendBeacon(API+'/api/scores/game',
-      JSON.stringify({game_id:'recovery',score:g.sc,level:g.lv,mode:'progression'})
-    );
-  }
-});
-
 var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[];
 function clrT(){timers.forEach(clearTimeout);timers=[]}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
@@ -294,12 +269,11 @@ function roundSuccess(){
   phase='idle';g.pf++;g.st++;g.sc+=10*g.lv;updateHUD();setPhase('✅');msg('CORRECT!','perfect');
   if(g.pf>=2){
     timers.push(setTimeout(function(){
-      if(g.lv<10){g.lv++;g.pf=0;submitScore(g.sc,g.lv,'progression');}
+      if(g.lv<10){g.lv++;g.pf=0}
       updateHUD();resetCells();msg('LEVEL UP! L'+g.lv,'perfect');
       timers.push(setTimeout(autoNextRound,900))
     },1200))
   }else{
-    submitScore(g.sc,g.lv,'progression');
     timers.push(setTimeout(autoNextRound,1000))
   }
 }
@@ -308,7 +282,6 @@ function autoNextRound(){if(phase!=='idle')return;resetCells();stopTimer();$('re
 
 function roundFail(){
   phase='idle';g.st=0;g.pf=0;updateHUD();setPhase('❌');msg('WRONG!','miss');
-  submitScore(g.sc,g.lv,'progression');
   timers.push(setTimeout(showMissOptions,1200));
 }
 
