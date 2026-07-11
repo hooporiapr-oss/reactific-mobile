@@ -91,6 +91,35 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 </style>
 </head>
 <body>
+<button id="rp-sound-toggle" onclick="rpToggleSound()" aria-label="Toggle sound" title="Toggle beat sound" style="position:fixed;top:14px;right:14px;z-index:9999;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">🔊</button>
+<script>
+(function(){
+  // Universal mute: wrap AudioContext so muting suspends ALL game audio.
+  var _ctxs = [];
+  var NativeAC = window.AudioContext || window.webkitAudioContext;
+  if (NativeAC){
+    function WrappedAC(){
+      var ctx = new NativeAC();
+      _ctxs.push(ctx);
+      if (window.__rpMuted && ctx.suspend) { try{ctx.suspend()}catch(e){} }
+      return ctx;
+    }
+    WrappedAC.prototype = NativeAC.prototype;
+    window.AudioContext = WrappedAC;
+    window.webkitAudioContext = WrappedAC;
+  }
+  window.__rpMuted = false;
+  window.rpToggleSound = function(){
+    window.__rpMuted = !window.__rpMuted;
+    var btn = document.getElementById('rp-sound-toggle');
+    _ctxs.forEach(function(c){
+      try{ if(window.__rpMuted){ c.suspend&&c.suspend(); } else { c.resume&&c.resume(); } }catch(e){}
+    });
+    if(btn){ btn.textContent = window.__rpMuted ? '🔇' : '🔊'; btn.style.opacity = window.__rpMuted ? '.55' : '1'; }
+  };
+})();
+</script>
+
 
 
 
