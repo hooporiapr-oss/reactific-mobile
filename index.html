@@ -34,6 +34,10 @@
   .brandmark{margin-top:50px;font-size:.75rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#4a5058}
   .brandmark b{color:#8892a0;font-style:italic}
 
+  #sound-toggle{position:fixed;top:16px;right:16px;z-index:10;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,30,60,.35);background:rgba(255,255,255,.06);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;backdrop-filter:blur(4px)}
+  #sound-toggle:hover{background:rgba(255,30,60,.18);border-color:#ff1e3c}
+  #sound-toggle.muted{opacity:.55}
+
   @media(max-width:480px){ .brand{font-size:3rem} }
 </style>
 </head>
@@ -42,6 +46,8 @@
 <div id="strobe"></div>
 <div id="beat-pulse"></div>
 <div id="dots"></div>
+
+<button id="sound-toggle" onclick="toggleSound()" aria-label="Toggle sound" title="Toggle beat sound">🔊</button>
 
 <div id="center">
   <div class="kicker">⚡ Reaction Arena</div>
@@ -122,6 +128,21 @@ function reject(msg){
 // ── 120 beat: visual (strobe + flying red dots) + audio click ──
 var BPM = 120, beatMs = 60000/BPM;
 var audioCtx = null, audioReady = false;
+var soundOn = true;   // beat audio on by default; user can mute
+
+// Mute/unmute toggle — visual beat always stays; this only affects sound.
+function toggleSound(){
+  soundOn = !soundOn;
+  var btn = $('sound-toggle');
+  if (soundOn){
+    btn.textContent = '🔊';
+    btn.classList.remove('muted');
+    initAudio();   // make sure audio is armed if they turn it back on
+  } else {
+    btn.textContent = '🔇';
+    btn.classList.add('muted');
+  }
+}
 
 // Audio can only start after a user gesture (browser rule).
 // We arm it on the first tap/keypress/click anywhere on the page.
@@ -139,7 +160,7 @@ function initAudio(){
 // The 120 beat "click" — a short, punchy low tone on every beat,
 // matching the flying red target that spawns on the same beat.
 function beatClick(){
-  if(!audioCtx) return;
+  if(!soundOn || !audioCtx) return;
   try{
     var o = audioCtx.createOscillator();
     var g = audioCtx.createGain();
