@@ -99,8 +99,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="intro-info">
     <strong>WATCH</strong> — a cell lights up red<br>
     <strong>TAP</strong> — hit it before the beat passes<br>
-    <strong>5 IN A ROW</strong> — perfect round<br>
-    <strong>2 PERFECT</strong> — level up
+    <strong>RUN THE COURT</strong> — all 50 cells, one by one<br>
+    <strong>SCORE</strong> — see how many you hit out of 50
   </div>
 </div>
 
@@ -108,14 +108,13 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="topbar">
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
     <div class="top-box info-box"><div class="top-label">BPM</div><div class="top-val" id="hBpm">100</div></div>
-    <div class="top-box"><div class="top-label">Round</div><div class="top-val" id="hRd">0/5</div></div>
-    <div class="top-box"><div class="top-label">Level</div><div class="top-val" id="hLv">1</div></div>
+    <div class="top-box"><div class="top-label">Court</div><div class="top-val" id="hRd">0/50</div></div>
+    <div class="top-box"><div class="top-label">Hits</div><div class="top-val" id="hHits">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
-    <div class="top-box"><div class="top-label">Perfect</div><div class="top-val" id="hPf">0/2</div></div>
+    <div class="top-box"><div class="top-label">Misses</div><div class="top-val" id="hMiss">0</div></div>
   </div>
   <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
   <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
-  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Level</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#ff1e3c"></span></div>
   <div class="court-area"><div class="court" id="court"></div></div>
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
@@ -154,12 +153,15 @@ function buildCourt(){
 function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var ROUND_LEN=5;
-var g={lv:1,sc:0,rd:0,st:0,pf:0,hits:0};
-function getInterval(){var base=60000/BPM;var tighten=1-((g.lv-1)*0.03);return Math.max(base*0.55,base*tighten)}
-function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.hits+'/'+ROUND_LEN;$('hLv').textContent=g.lv;$('hSt').textContent=g.st;$('hPf').textContent=g.pf+'/2';$('hBpm').textContent=BPM;$('ps1').textContent=g.lv}
+var COURT_SIZE=50;
+var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
+var order=[];
+function getInterval(){return 60000/BPM}
+var PACE_MS=600; // fixed 100 BPM breathing room between targets, regardless of speed selected
+function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.idx+'/'+COURT_SIZE;$('hHits').textContent=g.hits;$('hSt').textContent=g.st;$('hMiss').textContent=g.misses;$('hBpm').textContent=BPM}
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
-function initGame(){g={lv:1,sc:0,rd:0,st:0,pf:0,hits:0};updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRound;hideClock()}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+function initGame(){g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRun;hideClock()}
 
 var phase='idle',currentTarget=-1,timers=[],clockRAF=null,clockStart=0,clockDur=0;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
@@ -178,17 +180,19 @@ function showClock(dur){
 }
 function hideClock(){if(clockRAF)cancelAnimationFrame(clockRAF);clockRAF=null;$('clockFill').style.width='0%';$('clockFill').className='clockbar-fill'}
 
-function startRound(){
+function startRun(){
   if(phase!=='idle')return;
-  clrT();g.rd++;g.hits=0;$('actBtn').disabled=true;resetCells();updateHUD();
+  clrT();g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
+  order=shuffle(Array.from({length:COURT_SIZE},(_,i)=>i));
+  $('actBtn').disabled=true;resetCells();updateHUD();
   msg('GET READY...','watch');
   timers.push(setTimeout(nextBeat,600));
 }
 
 function nextBeat(){
-  if(g.hits>=ROUND_LEN){finishRound(true);return;}
+  if(g.idx>=COURT_SIZE){finishRun();return;}
   resetCells();
-  currentTarget=Math.floor(Math.random()*50);
+  currentTarget=order[g.idx];
   cellSt(currentTarget,'target');
   phase='waiting-tap';
   msg('⚡ TAP!','go');
@@ -198,8 +202,8 @@ function nextBeat(){
     if(phase!=='waiting-tap')return;
     phase='idle';hideClock();
     cellSt(currentTarget,'missed');
-    g.st=0;updateHUD();
-    finishRound(false);
+    g.misses++;g.st=0;g.idx++;updateHUD();
+    timers.push(setTimeout(nextBeat,PACE_MS));
   },interval));
 }
 
@@ -208,38 +212,19 @@ function handleTap(idx){
   if(idx!==currentTarget)return;
   phase='idle';hideClock();clrT();
   cellSt(idx,'hit');
-  g.hits++;g.st++;g.sc+=g.lv*10;
+  g.hits++;g.st++;if(g.st>g.bestSt)g.bestSt=g.st;g.sc+=10+g.st*2;g.idx++;
   updateHUD();
-  timers.push(setTimeout(nextBeat,180));
+  timers.push(setTimeout(nextBeat,PACE_MS));
 }
 
-function finishRound(success){
-  phase='idle';hideClock();clrT();
-  if(success){
-    g.pf++;updateHUD();
-    msg('✅ PERFECT ROUND!','perfect');
-    if(g.pf>=2){
-      timers.push(setTimeout(function(){
-        if(g.lv<10){g.lv++;g.pf=0}
-        updateHUD();resetCells();msg('🔥 LEVEL UP! L'+g.lv,'perfect');
-        timers.push(setTimeout(resetForNextRound,900));
-      },1000));
-    }else{
-      timers.push(setTimeout(resetForNextRound,900));
-    }
-  }else{
-    g.pf=0;updateHUD();
-    msg('MISSED — TRY AGAIN','miss');
-    timers.push(setTimeout(resetForNextRound,1400));
-  }
+function finishRun(){
+  phase='idle';hideClock();clrT();resetCells();
+  var pct=Math.round((g.hits/COURT_SIZE)*100);
+  msg('✅ COURT COMPLETE — '+g.hits+'/'+COURT_SIZE+' ('+pct+'%)','perfect');
+  $('actBtn').disabled=false;$('actBtn').textContent='RUN IT AGAIN';$('actBtn').onclick=startRun;
 }
 
-function resetForNextRound(){
-  resetCells();$('actBtn').disabled=false;
-  msg("TAP LET'S GO!",'watch');
-}
-
-$('actBtn').onclick=startRound;
+$('actBtn').onclick=startRun;
 buildCourt();
 })();
 </script>
