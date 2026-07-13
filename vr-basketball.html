@@ -170,7 +170,7 @@ var seamMat = new THREE.LineBasicMaterial({ color: 0x1a1a1a });
 
 // ---------- Game state ----------
 var HAND_OFFSET = new THREE.Vector3(0, 0, -0.12); // ball sits slightly in front of controller
-var SPAWN_LOCAL = new THREE.Vector3(0, 1.1, 0.4);  // relative to player rig, where ball resets to
+var SPAWN_LOCAL = new THREE.Vector3(0, 1.1, -0.4);  // relative to player rig, where ball resets to (negative Z = in front, matching hoop direction)
 
 var state = {
   held: false,
@@ -197,7 +197,7 @@ function resetBall(){
   posHistory = [];
   var p = renderer.xr.getCamera ? camera.position : camera.position;
   // place near player's default hand height in front of them
-  ball.position.set(0, 1.1, 0.4);
+  ball.position.set(0, 1.1, -0.4);
 }
 resetBall();
 
