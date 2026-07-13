@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VR Basketball Prototype | Ritnome</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
+#overlay{
+  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#180000 0%,#000 70%);z-index:10;text-align:center;padding:24px;
+}
+.logo{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(255,30,60,.8);margin-bottom:8px}
+.logo span{color:#ff1e3c}
+.sub{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#ff6b7f;margin-bottom:24px}
+#enterBtn{padding:16px 34px;border:none;border-radius:16px;background:linear-gradient(135deg,#ff1e3c,#ff6b7f);color:#fff;font-size:1.05rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,30,60,.6)}
+#enterBtn:disabled{opacity:.4;cursor:not-allowed}
+#status{margin-top:16px;font-size:.7rem;color:#8892a0;letter-spacing:.05em;max-width:340px;line-height:1.6}
+#hud{
+  position:fixed;top:16px;left:0;right:0;display:none;justify-content:center;gap:10px;z-index:5;pointer-events:none;
+}
+.hud-box{background:rgba(0,0,0,.6);border:1px solid rgba(255,30,60,.4);border-radius:10px;padding:6px 16px;text-align:center}
+.hud-label{font-size:.55rem;color:#ff1e3c;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.hud-val{font-size:1.2rem;font-weight:900;color:#fff}
+canvas{display:block}
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="logo">VR <span>BASKETBALL</span></div>
+  <div class="sub">Prototype · Real Shot Physics</div>
+  <button id="enterBtn" disabled>Checking WebXR…</button>
+  <div id="status">Put on your headset and open this page in Wolvic (Chromium build) to play.</div>
+</div>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Makes</div><div class="hud-val" id="hMakes">0</div></div>
+  <div class="hud-box"><div class="hud-label">Misses</div><div class="hud-val" id="hMisses">0</div></div>
+  <div class="hud-box"><div class="hud-label">Streak</div><div class="hud-val" id="hStreak">0</div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var $ = id => document.getElementById(id);
+
+// ---------- WebXR availability check ----------
+if (navigator.xr) {
+  navigator.xr.isSessionSupported('immersive-vr').then(supported => {
+    if (supported) {
+      $('enterBtn').disabled = false;
+      $('enterBtn').textContent = '🏀 Enter VR';
+      $('status').textContent = 'Grip the ball with your controller trigger, pull back, and release to shoot.';
+    } else {
+      $('status').textContent = 'WebXR immersive-vr not supported on this browser/device.';
+    }
+  }).catch(()=>{ $('status').textContent = 'Could not check WebXR support.'; });
+} else {
+  $('status').textContent = 'WebXR not available. Open this page in Wolvic (Chromium build) on your headset.';
+}
+
+// ---------- Three.js scene ----------
+var scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a12);
+scene.fog = new THREE.Fog(0x0a0a12, 8, 30);
+
+var camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.05, 100);
+camera.position.set(0, 1.6, 0.6); // sensible eye-height default before VR session starts (VR overrides this per-frame automatically)
+
+var renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true;
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+window.addEventListener('resize', function(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Lighting
+scene.add(new THREE.HemisphereLight(0xffffff, 0x222233, 0.9));
+var dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+dirLight.position.set(3, 8, 4);
+dirLight.castShadow = true;
+scene.add(dirLight);
+
+// Floor
+var floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshStandardMaterial({ color: 0x161620, roughness: 0.95 })
+);
+floor.rotation.x = -Math.PI/2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Court markings (simple ring under the hoop, cosmetic)
+var courtRing = new THREE.Mesh(
+  new THREE.RingGeometry(1.6, 1.7, 48),
+  new THREE.MeshBasicMaterial({ color: 0xff1e3c, side: THREE.DoubleSide, transparent:true, opacity:0.5 })
+);
+courtRing.rotation.x = -Math.PI/2;
+courtRing.position.set(0, 0.01, -3.2);
+scene.add(courtRing);
+
+// ---------- Hoop ----------
+var HOOP_HEIGHT = 2.6;      // rim height (meters) — real hoop is 3.05m, lowered for a comfortable room-scale prototype
+var HOOP_DIST   = -3.2;     // distance in front of player start
+var HOOP_RADIUS = 0.28;
+
+var hoopGroup = new THREE.Group();
+hoopGroup.position.set(0, 0, HOOP_DIST);
+scene.add(hoopGroup);
+
+// Backboard
+var backboard = new THREE.Mesh(
+  new THREE.BoxGeometry(1.2, 0.8, 0.05),
+  new THREE.MeshStandardMaterial({ color: 0xffffff, transparent:true, opacity:0.25 })
+);
+backboard.position.set(0, HOOP_HEIGHT + 0.35, -0.35);
+hoopGroup.add(backboard);
+
+// Rim (torus)
+var rim = new THREE.Mesh(
+  new THREE.TorusGeometry(HOOP_RADIUS, 0.02, 12, 32),
+  new THREE.MeshStandardMaterial({ color: 0xff6600, metalness:0.3, roughness:0.5 })
+);
+rim.rotation.x = Math.PI/2;
+rim.position.set(0, HOOP_HEIGHT, 0);
+hoopGroup.add(rim);
+
+// Net (simple visual cue, cosmetic wireframe cone)
+var net = new THREE.Mesh(
+  new THREE.ConeGeometry(HOOP_RADIUS*0.95, 0.35, 12, 1, true),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe:true, transparent:true, opacity:0.5 })
+);
+net.position.set(0, HOOP_HEIGHT - 0.18, 0);
+hoopGroup.add(net);
+
+// Pole
+var pole = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.05, 0.05, HOOP_HEIGHT + 0.8, 8),
+  new THREE.MeshStandardMaterial({ color: 0x333340 })
+);
+pole.position.set(0, (HOOP_HEIGHT + 0.8)/2, -0.6);
+hoopGroup.add(pole);
+
+// ---------- Ball ----------
+var BALL_RADIUS = 0.12;
+var ballMat = new THREE.MeshStandardMaterial({ color: 0xff7518, roughness:0.7 });
+var ball = new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS, 24, 24), ballMat);
+ball.castShadow = true;
+scene.add(ball);
+
+// Ball seam lines (cosmetic)
+var seamMat = new THREE.LineBasicMaterial({ color: 0x1a1a1a });
+[0, Math.PI/2].forEach(function(rotY){
+  var pts = [];
+  for (var a=0;a<=Math.PI*2+0.01;a+=0.1) pts.push(new THREE.Vector3(Math.sin(a)*BALL_RADIUS*1.01, Math.cos(a)*BALL_RADIUS*1.01, 0));
+  var geo = new THREE.BufferGeometry().setFromPoints(pts);
+  var line = new THREE.Line(geo, seamMat);
+  line.rotation.y = rotY;
+  ball.add(line);
+});
+
+// ---------- Game state ----------
+var HAND_OFFSET = new THREE.Vector3(0, 0, -0.12); // ball sits slightly in front of controller
+var SPAWN_LOCAL = new THREE.Vector3(0, 1.1, 0.4);  // relative to player rig, where ball resets to
+
+var state = {
+  held: false,
+  controller: null,
+  flying: false,
+  velocity: new THREE.Vector3(),
+  scoredThisShot: false,
+  passedThroughPlane: false,
+  makes: 0,
+  misses: 0,
+  streak: 0
+};
+
+var GRAVITY = -9.8;
+var posHistory = []; // last few frames of controller world position, for velocity-at-release calc
+var MAX_HISTORY = 4;
+
+function resetBall(){
+  state.flying = false;
+  state.held = false;
+  state.scoredThisShot = false;
+  state.passedThroughPlane = false;
+  state.velocity.set(0,0,0);
+  posHistory = [];
+  var p = renderer.xr.getCamera ? camera.position : camera.position;
+  // place near player's default hand height in front of them
+  ball.position.set(0, 1.1, 0.4);
+}
+resetBall();
+
+function vibrate(inputSource, intensity, durationMs){
+  try{
+    var gp = inputSource && inputSource.gamepad;
+    if (gp && gp.hapticActuators && gp.hapticActuators[0]) {
+      gp.hapticActuators[0].pulse(intensity, durationMs);
+    } else if (gp && gp.vibrationActuator) {
+      gp.vibrationActuator.playEffect('dual-rumble', { duration: durationMs, strongMagnitude: intensity, weakMagnitude: intensity });
+    }
+  }catch(e){}
+}
+
+var audioCtx = null;
+function getAC(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return audioCtx; }
+function tone(freq, dur, vol, type){
+  var c = getAC(); if(!c) return;
+  try{
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type||'sine'; o.frequency.value = freq;
+    o.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(vol||0.2, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + (dur||0.15));
+    o.start(); o.stop(c.currentTime + (dur||0.15) + 0.02);
+  }catch(e){}
+}
+function swishSound(){ [880,1100,1300].forEach(function(f,i){ setTimeout(function(){ tone(f,0.12,0.18) }, i*60) }); }
+function missSound(){ tone(200, 0.25, 0.15, 'sawtooth'); }
+function grabSound(){ tone(500, 0.06, 0.1); }
+
+function updateHUD(){
+  $('hMakes').textContent = state.makes;
+  $('hMisses').textContent = state.misses;
+  $('hStreak').textContent = state.streak;
+}
+
+// ---------- Controller setup ----------
+var controller0 = renderer.xr.getController(0);
+var controller1 = renderer.xr.getController(1);
+scene.add(controller0);
+scene.add(controller1);
+
+// Simple visual for controllers (small cone pointing forward)
+function makeControllerMesh(){
+  var geo = new THREE.ConeGeometry(0.02, 0.08, 8);
+  geo.rotateX(-Math.PI/2);
+  var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xff1e3c, emissive:0x330008 }));
+  return mesh;
+}
+controller0.add(makeControllerMesh());
+controller1.add(makeControllerMesh());
+
+var activeInputSource = null; // XRInputSource currently holding the ball
+
+function onSelectStart(event){
+  var controller = event.target;
+  var controllerPos = new THREE.Vector3();
+  controller.getWorldPosition(controllerPos);
+  var dist = controllerPos.distanceTo(ball.position);
+  // Must be reasonably close to the ball to grab it (basketball-in-hand feel, not a laser grab)
+  if (!state.flying && dist < 0.35) {
+    state.held = true;
+    state.controller = controller;
+    activeInputSource = event.data;
+    posHistory = [];
+    grabSound();
+    vibrate(event.data, 0.3, 40);
+  }
+}
+function onSelectEnd(event){
+  var controller = event.target;
+  if (state.held && state.controller === controller) {
+    // Release — launch with tracked velocity
+    var v = new THREE.Vector3();
+    if (posHistory.length >= 2) {
+      var a = posHistory[0], b = posHistory[posHistory.length-1];
+      var dt = (b.t - a.t) / 1000;
+      if (dt > 0) {
+        v.subVectors(b.pos, a.pos).divideScalar(dt);
+      }
+    }
+    // Minimum-effort guard: tiny/no motion = ball just drops (not a real shot attempt)
+    var speed = v.length();
+    if (speed < 0.4) {
+      v.set(0, 0.3, 0); // gentle drop
+    }
+    state.velocity.copy(v);
+    state.flying = true;
+    state.held = false;
+    state.scoredThisShot = false;
+    state.passedThroughPlane = false;
+    vibrate(activeInputSource, Math.min(1, speed/6), 60);
+    activeInputSource = null;
+  }
+}
+controller0.addEventListener('selectstart', onSelectStart);
+controller0.addEventListener('selectend', onSelectEnd);
+controller1.addEventListener('selectstart', onSelectStart);
+controller1.addEventListener('selectend', onSelectEnd);
+
+// ---------- Enter VR ----------
+$('enterBtn').addEventListener('click', function(){
+  navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }).then(function(session){
+    renderer.xr.setSession(session);
+    $('overlay').style.display = 'none';
+    $('hud').style.display = 'flex';
+    session.addEventListener('end', function(){
+      $('overlay').style.display = 'flex';
+      $('hud').style.display = 'none';
+    });
+  }).catch(function(err){
+    $('status').textContent = 'Failed to start VR session: ' + err.message;
+  });
+});
+
+// ---------- Frame loop ----------
+var clock = new THREE.Clock();
+
+renderer.setAnimationLoop(function(){
+  var dt = Math.min(clock.getDelta(), 0.05);
+
+  if (state.held && state.controller) {
+    var cpos = new THREE.Vector3();
+    state.controller.getWorldPosition(cpos);
+    var offset = HAND_OFFSET.clone().applyQuaternion(state.controller.quaternion);
+    ball.position.copy(cpos).add(offset);
+
+    posHistory.push({ pos: cpos.clone(), t: performance.now() });
+    if (posHistory.length > MAX_HISTORY) posHistory.shift();
+  } else if (state.flying) {
+    state.velocity.y += GRAVITY * dt;
+    ball.position.addScaledVector(state.velocity, dt);
+
+    // Rim/score detection: check if ball crosses the hoop's horizontal plane, moving downward, within radius
+    var localX = ball.position.x - hoopGroup.position.x;
+    var localZ = ball.position.z - hoopGroup.position.z;
+    var horizDist = Math.sqrt(localX*localX + localZ*localZ);
+    var ballY = ball.position.y;
+
+    if (!state.passedThroughPlane && state.velocity.y < 0 && ballY <= HOOP_HEIGHT && ballY > HOOP_HEIGHT - 0.25) {
+      state.passedThroughPlane = true;
+      if (horizDist < HOOP_RADIUS * 0.85 && !state.scoredThisShot) {
+        state.scoredThisShot = true;
+        state.makes++; state.streak++;
+        updateHUD();
+        swishSound();
+        if (activeInputSource) vibrate(activeInputSource, 0.6, 100);
+        var s = renderer.xr.getSession ? renderer.xr.getSession() : null;
+        if (s) { s.inputSources.forEach(function(src){ vibrate(src, 0.6, 100); }); }
+      }
+    }
+
+    // Ball hit floor or drifted far away -> resolve as miss if not scored, then reset
+    if (ball.position.y < 0.05 || ball.position.length() > 15) {
+      if (!state.scoredThisShot) {
+        state.misses++; state.streak = 0;
+        updateHUD();
+        missSound();
+      }
+      resetBall();
+    }
+  }
+
+  renderer.render(scene, camera);
+});
+
+})();
+</script>
+</body>
+</html>
