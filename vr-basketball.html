@@ -32,7 +32,7 @@ canvas{display:block}
   <div class="logo">VR <span>BASKETBALL</span></div>
   <div class="sub">Prototype · Real Shot Physics</div>
   <button id="enterBtn" disabled>Checking WebXR…</button>
-  <div id="status">Put on your headset and open this page in Wolvic (Chromium build) to play.</div>
+  <div id="status">Checking this headset for WebXR or legacy WebVR support…</div>
 </div>
 
 <div id="hud">
@@ -49,24 +49,43 @@ canvas{display:block}
   <div id="dbgBall">Ball pos: --</div>
 </div>
 
+<!-- Legacy bridge: exposes a WebXR-style API on browsers that only implement WebVR 1.1. -->
+<script src="https://cdn.jsdelivr.net/npm/webxr-polyfill@2.0.3/build/webxr-polyfill.min.js"></script>
+<script>
+window.__PICO_LEGACY_WEBVR__ = !navigator.xr && !!navigator.getVRDisplays;
+if (!navigator.xr && window.WebXRPolyfill) {
+  try {
+    window.__webXRPolyfill = new WebXRPolyfill({ webvr: true, cardboard: false });
+  } catch (e) {
+    console.error('WebXR polyfill failed:', e);
+  }
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
 var $ = id => document.getElementById(id);
 
-// ---------- WebXR availability check ----------
+// ---------- WebXR / legacy WebVR availability check ----------
+var legacyWebVR = !!window.__PICO_LEGACY_WEBVR__;
 if (navigator.xr) {
-  navigator.xr.isSessionSupported('immersive-vr').then(supported => {
+  navigator.xr.isSessionSupported('immersive-vr').then(function(supported){
     if (supported) {
       $('enterBtn').disabled = false;
       $('enterBtn').textContent = '🏀 Enter VR';
-      $('status').textContent = 'Grip the ball with your controller trigger, pull back, and release to shoot.';
+      $('status').textContent = legacyWebVR
+        ? 'Legacy PICO mode: press and hold the controller trigger, aim, then release to shoot.'
+        : 'Hold the controller trigger near the ball, pull back, and release to shoot.';
     } else {
-      $('status').textContent = 'WebXR immersive-vr not supported on this browser/device.';
+      $('status').textContent = 'The browser is present, but immersive VR was rejected by this headset.';
     }
-  }).catch(()=>{ $('status').textContent = 'Could not check WebXR support.'; });
+  }).catch(function(err){
+    $('status').textContent = 'Could not check VR support: ' + (err && err.message ? err.message : err);
+  });
+} else if (navigator.getVRDisplays) {
+  $('status').textContent = 'Legacy WebVR was detected, but the WebXR compatibility bridge did not load.';
 } else {
-  $('status').textContent = 'WebXR not available. Open this page in Wolvic (Chromium build) on your headset.';
+  $('status').textContent = 'This browser exposes neither WebXR nor legacy WebVR.';
 }
 
 // ---------- Three.js scene ----------
@@ -77,8 +96,9 @@ scene.fog = new THREE.Fog(0x0a0a12, 8, 30);
 var camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.05, 100);
 camera.position.set(0, 1.6, 0.6); // sensible eye-height default before VR session starts (VR overrides this per-frame automatically)
 
-var renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setPixelRatio(window.devicePixelRatio);
+var renderer = new THREE.WebGLRenderer({ antialias: !legacyWebVR });
+// Older standalone PICO GPUs can stall when rendering at the headset's full device pixel ratio.
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, legacyWebVR ? 1 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
 renderer.xr.setReferenceSpaceType('local-floor');
@@ -217,6 +237,7 @@ function resetBall(){
   state.grip = null;
   state.scoredThisShot = false;
   state.passedThroughPlane = false;
+  state.legacyAimGrab = false;
   state.velocity.set(0,0,0);
   posHistory = [];
   // place near player's default hand height in front of them
@@ -276,6 +297,17 @@ var gripFor = new Map();
 gripFor.set(controller0, grip0);
 gripFor.set(controller1, grip1);
 
+// Some older PICO/WebVR combinations expose a pointing ray but no usable grip pose.
+// Use the grip only when Three.js marks it visible; otherwise use the target-ray controller.
+function getUsableControllerSpace(controller){
+  var grip = gripFor.get(controller);
+  return (grip && grip.visible) ? grip : controller;
+}
+function hasUsableGrip(controller){
+  var grip = gripFor.get(controller);
+  return !!(grip && grip.visible);
+}
+
 // Visual for controllers (small ball-ish marker at the actual grip/hand position)
 function makeControllerMesh(){
   var mesh = new THREE.Mesh(
@@ -299,14 +331,19 @@ function reportTrigger(source){
 
 function tryGrab(controller, inputSource){
   if (state.held || state.flying) return;
-  var grip = gripFor.get(controller) || controller;
-  var gripPos = new THREE.Vector3();
-  grip.getWorldPosition(gripPos);
-  var dist = gripPos.distanceTo(ball.position);
-  if (dist < GRAB_RADIUS) {
+  var handSpace = getUsableControllerSpace(controller);
+  var handPos = new THREE.Vector3();
+  handSpace.getWorldPosition(handPos);
+  var dist = handPos.distanceTo(ball.position);
+
+  // A 3DoF/legacy controller cannot report a true hand position. In that case,
+  // allow trigger-to-grab from anywhere and use the controller aiming ray.
+  var legacyAimGrab = legacyWebVR || !hasUsableGrip(controller);
+  if (dist < GRAB_RADIUS || legacyAimGrab) {
     state.held = true;
     state.controller = controller;
-    state.grip = grip;
+    state.grip = handSpace;
+    state.legacyAimGrab = legacyAimGrab;
     activeInputSource = inputSource;
     posHistory = [];
     grabSound();
@@ -326,13 +363,25 @@ function doRelease(controller){
         v.subVectors(b.pos, a.pos).divideScalar(dt);
       }
     }
+
     var speed = v.length();
-    if (speed < 0.4) {
-      v.set(0, 0.3, 0);
+    // True positional throwing is impossible when the old controller only reports rotation.
+    // Use the controller's aiming direction as a playable fallback shot.
+    if (speed < 1.0 || state.legacyAimGrab) {
+      var worldQ = new THREE.Quaternion();
+      controller.getWorldQuaternion(worldQ);
+      var aim = new THREE.Vector3(0, 0, -1).applyQuaternion(worldQ).normalize();
+      aim.y = Math.max(aim.y, 0.18);
+      aim.normalize();
+      v.copy(aim).multiplyScalar(5.4);
+      v.y += 1.4;
+      speed = v.length();
     }
+
     state.velocity.copy(v);
     state.flying = true;
     state.held = false;
+    state.legacyAimGrab = false;
     state.scoredThisShot = false;
     state.passedThroughPlane = false;
     vibrate(activeInputSource, Math.min(1, speed/6), 60);
@@ -369,10 +418,18 @@ function pollRawGamepadInput(){
     var src = sources[i];
     var hasGamepad = !!src.gamepad;
     var pressed = false;
-    if (hasGamepad && src.gamepad.buttons && src.gamepad.buttons[0]) {
-      pressed = src.gamepad.buttons[0].pressed;
+    var pressedButton = -1;
+    // PICO generations do not all map the primary trigger to button 0.
+    if (hasGamepad && src.gamepad.buttons) {
+      for (var bi = 0; bi < src.gamepad.buttons.length; bi++) {
+        if (src.gamepad.buttons[bi] && src.gamepad.buttons[bi].pressed) {
+          pressed = true;
+          pressedButton = bi;
+          break;
+        }
+      }
     }
-    rawInfo.push('src' + i + '[' + (src.handedness||'?') + ']: gamepad=' + hasGamepad + ' trigger=' + pressed);
+    rawInfo.push('src' + i + '[' + (src.handedness||'?') + ']: gamepad=' + hasGamepad + ' pressed=' + pressed + ' button=' + pressedButton);
 
     if (pressed && !prevPressed[i]) {
       reportTrigger('raw-poll');
@@ -397,17 +454,19 @@ controller1.addEventListener('selectend', onSelectEnd);
 
 // ---------- Enter VR ----------
 $('enterBtn').addEventListener('click', function(){
-  navigator.xr.requestSession('immersive-vr', { requiredFeatures: ['local-floor'], optionalFeatures: ['bounded-floor'] }).then(function(session){
-    renderer.xr.setSession(session);
-    $('overlay').style.display = 'none';
-    $('hud').style.display = 'flex';
-    $('debugHud').style.display = 'block';
-    session.addEventListener('end', function(){
-      $('overlay').style.display = 'flex';
-      $('hud').style.display = 'none';
+  // local-floor is optional here because some legacy WebVR bridges reject it as required.
+  navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }).then(function(session){
+    return renderer.xr.setSession(session).then(function(){
+      $('overlay').style.display = 'none';
+      $('hud').style.display = 'flex';
+      $('debugHud').style.display = 'block';
+      session.addEventListener('end', function(){
+        $('overlay').style.display = 'flex';
+        $('hud').style.display = 'none';
+      });
     });
   }).catch(function(err){
-    $('status').textContent = 'Failed to start VR session: ' + err.message;
+    $('status').textContent = 'Failed to start VR session: ' + (err && err.message ? err.message : err);
   });
 });
 
@@ -426,8 +485,8 @@ renderer.setAnimationLoop(function(){
 
   // Ball glows bright green when a controller is within grab range — visible proof the distance check is passing
   if (!state.held && !state.flying) {
-    var gg0 = new THREE.Vector3(); grip0.getWorldPosition(gg0);
-    var gg1 = new THREE.Vector3(); grip1.getWorldPosition(gg1);
+    var gg0 = new THREE.Vector3(); getUsableControllerSpace(controller0).getWorldPosition(gg0);
+    var gg1 = new THREE.Vector3(); getUsableControllerSpace(controller1).getWorldPosition(gg1);
     var inRange = gg0.distanceTo(ball.position) < GRAB_RADIUS || gg1.distanceTo(ball.position) < GRAB_RADIUS;
     ballMat.color.set(inRange ? 0x00ff00 : 0xff7518);
     ballMat.emissive.set(inRange ? 0x004400 : 0x000000);
@@ -435,8 +494,8 @@ renderer.setAnimationLoop(function(){
 
   // Live debug readout — nearest controller grip distance to ball, updated every frame
   if ($('debugHud') && $('debugHud').style.display !== 'none') {
-    var g0 = new THREE.Vector3(); grip0.getWorldPosition(g0);
-    var g1 = new THREE.Vector3(); grip1.getWorldPosition(g1);
+    var g0 = new THREE.Vector3(); getUsableControllerSpace(controller0).getWorldPosition(g0);
+    var g1 = new THREE.Vector3(); getUsableControllerSpace(controller1).getWorldPosition(g1);
     var d0 = g0.distanceTo(ball.position);
     var d1 = g1.distanceTo(ball.position);
     var nearest = Math.min(d0, d1);
@@ -447,8 +506,12 @@ renderer.setAnimationLoop(function(){
 
   if (state.held && state.grip) {
     var cpos = new THREE.Vector3();
+    var cquat = new THREE.Quaternion();
     state.grip.getWorldPosition(cpos);
-    var offset = HAND_OFFSET.clone().applyQuaternion(state.grip.quaternion);
+    state.grip.getWorldQuaternion(cquat);
+
+    var holdDistance = state.legacyAimGrab ? 0.42 : 0.12;
+    var offset = new THREE.Vector3(0, 0, -holdDistance).applyQuaternion(cquat);
     ball.position.copy(cpos).add(offset);
 
     posHistory.push({ pos: cpos.clone(), t: performance.now() });
