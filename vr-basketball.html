@@ -73,6 +73,7 @@ var renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
+renderer.xr.setReferenceSpaceType('local-floor');
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
@@ -300,7 +301,7 @@ controller1.addEventListener('selectend', onSelectEnd);
 
 // ---------- Enter VR ----------
 $('enterBtn').addEventListener('click', function(){
-  navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }).then(function(session){
+  navigator.xr.requestSession('immersive-vr', { requiredFeatures: ['local-floor'], optionalFeatures: ['bounded-floor'] }).then(function(session){
     renderer.xr.setSession(session);
     $('overlay').style.display = 'none';
     $('hud').style.display = 'flex';
