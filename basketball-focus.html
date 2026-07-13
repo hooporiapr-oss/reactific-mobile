@@ -49,6 +49,7 @@ select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(2
   <div class="hudBox"><div class="hudLabel">Shots</div><div class="hudValue" id="hudShots">0</div></div>
   <div class="hudBox"><div class="hudLabel">Streak</div><div class="hudValue" id="hudStreak">0</div></div>
   <div class="hudBox"><div class="hudLabel">Accuracy</div><div class="hudValue" id="hudAccuracy">0%</div></div>
+  <div class="hudBox"><div class="hudLabel">Focus Eff.</div><div class="hudValue" id="hudEfficiency">0.0</div></div>
 </div>
 
 <div id="message">Choose a player, level, and round time.</div>
@@ -93,7 +94,7 @@ select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(2
     </div>
 
     <button id="startBtn" type="button">START ROUND</button>
-    <div id="smallNote">Profiles and records are stored only in this browser on this headset. No WebXR, WebVR, or outside scripts are required.</div>
+    <div id="smallNote">Focus Efficiency equals made baskets per minute, rewarding quick, accurate focus. Profiles and records are stored only in this browser on this headset. No WebXR, WebVR, or outside scripts are required.</div>
   </div>
 </div>
 
@@ -121,6 +122,7 @@ var hudMakes=document.getElementById("hudMakes");
 var hudShots=document.getElementById("hudShots");
 var hudStreak=document.getElementById("hudStreak");
 var hudAccuracy=document.getElementById("hudAccuracy");
+var hudEfficiency=document.getElementById("hudEfficiency");
 
 var STORAGE_KEY="ritnome_basketball_focus_profiles_v2";
 var W=0,H=0,DPR=1;
@@ -168,6 +170,7 @@ var acceptingShots=false;
 var shotInProgress=false;
 var countdownEnd=0;
 var roundEnd=0;
+var roundStart=0;
 var resetAt=0;
 var lastDisplayedSecond=-1;
 var phaseX=Math.random()*10;
@@ -199,7 +202,7 @@ function defaultProfiles(){
     active:"Guest",
     players:{
       "Guest":{
-        rounds:0,totalShots:0,totalMakes:0,bestStreak:0,bestAccuracy:0,bestRounds:{}
+        rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}
       }
     }
   };
@@ -212,7 +215,7 @@ function loadProfiles(){
   }catch(err){data=null;}
   if(!data||!data.players){data=defaultProfiles();}
   if(!data.players.Guest){
-    data.players.Guest={rounds:0,totalShots:0,totalMakes:0,bestStreak:0,bestAccuracy:0,bestRounds:{}};
+    data.players.Guest={rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}};
   }
   if(!data.active||!data.players[data.active]){data.active="Guest";}
   return data;
@@ -234,9 +237,12 @@ function ensurePlayerShape(player){
   if(typeof player.rounds!=="number"){player.rounds=0;}
   if(typeof player.totalShots!=="number"){player.totalShots=0;}
   if(typeof player.totalMakes!=="number"){player.totalMakes=0;}
+  if(typeof player.totalSeconds!=="number"){player.totalSeconds=0;}
   if(typeof player.bestStreak!=="number"){player.bestStreak=0;}
   if(typeof player.bestAccuracy!=="number"){player.bestAccuracy=0;}
+  if(typeof player.bestEfficiency!=="number"){player.bestEfficiency=0;}
   if(!player.bestRounds){player.bestRounds={};}
+  if(!player.bestEfficiencies){player.bestEfficiencies={};}
   return player;
 }
 
@@ -279,7 +285,7 @@ function addProfile(){
     return;
   }
   if(!profiles.players[name]){
-    profiles.players[name]={rounds:0,totalShots:0,totalMakes:0,bestStreak:0,bestAccuracy:0,bestRounds:{}};
+    profiles.players[name]={rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}};
   }
   activeProfile=name;
   profiles.active=name;
@@ -308,11 +314,14 @@ function updateProfileStats(){
   var player=ensurePlayerShape(profiles.players[activeProfile]);
   profiles.players[activeProfile]=player;
   var careerAccuracy=player.totalShots?Math.round(player.totalMakes/player.totalShots*100):0;
+  var careerEfficiency=player.totalSeconds?(player.totalMakes*60/player.totalSeconds):0;
   var best=player.bestRounds[recordKey()]||0;
+  var bestEfficiency=player.bestEfficiencies[recordKey()]||0;
   profileStats.innerHTML=
     "<strong>"+escapeHtml(activeProfile)+"</strong> · Rounds "+player.rounds+
-    " · Career "+careerAccuracy+"% · Best streak "+player.bestStreak+
-    " · Best "+LEVELS[selectedLevel].label+" "+selectedSeconds+"s result: "+best+" makes";
+    " · Career "+careerAccuracy+"% · Career efficiency "+formatEfficiency(careerEfficiency)+" makes/min"+
+    " · Best streak "+player.bestStreak+
+    " · Best "+LEVELS[selectedLevel].label+" "+selectedSeconds+"s: "+best+" makes · "+formatEfficiency(bestEfficiency)+"/min";
 }
 
 function selectLevel(level){
@@ -368,13 +377,31 @@ function resize(){
   }
 }
 
-function updateHud(){
+function formatEfficiency(value){
+  value=isFinite(value)?value:0;
+  return value.toFixed(1);
+}
+
+function liveEfficiency(t){
+  if(!roundStarted||!roundStart){return 0;}
+  t=typeof t==="number"?t:timeNow();
+  var effectiveEnd=Math.min(t,roundEnd||t);
+  var elapsedSeconds=Math.max(1,(effectiveEnd-roundStart)/1000);
+  return makes*60/elapsedSeconds;
+}
+
+function finalEfficiency(){
+  return selectedSeconds?makes*60/selectedSeconds:0;
+}
+
+function updateHud(t){
   hudPlayer.textContent=activeProfile;
   hudLevel.textContent=LEVELS[selectedLevel].label;
   hudMakes.textContent=makes;
   hudShots.textContent=shots;
   hudStreak.textContent=streak;
   hudAccuracy.textContent=shots?Math.round(makes/shots*100)+"%":"0%";
+  hudEfficiency.textContent=formatEfficiency(gameRunning?liveEfficiency(t):0);
 }
 
 function setMessage(text){message.textContent=text;}
@@ -528,6 +555,7 @@ function startRound(){
   gameRunning=true;
   roundStarted=false;
   acceptingShots=false;
+  roundStart=0;
   lastDisplayedSecond=-1;
   phaseX=Math.random()*10;
   phaseY=Math.random()*10;
@@ -552,6 +580,7 @@ function startRound(){
 function startTimedPlay(t){
   roundStarted=true;
   acceptingShots=true;
+  roundStart=t;
   roundEnd=t+selectedSeconds*1000;
   hudTime.textContent=selectedSeconds;
   setMessage("Track the center, hold until green, then click.");
@@ -575,6 +604,7 @@ function updateRoundClock(t){
   if(remaining!==lastDisplayedSecond){
     lastDisplayedSecond=remaining;
     hudTime.textContent=remaining;
+    updateHud(t);
   }
 
   if(t>=roundEnd&&acceptingShots){
@@ -593,13 +623,17 @@ function updateRoundClock(t){
 function saveRoundResult(){
   var player=ensurePlayerShape(profiles.players[activeProfile]);
   var accuracy=shots?Math.round(makes/shots*100):0;
+  var efficiency=finalEfficiency();
   player.rounds++;
   player.totalShots+=shots;
   player.totalMakes+=makes;
+  player.totalSeconds+=selectedSeconds;
   if(bestStreak>player.bestStreak){player.bestStreak=bestStreak;}
   if(accuracy>player.bestAccuracy){player.bestAccuracy=accuracy;}
+  if(efficiency>player.bestEfficiency){player.bestEfficiency=efficiency;}
   var key=recordKey();
   if(!player.bestRounds[key]||makes>player.bestRounds[key]){player.bestRounds[key]=makes;}
+  if(!player.bestEfficiencies[key]||efficiency>player.bestEfficiencies[key]){player.bestEfficiencies[key]=efficiency;}
   profiles.players[activeProfile]=player;
   profiles.active=activeProfile;
   saveProfiles();
@@ -613,15 +647,20 @@ function finishRound(){
   saveRoundResult();
 
   var accuracy=shots?Math.round(makes/shots*100):0;
+  var efficiency=finalEfficiency();
   var player=ensurePlayerShape(profiles.players[activeProfile]);
   var career=player.totalShots?Math.round(player.totalMakes/player.totalShots*100):0;
+  var careerEfficiency=player.totalSeconds?(player.totalMakes*60/player.totalSeconds):0;
   var best=player.bestRounds[recordKey()]||makes;
+  var bestEfficiency=player.bestEfficiencies[recordKey()]||efficiency;
 
   resultBox.innerHTML=
     "<strong>"+escapeHtml(activeProfile)+" — "+LEVELS[selectedLevel].label+" complete</strong><br>"+
     "Makes: "+makes+" of "+shots+" · Accuracy: "+accuracy+"%<br>"+
+    "<strong>Focus Efficiency: "+formatEfficiency(efficiency)+" made baskets/minute</strong><br>"+
     "Perfect focus shots: "+perfects+" · Best streak: "+bestStreak+"<br>"+
-    "Career accuracy: "+career+"% · Record for this round: "+best+" makes<br>"+
+    "Career accuracy: "+career+"% · Career efficiency: "+formatEfficiency(careerEfficiency)+"/min<br>"+
+    "Round records: "+best+" makes · "+formatEfficiency(bestEfficiency)+"/min<br>"+
     "<strong>"+focusRating(accuracy)+"</strong>";
   resultBox.style.display="block";
   startBtn.textContent="PLAY AGAIN";
