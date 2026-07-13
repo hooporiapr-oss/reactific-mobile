@@ -163,6 +163,20 @@ var BALL_RADIUS = 0.12;
 var ballMat = new THREE.MeshStandardMaterial({ color: 0xff7518, roughness:0.7 });
 var ball = new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS, 24, 24), ballMat);
 ball.castShadow = true;
+
+// ---------- IN-SCENE diagnostic panel (HTML overlays are NOT visible inside a VR headset — this is) ----------
+// Floats in front of the player. RED = idle. Flashes BRIGHT WHITE the instant ANY raw trigger press is detected.
+var diagPanel = new THREE.Mesh(
+  new THREE.PlaneGeometry(0.6, 0.3),
+  new THREE.MeshBasicMaterial({ color: 0xff1e3c, side: THREE.DoubleSide })
+);
+diagPanel.position.set(0, 1.9, -1.2);
+scene.add(diagPanel);
+var diagFlashUntil = 0;
+function flashDiagPanel(){
+  diagPanel.material.color.set(0xffffff);
+  diagFlashUntil = performance.now() + 400;
+}
 scene.add(ball);
 
 // Ball seam lines (cosmetic)
@@ -297,6 +311,8 @@ function tryGrab(controller, inputSource){
     posHistory = [];
     grabSound();
     vibrate(inputSource, 0.3, 40);
+    ballMat.color.set(0xff7518);
+    ballMat.emissive.set(0x000000);
   }
 }
 
@@ -346,6 +362,7 @@ function pollRawGamepadInput(){
 
     if (pressed && !prevPressed[i]) {
       reportTrigger('raw-poll');
+      flashDiagPanel();
       tryGrab(controllersByIndex[i], src);
     } else if (!pressed && prevPressed[i]) {
       doRelease(controllersByIndex[i]);
@@ -357,7 +374,7 @@ function pollRawGamepadInput(){
 }
 
 // Path A: standard WebXR select events (kept as backup — may not fire on all browsers)
-function onSelectStart(event){ reportTrigger('event'); tryGrab(event.target, event.data); }
+function onSelectStart(event){ reportTrigger('event'); flashDiagPanel(); tryGrab(event.target, event.data); }
 function onSelectEnd(event){ doRelease(event.target); }
 controller0.addEventListener('selectstart', onSelectStart);
 controller0.addEventListener('selectend', onSelectEnd);
@@ -387,6 +404,20 @@ renderer.setAnimationLoop(function(){
   var dt = Math.min(clock.getDelta(), 0.05);
 
   pollRawGamepadInput();
+
+  // Panel flash decay — fades back to red after a brief flash
+  if (performance.now() > diagFlashUntil) {
+    diagPanel.material.color.set(0xff1e3c);
+  }
+
+  // Ball glows bright green when a controller is within grab range — visible proof the distance check is passing
+  if (!state.held && !state.flying) {
+    var gg0 = new THREE.Vector3(); grip0.getWorldPosition(gg0);
+    var gg1 = new THREE.Vector3(); grip1.getWorldPosition(gg1);
+    var inRange = gg0.distanceTo(ball.position) < GRAB_RADIUS || gg1.distanceTo(ball.position) < GRAB_RADIUS;
+    ballMat.color.set(inRange ? 0x00ff00 : 0xff7518);
+    ballMat.emissive.set(inRange ? 0x004400 : 0x000000);
+  }
 
   // Live debug readout — nearest controller grip distance to ball, updated every frame
   if ($('debugHud') && $('debugHud').style.display !== 'none') {
