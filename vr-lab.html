@@ -33,47 +33,42 @@ body{
 .home-btn:hover{background:rgba(155,89,182,.25);border-color:#9B59B6;color:#fff;transform:translateY(-1px)}
 
 .main{
-  display:grid;grid-template-columns:1fr 2fr;
-  gap:12px;flex:1;overflow:hidden;
+  display:flex;flex-direction:column;
+  flex:1;overflow:hidden;gap:10px;
 }
 
-/* LEFT — 4 Games */
-.games-section{display:flex;flex-direction:column;gap:14px;overflow:hidden}
-.category{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
-.cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-.cat-name{font-size:.95rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#fff}
-.cat-tag{font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8892a0;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
-.games-grid{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow:hidden}
+.cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;flex-shrink:0}
+.cat-name{font-size:1.1rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.cat-tag{font-size:.65rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8892a0;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+
+.games-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;flex:1;min-height:0}
 
 .game-card{
   background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25);
-  border-radius:10px;padding:8px 10px;text-align:center;cursor:pointer;
+  border-radius:14px;padding:20px 14px;text-align:center;cursor:pointer;
   transition:all .2s;text-decoration:none;color:inherit;display:flex;
-  flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  flex:1 1 0;min-height:0;
+  flex-direction:column;align-items:center;justify-content:center;gap:10px;
 }
 .grid-card{background:rgba(0,168,255,.08);border-color:rgba(0,168,255,.28)}
 .grid-card:hover{background:rgba(0,168,255,.16);border-color:#00a8ff}
-.game-card:hover{background:rgba(155,89,182,.18);border-color:#9B59B6;transform:translateY(-2px)}
+.game-card:hover{background:rgba(155,89,182,.18);border-color:#9B59B6;transform:translateY(-3px)}
 .fusion-card{background:linear-gradient(135deg,rgba(0,206,209,.14),rgba(154,205,50,.14));border:2px solid rgba(0,206,209,.5);box-shadow:0 0 24px rgba(0,206,209,.25)}
-.fusion-card:hover{background:linear-gradient(135deg,rgba(0,206,209,.24),rgba(154,205,50,.24));border-color:#00CED1;box-shadow:0 0 34px rgba(0,206,209,.45);transform:translateY(-2px)}
+.fusion-card:hover{background:linear-gradient(135deg,rgba(0,206,209,.24),rgba(154,205,50,.24));border-color:#00CED1;box-shadow:0 0 34px rgba(0,206,209,.45);transform:translateY(-3px)}
 .fusion-card .game-name{background:linear-gradient(120deg,#00CED1,#9ACD32);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.game-icon{font-size:1.35rem}
-.game-name{font-size:.68rem;font-weight:900;color:#fff;line-height:1.1}
-.game-skill{font-size:.52rem;color:#8892a0;text-transform:uppercase;letter-spacing:.06em;line-height:1.1}
+.game-icon{font-size:2.6rem}
+.game-name{font-size:1.05rem;font-weight:900;letter-spacing:.06em;color:#fff;line-height:1.2}
+.game-skill{font-size:.66rem;color:#8892a0;text-transform:uppercase;letter-spacing:.05em;line-height:1.3}
 
-/* CENTER — Platform Identity */
-.center-section{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,rgba(155,89,182,.15),rgba(0,150,136,.08));
-  border:2px solid rgba(155,89,182,.4);border-radius:16px;padding:24px;
-  box-shadow:0 0 60px rgba(155,89,182,.2);gap:16px;text-align:center;
+/* Platform identity — compact strip, not a competing panel */
+.platform-strip{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  flex-shrink:0;padding:10px 16px;
+  border-top:1px solid rgba(155,89,182,.2);
+  flex-wrap:wrap;text-align:center;
 }
-.platform-logo{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(155,89,182,.8)}
-.platform-logo span{color:#9B59B6}
-.platform-tagline{font-size:.75rem;color:#8892a0;line-height:1.6;max-width:260px}
-.platform-badge{background:rgba(155,89,182,.2);border:1px solid rgba(155,89,182,.3);color:#9B59B6;padding:6px 14px;border-radius:999px;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
-.divider{width:60%;height:1px;background:rgba(155,89,182,.2)}
+.platform-strip .platform-logo{font-size:1rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 20px rgba(155,89,182,.7)}
+.platform-strip .platform-logo span{color:#9B59B6}
+.platform-strip .platform-tagline{font-size:.65rem;color:#8892a0;letter-spacing:.02em}
 
 
 ::-webkit-scrollbar{width:4px}
@@ -81,14 +76,14 @@ body{
 ::-webkit-scrollbar-thumb{background:rgba(155,89,182,.4);border-radius:2px}
 
 @media (max-width:1024px){
-  .main{grid-template-columns:1fr}
-  .games-grid{flex-direction:row;flex-wrap:wrap}
-  .game-card{flex:1;min-width:80px}
+  .games-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media (max-width:640px){
   body{padding:8px}
   .logo{font-size:.9rem}
-  .platform-logo{font-size:1.4rem}
+  .games-grid{grid-template-columns:repeat(2,1fr)}
+  .game-icon{font-size:2rem}
+  .game-name{font-size:.85rem}
 }
 
 #site-footer{flex-shrink:0;text-align:center;padding-top:6px}
@@ -108,59 +103,40 @@ body{
 
 <div class="main">
 
-  <!-- LEFT: TWO CATEGORIES -->
-  <div class="games-section">
-
-    <!-- THE GRID (5x10 court) — Ritnome's one and only court -->
-    <div class="category">
-      <div class="cat-header"><span class="cat-name">The Grid</span><span class="cat-tag">5×10 Court</span></div>
-      <div class="games-grid">
-        <a class="game-card grid-card" href="/vr-reaction-grid.html">
-          <div class="game-icon">⚡</div>
-          <div class="game-name">REACTION</div>
-          <div class="game-skill">Tap the Lit Cell — On the Beat</div>
-        </a>
-        <a class="game-card grid-card" href="/vr-pattern.html">
-          <div class="game-icon">🎯</div>
-          <div class="game-name">RECALL</div>
-          <div class="game-skill">Spot the Pattern on the Court</div>
-        </a>
-        <a class="game-card grid-card" href="/vr-flash.html">
-          <div class="game-icon">💥</div>
-          <div class="game-name">REFLEX</div>
-          <div class="game-skill">Watch · Remember · Tap the Grid</div>
-        </a>
-        <a class="game-card grid-card" href="/vr-sequence.html">
-          <div class="game-icon">🔟</div>
-          <div class="game-name">REPLAY</div>
-          <div class="game-skill">Repeat the Sequence in Order</div>
-        </a>
-        <a class="game-card grid-card" href="/vr-echo.html">
-          <div class="game-icon">👁️</div>
-          <div class="game-name">RITMO</div>
-          <div class="game-skill">Watch · Echo · Spot the Change</div>
-        </a>
-      </div>
-    </div>
-
+  <div class="cat-header"><span class="cat-name">The Grid</span><span class="cat-tag">5×10 Court</span></div>
+  <div class="games-grid">
+    <a class="game-card grid-card" href="/vr-reaction-grid.html">
+      <div class="game-icon">⚡</div>
+      <div class="game-name">REACTION</div>
+      <div class="game-skill">Tap the Lit Cell — On the Beat</div>
+    </a>
+    <a class="game-card grid-card" href="/vr-pattern.html">
+      <div class="game-icon">🎯</div>
+      <div class="game-name">RECALL</div>
+      <div class="game-skill">Spot the Pattern on the Court</div>
+    </a>
+    <a class="game-card grid-card" href="/vr-flash.html">
+      <div class="game-icon">💥</div>
+      <div class="game-name">REFLEX</div>
+      <div class="game-skill">Watch · Remember · Tap the Grid</div>
+    </a>
+    <a class="game-card grid-card" href="/vr-sequence.html">
+      <div class="game-icon">🔟</div>
+      <div class="game-name">REPLAY</div>
+      <div class="game-skill">Repeat the Sequence in Order</div>
+    </a>
+    <a class="game-card grid-card" href="/vr-echo.html">
+      <div class="game-icon">👁️</div>
+      <div class="game-name">RITMO</div>
+      <div class="game-skill">Watch · Echo · Spot the Change</div>
+    </a>
   </div>
 
-  <!-- CENTER: PLATFORM IDENTITY -->
-  <div class="center-section">
-    <div class="platform-badge">⚡ Virtual Reaction</div>
-    <div class="platform-logo">REACTIFIC<span>™</span></div>
-    <div class="divider"></div>
-    <div class="platform-tagline">
-      Pure Reaction. To the Beat of the Ritnome.<br><br>
-      One court. Five challenges.<br>
-      The Grid.
-    </div>
-    <div class="divider"></div>
-    <div class="platform-tagline" style="font-size:.65rem;color:#5a6070">
-      Feel the beat. Race the strobe.<br>How high can you climb?
-    </div>
-  </div>
+</div>
 
+<div class="platform-strip">
+  <span class="platform-logo">REACTIFIC<span>™</span></span>
+  <span class="platform-tagline">Pure Reaction. To the Beat of the Ritnome. · One court. Five challenges. The Grid.</span>
 </div>
 
 <div id="site-footer">
