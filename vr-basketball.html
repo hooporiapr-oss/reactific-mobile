@@ -42,7 +42,8 @@ canvas{display:block}
 </div>
 
 <div id="debugHud" style="display:none;position:fixed;bottom:10px;left:0;right:0;text-align:center;z-index:5;pointer-events:none;font-size:.65rem;color:#0f0;background:rgba(0,0,0,.7);padding:8px;line-height:1.6">
-  <div id="dbgTrigger">Trigger events fired: 0</div>
+  <div id="dbgTrigger">Trigger presses detected: 0</div>
+  <div id="dbgRaw">Raw input sources: --</div>
   <div id="dbgDist">Distance to ball: --</div>
   <div id="dbgGrip">Grip pos: --</div>
   <div id="dbgBall">Ball pos: --</div>
@@ -276,31 +277,31 @@ var activeInputSource = null; // XRInputSource currently holding the ball
 var GRAB_RADIUS = 0.5; // generous — real-world VR reaching is never pixel-perfect
 var debugTriggerCount = 0;
 
-function onSelectStart(event){
+function reportTrigger(source){
   debugTriggerCount++;
   var dbgT = document.getElementById('dbgTrigger');
-  if (dbgT) dbgT.textContent = 'Trigger events fired: ' + debugTriggerCount + ' (last: ' + new Date().toLocaleTimeString() + ')';
+  if (dbgT) dbgT.textContent = 'Trigger presses detected: ' + debugTriggerCount + ' (via ' + source + ', last: ' + new Date().toLocaleTimeString() + ')';
+}
 
-  var controller = event.target;
+function tryGrab(controller, inputSource){
+  if (state.held || state.flying) return;
   var grip = gripFor.get(controller) || controller;
   var gripPos = new THREE.Vector3();
   grip.getWorldPosition(gripPos);
   var dist = gripPos.distanceTo(ball.position);
-  // Must be reasonably close to the ball to grab it (basketball-in-hand feel, not a laser grab)
-  if (!state.flying && dist < GRAB_RADIUS) {
+  if (dist < GRAB_RADIUS) {
     state.held = true;
     state.controller = controller;
     state.grip = grip;
-    activeInputSource = event.data;
+    activeInputSource = inputSource;
     posHistory = [];
     grabSound();
-    vibrate(event.data, 0.3, 40);
+    vibrate(inputSource, 0.3, 40);
   }
 }
-function onSelectEnd(event){
-  var controller = event.target;
+
+function doRelease(controller){
   if (state.held && state.controller === controller) {
-    // Release — launch with tracked velocity
     var v = new THREE.Vector3();
     if (posHistory.length >= 2) {
       var a = posHistory[0], b = posHistory[posHistory.length-1];
@@ -309,10 +310,9 @@ function onSelectEnd(event){
         v.subVectors(b.pos, a.pos).divideScalar(dt);
       }
     }
-    // Minimum-effort guard: tiny/no motion = ball just drops (not a real shot attempt)
     var speed = v.length();
     if (speed < 0.4) {
-      v.set(0, 0.3, 0); // gentle drop
+      v.set(0, 0.3, 0);
     }
     state.velocity.copy(v);
     state.flying = true;
@@ -323,6 +323,42 @@ function onSelectEnd(event){
     activeInputSource = null;
   }
 }
+
+// Path B: raw per-frame gamepad button polling (more reliable across imperfect WebXR implementations)
+var prevPressed = [false, false];
+var controllersByIndex = [controller0, controller1];
+var gripsByIndex = [grip0, grip1];
+
+function pollRawGamepadInput(){
+  var session = renderer.xr.getSession();
+  var dbgRaw = document.getElementById('dbgTrigger');
+  if (!session) return;
+  var sources = session.inputSources;
+  var rawInfo = [];
+  for (var i = 0; i < sources.length && i < 2; i++) {
+    var src = sources[i];
+    var hasGamepad = !!src.gamepad;
+    var pressed = false;
+    if (hasGamepad && src.gamepad.buttons && src.gamepad.buttons[0]) {
+      pressed = src.gamepad.buttons[0].pressed;
+    }
+    rawInfo.push('src' + i + '[' + (src.handedness||'?') + ']: gamepad=' + hasGamepad + ' trigger=' + pressed);
+
+    if (pressed && !prevPressed[i]) {
+      reportTrigger('raw-poll');
+      tryGrab(controllersByIndex[i], src);
+    } else if (!pressed && prevPressed[i]) {
+      doRelease(controllersByIndex[i]);
+    }
+    prevPressed[i] = pressed;
+  }
+  var dbgRawEl = document.getElementById('dbgRaw');
+  if (dbgRawEl) dbgRawEl.textContent = 'Raw input sources (' + sources.length + '): ' + (rawInfo.join(' | ') || 'none detected');
+}
+
+// Path A: standard WebXR select events (kept as backup — may not fire on all browsers)
+function onSelectStart(event){ reportTrigger('event'); tryGrab(event.target, event.data); }
+function onSelectEnd(event){ doRelease(event.target); }
 controller0.addEventListener('selectstart', onSelectStart);
 controller0.addEventListener('selectend', onSelectEnd);
 controller1.addEventListener('selectstart', onSelectStart);
@@ -349,6 +385,8 @@ var clock = new THREE.Clock();
 
 renderer.setAnimationLoop(function(){
   var dt = Math.min(clock.getDelta(), 0.05);
+
+  pollRawGamepadInput();
 
   // Live debug readout — nearest controller grip distance to ball, updated every frame
   if ($('debugHud') && $('debugHud').style.display !== 'none') {
