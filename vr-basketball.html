@@ -41,6 +41,13 @@ canvas{display:block}
   <div class="hud-box"><div class="hud-label">Streak</div><div class="hud-val" id="hStreak">0</div></div>
 </div>
 
+<div id="debugHud" style="display:none;position:fixed;bottom:10px;left:0;right:0;text-align:center;z-index:5;pointer-events:none;font-size:.65rem;color:#0f0;background:rgba(0,0,0,.7);padding:8px;line-height:1.6">
+  <div id="dbgTrigger">Trigger events fired: 0</div>
+  <div id="dbgDist">Distance to ball: --</div>
+  <div id="dbgGrip">Grip pos: --</div>
+  <div id="dbgBall">Ball pos: --</div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
@@ -267,8 +274,13 @@ grip1.add(makeControllerMesh());
 
 var activeInputSource = null; // XRInputSource currently holding the ball
 var GRAB_RADIUS = 0.5; // generous — real-world VR reaching is never pixel-perfect
+var debugTriggerCount = 0;
 
 function onSelectStart(event){
+  debugTriggerCount++;
+  var dbgT = document.getElementById('dbgTrigger');
+  if (dbgT) dbgT.textContent = 'Trigger events fired: ' + debugTriggerCount + ' (last: ' + new Date().toLocaleTimeString() + ')';
+
   var controller = event.target;
   var grip = gripFor.get(controller) || controller;
   var gripPos = new THREE.Vector3();
@@ -322,6 +334,7 @@ $('enterBtn').addEventListener('click', function(){
     renderer.xr.setSession(session);
     $('overlay').style.display = 'none';
     $('hud').style.display = 'flex';
+    $('debugHud').style.display = 'block';
     session.addEventListener('end', function(){
       $('overlay').style.display = 'flex';
       $('hud').style.display = 'none';
@@ -336,6 +349,18 @@ var clock = new THREE.Clock();
 
 renderer.setAnimationLoop(function(){
   var dt = Math.min(clock.getDelta(), 0.05);
+
+  // Live debug readout — nearest controller grip distance to ball, updated every frame
+  if ($('debugHud') && $('debugHud').style.display !== 'none') {
+    var g0 = new THREE.Vector3(); grip0.getWorldPosition(g0);
+    var g1 = new THREE.Vector3(); grip1.getWorldPosition(g1);
+    var d0 = g0.distanceTo(ball.position);
+    var d1 = g1.distanceTo(ball.position);
+    var nearest = Math.min(d0, d1);
+    document.getElementById('dbgDist').textContent = 'Distance to ball — grip0: ' + d0.toFixed(2) + 'm, grip1: ' + d1.toFixed(2) + 'm (grab needs < ' + GRAB_RADIUS + 'm)';
+    document.getElementById('dbgGrip').textContent = 'Grip0: (' + g0.x.toFixed(2) + ', ' + g0.y.toFixed(2) + ', ' + g0.z.toFixed(2) + ')  Grip1: (' + g1.x.toFixed(2) + ', ' + g1.y.toFixed(2) + ', ' + g1.z.toFixed(2) + ')';
+    document.getElementById('dbgBall').textContent = 'Ball pos: (' + ball.position.x.toFixed(2) + ', ' + ball.position.y.toFixed(2) + ', ' + ball.position.z.toFixed(2) + ')  Held: ' + state.held;
+  }
 
   if (state.held && state.grip) {
     var cpos = new THREE.Vector3();
