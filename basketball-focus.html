@@ -3,70 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Basketball Focus Trainer Pro | Ritnome</title>
+<title>Basketball Focus + Dynamic Vision | Ritnome</title>
 <style>
 *{box-sizing:border-box}
-html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#05070d;color:#fff;font-family:Arial,Helvetica,sans-serif;-webkit-user-select:none;user-select:none}
+html,body{
+  width:100%;height:100%;margin:0;overflow:hidden;background:#05070d;color:#fff;
+  font-family:Arial,Helvetica,sans-serif;-webkit-user-select:none;user-select:none
+}
 button,input,select{font-family:Arial,Helvetica,sans-serif}
 #game{display:block;width:100%;height:100%;cursor:auto;touch-action:none}
 #backBtn{
-  position:fixed;top:10px;left:10px;z-index:12;display:none;
-  min-width:80px;padding:11px 13px;border:1px solid rgba(255,255,255,.28);
-  border-radius:10px;background:rgba(0,0,0,.78);color:#fff;
-  font-size:14px;font-weight:bold;letter-spacing:.4px;cursor:pointer;
-  box-shadow:0 0 14px rgba(0,0,0,.45)
+  position:fixed;top:10px;left:10px;z-index:12;display:none;min-width:82px;
+  padding:11px 13px;border:1px solid rgba(255,255,255,.28);border-radius:10px;
+  background:rgba(0,0,0,.8);color:#fff;font-size:14px;font-weight:bold;
+  letter-spacing:.4px;cursor:pointer;box-shadow:0 0 14px rgba(0,0,0,.45)
 }
 #backBtn:active{transform:scale(.97)}
-#hud{position:fixed;top:10px;left:100px;right:8px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;z-index:5;pointer-events:none}
-.hudBox{min-width:72px;padding:5px 9px;border:1px solid rgba(255,126,32,.55);border-radius:9px;background:rgba(0,0,0,.68);text-align:center}
-.hudWide{min-width:110px}
-.hudLabel{font-size:9px;color:#ff9b50;font-weight:bold;letter-spacing:1px;text-transform:uppercase}
+#hud{
+  position:fixed;top:10px;left:100px;right:8px;display:none;justify-content:center;
+  flex-wrap:wrap;gap:6px;z-index:5;pointer-events:none
+}
+.hudBox{
+  min-width:72px;padding:5px 9px;border:1px solid rgba(255,126,32,.55);
+  border-radius:9px;background:rgba(0,0,0,.7);text-align:center
+}
+.hudWide{min-width:108px}
+.hudLabel{
+  font-size:9px;color:#ff9b50;font-weight:bold;letter-spacing:1px;text-transform:uppercase
+}
 .hudValue{margin-top:2px;font-size:17px;font-weight:bold;white-space:nowrap}
-#message{position:fixed;left:5%;right:5%;bottom:14px;max-width:680px;margin:auto;padding:9px 14px;border-radius:11px;background:rgba(0,0,0,.72);text-align:center;font-size:14px;font-weight:bold;letter-spacing:.2px;z-index:5;pointer-events:none}
-#overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at center,rgba(62,18,0,.96),rgba(0,0,0,.99) 72%);overflow:auto}
-#panel{width:94%;max-width:680px;padding:22px;border:1px solid rgba(255,126,32,.58);border-radius:18px;background:rgba(8,10,17,.97);text-align:center;box-shadow:0 0 42px rgba(255,90,10,.22)}
-h1{margin:0 0 6px;font-size:29px;font-style:italic;letter-spacing:1px}
+#message{
+  position:fixed;left:5%;right:5%;bottom:14px;max-width:720px;margin:auto;
+  padding:9px 14px;border-radius:11px;background:rgba(0,0,0,.74);
+  text-align:center;font-size:14px;font-weight:bold;letter-spacing:.2px;
+  z-index:5;pointer-events:none
+}
+#overlay{
+  position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  padding:16px;background:radial-gradient(circle at center,rgba(62,18,0,.96),rgba(0,0,0,.99) 72%);
+  overflow:auto
+}
+#panel{
+  width:94%;max-width:720px;padding:22px;border:1px solid rgba(255,126,32,.58);
+  border-radius:18px;background:rgba(8,10,17,.98);text-align:center;
+  box-shadow:0 0 42px rgba(255,90,10,.22)
+}
+h1{margin:0 0 6px;font-size:28px;font-style:italic;letter-spacing:1px}
 h1 span{color:#ff7e20}
-.subtitle{margin-bottom:15px;color:#ffb274;font-size:11px;letter-spacing:2px;text-transform:uppercase}
-.section{margin:12px 0;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035);text-align:left}
-.sectionTitle{margin-bottom:8px;color:#ff9b50;font-size:11px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase}
+.subtitle{
+  margin-bottom:14px;color:#ffb274;font-size:11px;letter-spacing:2px;text-transform:uppercase
+}
+.section{
+  margin:11px 0;padding:12px;border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;background:rgba(255,255,255,.035);text-align:left
+}
+.sectionTitle{
+  margin-bottom:8px;color:#ff9b50;font-size:11px;font-weight:bold;
+  letter-spacing:1.2px;text-transform:uppercase
+}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .row>*{flex:1}
-select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(255,255,255,.22);border-radius:9px;background:#151a25;color:#fff;font-size:15px}
-.smallBtn{min-width:0;padding:10px 12px;border:1px solid rgba(255,126,32,.45);border-radius:9px;background:#2a1820;color:#fff;font-size:13px;font-weight:bold;cursor:pointer}
+select,input{
+  width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(255,255,255,.22);
+  border-radius:9px;background:#151a25;color:#fff;font-size:15px
+}
+.smallBtn{
+  min-width:0;padding:10px 12px;border:1px solid rgba(255,126,32,.45);
+  border-radius:9px;background:#2a1820;color:#fff;font-size:13px;font-weight:bold;cursor:pointer
+}
 .smallBtn.secondary{background:#171c28;border-color:rgba(255,255,255,.18)}
 .choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.choiceBtn{min-width:0;padding:11px 7px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:#151a25;color:#dce2ed;font-size:13px;font-weight:bold;cursor:pointer}
-.choiceBtn.active{border-color:#ff8b37;background:#4a2411;color:#fff;box-shadow:0 0 14px rgba(255,126,32,.24)}
-#difficultyInfo,#profileStats{margin-top:8px;color:#b9c2d0;font-size:12px;line-height:1.45}
-#resultBox{display:none;margin:12px 0;padding:14px;border:1px solid rgba(89,255,132,.35);border-radius:12px;background:rgba(28,80,43,.17);color:#e9fff0;font-size:15px;line-height:1.55}
-#startBtn{width:100%;margin-top:10px;padding:14px 24px;border:0;border-radius:13px;background:linear-gradient(135deg,#ff6417,#ff9b50);color:#fff;font-size:17px;font-weight:bold;letter-spacing:.7px;cursor:pointer;box-shadow:0 0 24px rgba(255,100,23,.38)}
-#smallNote{margin-top:12px;color:#8791a2;font-size:11px;line-height:1.4}
-@media(max-height:650px){#panel{padding:14px}.section{margin:8px 0;padding:9px}h1{font-size:24px}.subtitle{margin-bottom:8px}}
+.modeGrid{grid-template-columns:repeat(2,1fr)}
+.choiceBtn{
+  min-width:0;padding:11px 7px;border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;background:#151a25;color:#dce2ed;font-size:13px;
+  font-weight:bold;cursor:pointer
+}
+.choiceBtn.active{
+  border-color:#ff8b37;background:#4a2411;color:#fff;
+  box-shadow:0 0 14px rgba(255,126,32,.24)
+}
+#modeInfo,#optionInfo,#profileStats{
+  margin-top:8px;color:#b9c2d0;font-size:12px;line-height:1.45
+}
+#resultBox{
+  display:none;margin:12px 0;padding:14px;border:1px solid rgba(89,255,132,.35);
+  border-radius:12px;background:rgba(28,80,43,.17);color:#e9fff0;
+  font-size:15px;line-height:1.55
+}
+#startBtn{
+  width:100%;margin-top:10px;padding:14px 24px;border:0;border-radius:13px;
+  background:linear-gradient(135deg,#ff6417,#ff9b50);color:#fff;
+  font-size:17px;font-weight:bold;letter-spacing:.7px;cursor:pointer;
+  box-shadow:0 0 24px rgba(255,100,23,.38)
+}
+#smallNote{margin-top:12px;color:#8791a2;font-size:11px;line-height:1.45}
+.hidden{display:none!important}
+@media(max-height:690px){
+  #panel{padding:13px}.section{margin:7px 0;padding:8px}
+  h1{font-size:23px}.subtitle{margin-bottom:7px}
+  #smallNote{margin-top:7px}
+}
 </style>
 </head>
 <body>
 
 <canvas id="game"></canvas>
-<button id="backBtn" type="button" aria-label="Return to selection screen">← BACK</button>
+<button id="backBtn" type="button">← BACK</button>
 
 <div id="hud">
   <div class="hudBox hudWide"><div class="hudLabel">Player</div><div class="hudValue" id="hudPlayer">Guest</div></div>
-  <div class="hudBox"><div class="hudLabel">Level</div><div class="hudValue" id="hudLevel">Steady</div></div>
+  <div class="hudBox"><div class="hudLabel" id="hudSettingLabel">Level</div><div class="hudValue" id="hudSetting">Steady</div></div>
   <div class="hudBox"><div class="hudLabel">Time</div><div class="hudValue" id="hudTime">60</div></div>
-  <div class="hudBox"><div class="hudLabel">Makes</div><div class="hudValue" id="hudMakes">0</div></div>
-  <div class="hudBox"><div class="hudLabel">Shots</div><div class="hudValue" id="hudShots">0</div></div>
+  <div class="hudBox"><div class="hudLabel" id="hudScoreLabel">Makes</div><div class="hudValue" id="hudScore">0</div></div>
+  <div class="hudBox"><div class="hudLabel" id="hudAttemptLabel">Shots</div><div class="hudValue" id="hudAttempts">0</div></div>
   <div class="hudBox"><div class="hudLabel">Streak</div><div class="hudValue" id="hudStreak">0</div></div>
   <div class="hudBox"><div class="hudLabel">Accuracy</div><div class="hudValue" id="hudAccuracy">0%</div></div>
-  <div class="hudBox"><div class="hudLabel">Focus Eff.</div><div class="hudValue" id="hudEfficiency">0.0</div></div>
+  <div class="hudBox hudWide"><div class="hudLabel" id="hudMetricLabel">Focus Eff.</div><div class="hudValue" id="hudMetric">0.0</div></div>
 </div>
 
-<div id="message">Choose a player, level, and round time.</div>
+<div id="message">Choose a player, training mode, and round time.</div>
 
 <div id="overlay">
   <div id="panel">
-    <h1>Basketball <span>Focus</span></h1>
-    <div class="subtitle">Focus · timing · visual tracking</div>
+    <h1>Basketball <span>Vision Training</span></h1>
+    <div class="subtitle">Focus · reaction · timing · visual tracking</div>
 
     <div id="resultBox"></div>
 
@@ -84,13 +145,32 @@ select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(2
     </div>
 
     <div class="section">
-      <div class="sectionTitle">Difficulty</div>
+      <div class="sectionTitle">Training mode</div>
+      <div class="choiceGrid modeGrid">
+        <button class="choiceBtn active" data-mode="focus" type="button">BASKETBALL FOCUS</button>
+        <button class="choiceBtn" data-mode="dynamic" type="button">DYNAMIC VISION</button>
+      </div>
+      <div id="modeInfo"></div>
+    </div>
+
+    <div class="section" id="focusOptions">
+      <div class="sectionTitle">Focus difficulty</div>
       <div class="choiceGrid">
         <button class="choiceBtn active" data-level="steady" type="button">STEADY</button>
         <button class="choiceBtn" data-level="focus" type="button">FOCUS</button>
         <button class="choiceBtn" data-level="challenge" type="button">CHALLENGE</button>
       </div>
-      <div id="difficultyInfo"></div>
+      <div id="optionInfo"></div>
+    </div>
+
+    <div class="section hidden" id="dynamicOptions">
+      <div class="sectionTitle">Target pulse speed</div>
+      <div class="choiceGrid">
+        <button class="choiceBtn active" data-bpm="60" type="button">60 BPM</button>
+        <button class="choiceBtn" data-bpm="80" type="button">80 BPM</button>
+        <button class="choiceBtn" data-bpm="100" type="button">100 BPM</button>
+      </div>
+      <div id="dynamicInfo" style="margin-top:8px;color:#b9c2d0;font-size:12px;line-height:1.45"></div>
     </div>
 
     <div class="section">
@@ -103,7 +183,10 @@ select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(2
     </div>
 
     <button id="startBtn" type="button">START ROUND</button>
-    <div id="smallNote">Focus Efficiency equals made baskets per minute, rewarding quick, accurate focus. Profiles and records are stored only in this browser on this headset. No WebXR, WebVR, or outside scripts are required.</div>
+    <div id="smallNote">
+      Dynamic Vision uses one bright target pulse per appearance rather than rapid full-screen flicker.
+      Profiles and records are stored only in this browser on this headset. No WebXR, WebVR, or outside scripts are required.
+    </div>
   </div>
 </div>
 
@@ -118,116 +201,217 @@ var resultBox=document.getElementById("resultBox");
 var message=document.getElementById("message");
 var startBtn=document.getElementById("startBtn");
 var backBtn=document.getElementById("backBtn");
+var hud=document.getElementById("hud");
+
 var profileSelect=document.getElementById("profileSelect");
 var newProfileName=document.getElementById("newProfileName");
 var addProfileBtn=document.getElementById("addProfileBtn");
 var deleteProfileBtn=document.getElementById("deleteProfileBtn");
-var difficultyInfo=document.getElementById("difficultyInfo");
 var profileStats=document.getElementById("profileStats");
 
+var focusOptions=document.getElementById("focusOptions");
+var dynamicOptions=document.getElementById("dynamicOptions");
+var modeInfo=document.getElementById("modeInfo");
+var optionInfo=document.getElementById("optionInfo");
+var dynamicInfo=document.getElementById("dynamicInfo");
+
 var hudPlayer=document.getElementById("hudPlayer");
-var hudLevel=document.getElementById("hudLevel");
+var hudSettingLabel=document.getElementById("hudSettingLabel");
+var hudSetting=document.getElementById("hudSetting");
 var hudTime=document.getElementById("hudTime");
-var hudMakes=document.getElementById("hudMakes");
-var hudShots=document.getElementById("hudShots");
+var hudScoreLabel=document.getElementById("hudScoreLabel");
+var hudScore=document.getElementById("hudScore");
+var hudAttemptLabel=document.getElementById("hudAttemptLabel");
+var hudAttempts=document.getElementById("hudAttempts");
 var hudStreak=document.getElementById("hudStreak");
 var hudAccuracy=document.getElementById("hudAccuracy");
-var hudEfficiency=document.getElementById("hudEfficiency");
+var hudMetricLabel=document.getElementById("hudMetricLabel");
+var hudMetric=document.getElementById("hudMetric");
 
-var STORAGE_KEY="ritnome_basketball_focus_profiles_v2";
-var W=0,H=0,DPR=1;
-var selectedLevel="steady";
-var selectedSeconds=60;
-var activeProfile="Guest";
+var STORAGE_KEY="ritnome_basketball_vision_profiles_v3";
+var LEGACY_KEY="ritnome_basketball_focus_profiles_v2";
 
-var LEVELS={
-  steady:{
-    label:"Steady",
-    hold:800,
-    targetScale:.022,
-    moveX:0,
-    moveY:0,
-    speedX:0,
-    speedY:0,
-    description:"Stationary rim, larger center target, and a longer steady hold. Best for learning the focus sequence."
-  },
+var MODES={
   focus:{
-    label:"Focus",
-    hold:620,
-    targetScale:.018,
-    moveX:.16,
-    moveY:0,
-    speedX:.00072,
-    speedY:0,
-    description:"The rim moves slowly from side to side. Track it, center the pointer, hold, and click."
+    label:"Basketball Focus",
+    description:"Hold the controller pointer on the center of the rim, lock focus, and release the chest-height ball."
   },
-  challenge:{
-    label:"Challenge",
-    hold:440,
-    targetScale:.014,
-    moveX:.23,
-    moveY:.075,
-    speedX:.00112,
-    speedY:.00147,
-    description:"Smaller target with faster horizontal and vertical movement. Follow the headset browser pointer, wait for green, and click the center."
+  dynamic:{
+    label:"Dynamic Vision",
+    description:"A backboard and rim appear in random areas. React and click the rim center before the target disappears."
   }
 };
 
+var LEVELS={
+  steady:{
+    label:"Steady",hold:800,targetScale:.022,moveX:0,moveY:0,speedX:0,speedY:0,
+    description:"Stationary rim, larger target, and longer focus hold."
+  },
+  focus:{
+    label:"Focus",hold:620,targetScale:.018,moveX:.16,moveY:0,speedX:.00072,speedY:0,
+    description:"The rim moves slowly from side to side."
+  },
+  challenge:{
+    label:"Challenge",hold:440,targetScale:.014,moveX:.23,moveY:.075,speedX:.00112,speedY:.00147,
+    description:"Smaller target with faster horizontal and vertical movement."
+  }
+};
+
+var W=0,H=0,DPR=1;
+var selectedMode="focus";
+var selectedLevel="steady";
+var selectedBpm=60;
+var selectedSeconds=60;
+var activeProfile="Guest";
 var profiles=loadProfiles();
+
 var gameRunning=false;
 var roundStarted=false;
-var acceptingShots=false;
-var shotInProgress=false;
+var acceptingInput=false;
 var countdownEnd=0;
-var roundEnd=0;
 var roundStart=0;
-var resetAt=0;
+var roundEnd=0;
 var lastDisplayedSecond=-1;
-var phaseX=Math.random()*10;
-var phaseY=Math.random()*10;
 
-var makes=0;
-var shots=0;
+var cursor={x:-1000,y:-1000,visible:false};
+var clickMarker={x:-1000,y:-1000,until:0,success:false};
+
+var score=0;
+var attempts=0;
 var streak=0;
 var bestStreak=0;
 var perfects=0;
+var falseStarts=0;
+
+var totalReaction=0;
+var reactionCount=0;
+var fastestReaction=0;
+
 var focusStart=0;
 var focusProgress=0;
 var lastFocusLock=0;
-var clickMarker={x:-1000,y:-1000,until:0,made:false};
+var phaseX=Math.random()*10;
+var phaseY=Math.random()*10;
 
-var cursor={x:-1000,y:-1000,visible:false};
 var hoop={baseX:0,baseY:0,x:0,y:0,rx:0,ry:0,frozenX:0,frozenY:0};
 var ballHome={x:0,y:0};
 var ball={x:0,y:0,r:28,currentR:28};
 var shot=null;
+var shotInProgress=false;
+var resetAt=0;
+
+var dynamic={
+  visible:false,
+  appearedAt:0,
+  hideAt:0,
+  nextAt:0,
+  resolved:false,
+  pulse:0
+};
+
 var particles=[];
 var resultText="";
 var resultUntil=0;
 
-function timeNow(){
+function now(){
   return(window.performance&&performance.now)?performance.now():(new Date()).getTime();
 }
 
-function defaultProfiles(){
+function blankFocusStats(){
   return{
-    active:"Guest",
-    players:{
-      "Guest":{
-        rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}
-      }
-    }
+    rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,
+    bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}
   };
+}
+
+function blankDynamicStats(){
+  return{
+    rounds:0,totalTargets:0,totalHits:0,totalSeconds:0,bestStreak:0,
+    bestAccuracy:0,bestHitsPerMin:0,fastestReaction:0,bestRounds:{},bestReactions:{}
+  };
+}
+
+function blankPlayer(){
+  return{focus:blankFocusStats(),dynamic:blankDynamicStats()};
+}
+
+function defaultData(){
+  return{active:"Guest",players:{"Guest":blankPlayer()}};
+}
+
+function ensurePlayer(player){
+  if(!player){player=blankPlayer();}
+  if(!player.focus){player.focus=blankFocusStats();}
+  if(!player.dynamic){player.dynamic=blankDynamicStats();}
+  ensureFocus(player.focus);
+  ensureDynamic(player.dynamic);
+  return player;
+}
+
+function ensureFocus(s){
+  if(typeof s.rounds!=="number"){s.rounds=0;}
+  if(typeof s.totalShots!=="number"){s.totalShots=0;}
+  if(typeof s.totalMakes!=="number"){s.totalMakes=0;}
+  if(typeof s.totalSeconds!=="number"){s.totalSeconds=0;}
+  if(typeof s.bestStreak!=="number"){s.bestStreak=0;}
+  if(typeof s.bestAccuracy!=="number"){s.bestAccuracy=0;}
+  if(typeof s.bestEfficiency!=="number"){s.bestEfficiency=0;}
+  if(!s.bestRounds){s.bestRounds={};}
+  if(!s.bestEfficiencies){s.bestEfficiencies={};}
+}
+
+function ensureDynamic(s){
+  if(typeof s.rounds!=="number"){s.rounds=0;}
+  if(typeof s.totalTargets!=="number"){s.totalTargets=0;}
+  if(typeof s.totalHits!=="number"){s.totalHits=0;}
+  if(typeof s.totalSeconds!=="number"){s.totalSeconds=0;}
+  if(typeof s.bestStreak!=="number"){s.bestStreak=0;}
+  if(typeof s.bestAccuracy!=="number"){s.bestAccuracy=0;}
+  if(typeof s.bestHitsPerMin!=="number"){s.bestHitsPerMin=0;}
+  if(typeof s.fastestReaction!=="number"){s.fastestReaction=0;}
+  if(!s.bestRounds){s.bestRounds={};}
+  if(!s.bestReactions){s.bestReactions={};}
+}
+
+function migrateLegacy(){
+  var old=null;
+  var data=defaultData();
+  var name,p,s;
+  try{old=JSON.parse(localStorage.getItem(LEGACY_KEY)||"null");}catch(err){old=null;}
+  if(!old||!old.players){return data;}
+
+  data.active=old.active||"Guest";
+  data.players={};
+
+  for(name in old.players){
+    if(old.players.hasOwnProperty(name)){
+      p=blankPlayer();
+      s=old.players[name]||{};
+      p.focus.rounds=s.rounds||0;
+      p.focus.totalShots=s.totalShots||0;
+      p.focus.totalMakes=s.totalMakes||0;
+      p.focus.totalSeconds=s.totalSeconds||0;
+      p.focus.bestStreak=s.bestStreak||0;
+      p.focus.bestAccuracy=s.bestAccuracy||0;
+      p.focus.bestEfficiency=s.bestEfficiency||0;
+      p.focus.bestRounds=s.bestRounds||{};
+      p.focus.bestEfficiencies=s.bestEfficiencies||{};
+      data.players[name]=p;
+    }
+  }
+  if(!data.players.Guest){data.players.Guest=blankPlayer();}
+  if(!data.players[data.active]){data.active="Guest";}
+  return data;
 }
 
 function loadProfiles(){
   var data=null;
-  try{
-    data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-  }catch(err){data=null;}
-  if(!data||!data.players){data=defaultProfiles();}
-  if(!data.players.Guest){
-    data.players.Guest={rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}};
+  var name;
+  try{data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}catch(err){data=null;}
+  if(!data||!data.players){data=migrateLegacy();}
+  if(!data.players.Guest){data.players.Guest=blankPlayer();}
+  for(name in data.players){
+    if(data.players.hasOwnProperty(name)){data.players[name]=ensurePlayer(data.players[name]);}
   }
   if(!data.active||!data.players[data.active]){data.active="Guest";}
   return data;
@@ -237,6 +421,11 @@ function saveProfiles(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(profiles));}catch(err){}
 }
 
+function escapeHtml(value){
+  return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
 function cleanName(value){
   value=String(value||"").replace(/^\s+|\s+$/g,"").replace(/\s+/g," ");
   value=value.replace(/[<>]/g,"");
@@ -244,21 +433,7 @@ function cleanName(value){
   return value;
 }
 
-function ensurePlayerShape(player){
-  if(!player){player={};}
-  if(typeof player.rounds!=="number"){player.rounds=0;}
-  if(typeof player.totalShots!=="number"){player.totalShots=0;}
-  if(typeof player.totalMakes!=="number"){player.totalMakes=0;}
-  if(typeof player.totalSeconds!=="number"){player.totalSeconds=0;}
-  if(typeof player.bestStreak!=="number"){player.bestStreak=0;}
-  if(typeof player.bestAccuracy!=="number"){player.bestAccuracy=0;}
-  if(typeof player.bestEfficiency!=="number"){player.bestEfficiency=0;}
-  if(!player.bestRounds){player.bestRounds={};}
-  if(!player.bestEfficiencies){player.bestEfficiencies={};}
-  return player;
-}
-
-function sortedProfileNames(){
+function sortedNames(){
   var names=[],name;
   for(name in profiles.players){
     if(profiles.players.hasOwnProperty(name)){names.push(name);}
@@ -272,7 +447,7 @@ function sortedProfileNames(){
 }
 
 function refreshProfiles(){
-  var names=sortedProfileNames();
+  var names=sortedNames();
   var html="",i;
   for(i=0;i<names.length;i++){
     html+='<option value="'+escapeHtml(names[i])+'">'+escapeHtml(names[i])+"</option>";
@@ -286,19 +461,13 @@ function refreshProfiles(){
   updateHud();
 }
 
-function escapeHtml(text){
-  return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
 function addProfile(){
   var name=cleanName(newProfileName.value);
   if(!name){
     profileStats.innerHTML="<strong>Enter a player name first.</strong>";
     return;
   }
-  if(!profiles.players[name]){
-    profiles.players[name]={rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,bestAccuracy:0,bestEfficiency:0,bestRounds:{},bestEfficiencies:{}};
-  }
+  if(!profiles.players[name]){profiles.players[name]=blankPlayer();}
   activeProfile=name;
   profiles.active=name;
   newProfileName.value="";
@@ -318,46 +487,110 @@ function deleteProfile(){
   refreshProfiles();
 }
 
-function recordKey(){
-  return selectedLevel+"_"+selectedSeconds;
+function focusRecordKey(){return selectedLevel+"_"+selectedSeconds;}
+function dynamicRecordKey(){return selectedBpm+"_"+selectedSeconds;}
+
+function formatOne(value){
+  value=isFinite(value)?value:0;
+  return value.toFixed(1);
+}
+
+function formatMs(value){
+  if(!value||!isFinite(value)){return"--";}
+  return Math.round(value)+" ms";
 }
 
 function updateProfileStats(){
-  var player=ensurePlayerShape(profiles.players[activeProfile]);
+  var player=ensurePlayer(profiles.players[activeProfile]);
   profiles.players[activeProfile]=player;
-  var careerAccuracy=player.totalShots?Math.round(player.totalMakes/player.totalShots*100):0;
-  var careerEfficiency=player.totalSeconds?(player.totalMakes*60/player.totalSeconds):0;
-  var best=player.bestRounds[recordKey()]||0;
-  var bestEfficiency=player.bestEfficiencies[recordKey()]||0;
-  profileStats.innerHTML=
-    "<strong>"+escapeHtml(activeProfile)+"</strong> · Rounds "+player.rounds+
-    " · Career "+careerAccuracy+"% · Career efficiency "+formatEfficiency(careerEfficiency)+" makes/min"+
-    " · Best streak "+player.bestStreak+
-    " · Best "+LEVELS[selectedLevel].label+" "+selectedSeconds+"s: "+best+" makes · "+formatEfficiency(bestEfficiency)+"/min";
+
+  if(selectedMode==="focus"){
+    var f=player.focus;
+    var accuracy=f.totalShots?Math.round(f.totalMakes/f.totalShots*100):0;
+    var efficiency=f.totalSeconds?f.totalMakes*60/f.totalSeconds:0;
+    var best=f.bestRounds[focusRecordKey()]||0;
+    var bestEff=f.bestEfficiencies[focusRecordKey()]||0;
+    profileStats.innerHTML=
+      "<strong>"+escapeHtml(activeProfile)+"</strong> · Focus rounds "+f.rounds+
+      " · Career "+accuracy+"% · "+formatOne(efficiency)+" makes/min"+
+      " · Best streak "+f.bestStreak+
+      " · Best "+LEVELS[selectedLevel].label+" "+selectedSeconds+"s: "+best+
+      " makes · "+formatOne(bestEff)+"/min";
+  }else{
+    var d=player.dynamic;
+    var dynAccuracy=d.totalTargets?Math.round(d.totalHits/d.totalTargets*100):0;
+    var hitsPerMin=d.totalSeconds?d.totalHits*60/d.totalSeconds:0;
+    var dynBest=d.bestRounds[dynamicRecordKey()]||0;
+    var dynReaction=d.bestReactions[dynamicRecordKey()]||0;
+    profileStats.innerHTML=
+      "<strong>"+escapeHtml(activeProfile)+"</strong> · Dynamic rounds "+d.rounds+
+      " · Career "+dynAccuracy+"% · "+formatOne(hitsPerMin)+" hits/min"+
+      " · Best streak "+d.bestStreak+
+      " · Fastest "+formatMs(d.fastestReaction)+
+      " · Best "+selectedBpm+" BPM "+selectedSeconds+"s: "+dynBest+
+      " hits · avg "+formatMs(dynReaction);
+  }
+}
+
+function selectMode(mode){
+  if(!MODES[mode]){return;}
+  selectedMode=mode;
+
+  setActiveButtons("[data-mode]","data-mode",mode);
+  focusOptions.className=mode==="focus"?"section":"section hidden";
+  dynamicOptions.className=mode==="dynamic"?"section":"section hidden";
+  modeInfo.textContent=MODES[mode].description;
+
+  if(mode==="focus"){
+    optionInfo.textContent=LEVELS[selectedLevel].description;
+    startBtn.textContent="START FOCUS ROUND";
+  }else{
+    updateDynamicInfo();
+    startBtn.textContent="START DYNAMIC ROUND";
+  }
+
+  updateProfileStats();
+  updateHud();
 }
 
 function selectLevel(level){
   if(!LEVELS[level]){return;}
   selectedLevel=level;
-  var buttons=document.querySelectorAll("[data-level]");
-  var i;
-  for(i=0;i<buttons.length;i++){
-    buttons[i].className="choiceBtn"+(buttons[i].getAttribute("data-level")===level?" active":"");
-  }
-  difficultyInfo.textContent=LEVELS[level].description;
+  setActiveButtons("[data-level]","data-level",level);
+  optionInfo.textContent=LEVELS[level].description;
   updateProfileStats();
   updateHud();
 }
 
-function selectTime(seconds){
-  selectedSeconds=parseInt(seconds,10)||60;
-  var buttons=document.querySelectorAll("[data-time]");
-  var i;
-  for(i=0;i<buttons.length;i++){
-    buttons[i].className="choiceBtn"+(parseInt(buttons[i].getAttribute("data-time"),10)===selectedSeconds?" active":"");
-  }
+function selectBpm(value){
+  value=parseInt(value,10);
+  if(value!==60&&value!==80&&value!==100){value=60;}
+  selectedBpm=value;
+  setActiveButtons("[data-bpm]","data-bpm",String(value));
+  updateDynamicInfo();
+  updateProfileStats();
+  updateHud();
+}
+
+function updateDynamicInfo(){
+  var visible=Math.round(60000/selectedBpm);
+  dynamicInfo.textContent=
+    "The target stays visible for "+visible+" ms, then disappears. The next target appears after a fixed 1,000 ms delay.";
+}
+
+function selectTime(value){
+  selectedSeconds=parseInt(value,10)||60;
+  setActiveButtons("[data-time]","data-time",String(selectedSeconds));
   updateProfileStats();
   hudTime.textContent=selectedSeconds;
+}
+
+function setActiveButtons(selector,attribute,value){
+  var buttons=document.querySelectorAll(selector);
+  var i;
+  for(i=0;i<buttons.length;i++){
+    buttons[i].className="choiceBtn"+(buttons[i].getAttribute(attribute)===String(value)?" active":"");
+  }
 }
 
 function resize(){
@@ -372,8 +605,9 @@ function resize(){
 
   hoop.baseX=W*.5;
   hoop.baseY=H*.30;
-  hoop.rx=Math.max(52,Math.min(88,W*.086));
+  hoop.rx=Math.max(50,Math.min(84,W*.083));
   hoop.ry=hoop.rx*.23;
+
   if(!gameRunning){
     hoop.x=hoop.baseX;
     hoop.y=hoop.baseY;
@@ -382,6 +616,7 @@ function resize(){
   ballHome.x=W*.5;
   ballHome.y=H*.75;
   ball.r=Math.max(23,Math.min(37,W*.036));
+
   if(!shotInProgress){
     ball.x=ballHome.x;
     ball.y=ballHome.y;
@@ -389,76 +624,75 @@ function resize(){
   }
 }
 
-function formatEfficiency(value){
-  value=isFinite(value)?value:0;
-  return value.toFixed(1);
-}
-
-function liveEfficiency(t){
-  if(!roundStarted||!roundStart){return 0;}
-  t=typeof t==="number"?t:timeNow();
-  var effectiveEnd=Math.min(t,roundEnd||t);
-  var elapsedSeconds=Math.max(1,(effectiveEnd-roundStart)/1000);
-  return makes*60/elapsedSeconds;
-}
-
-function finalEfficiency(){
-  return selectedSeconds?makes*60/selectedSeconds:0;
-}
-
-function updateHud(t){
-  hudPlayer.textContent=activeProfile;
-  hudLevel.textContent=LEVELS[selectedLevel].label;
-  hudMakes.textContent=makes;
-  hudShots.textContent=shots;
-  hudStreak.textContent=streak;
-  hudAccuracy.textContent=shots?Math.round(makes/shots*100)+"%":"0%";
-  hudEfficiency.textContent=formatEfficiency(gameRunning?liveEfficiency(t):0);
-}
-
-function setMessage(text){message.textContent=text;}
-
 function pointerPosition(e){
   var rect=canvas.getBoundingClientRect();
-  var clientX=e.clientX;
-  var clientY=e.clientY;
+  var x=e.clientX;
+  var y=e.clientY;
   if(e.touches&&e.touches.length){
-    clientX=e.touches[0].clientX;
-    clientY=e.touches[0].clientY;
+    x=e.touches[0].clientX;
+    y=e.touches[0].clientY;
   }
-  if(typeof clientX==="number"&&typeof clientY==="number"){
-    cursor.x=clientX-rect.left;
-    cursor.y=clientY-rect.top;
+  if(typeof x==="number"&&typeof y==="number"){
+    cursor.x=x-rect.left;
+    cursor.y=y-rect.top;
     cursor.visible=true;
   }
 }
 
+function setMessage(value){message.textContent=value;}
+
+function elapsedSeconds(t){
+  if(!roundStarted||!roundStart){return 0;}
+  return Math.max(1,(Math.min(t,roundEnd)-roundStart)/1000);
+}
+
+function updateHud(t){
+  t=typeof t==="number"?t:now();
+  hudPlayer.textContent=activeProfile;
+  hudTime.textContent=roundStarted?Math.max(0,Math.ceil((roundEnd-t)/1000)):selectedSeconds;
+  hudScore.textContent=score;
+  hudAttempts.textContent=attempts;
+  hudStreak.textContent=streak;
+  hudAccuracy.textContent=attempts?Math.round(score/attempts*100)+"%":"0%";
+
+  if(selectedMode==="focus"){
+    hudSettingLabel.textContent="Level";
+    hudSetting.textContent=LEVELS[selectedLevel].label;
+    hudScoreLabel.textContent="Makes";
+    hudAttemptLabel.textContent="Shots";
+    hudMetricLabel.textContent="Focus Eff.";
+    hudMetric.textContent=formatOne(gameRunning?score*60/elapsedSeconds(t):0);
+  }else{
+    hudSettingLabel.textContent="Pulse";
+    hudSetting.textContent=selectedBpm+" BPM";
+    hudScoreLabel.textContent="Hits";
+    hudAttemptLabel.textContent="Targets";
+    hudMetricLabel.textContent="Avg React";
+    hudMetric.textContent=reactionCount?Math.round(totalReaction/reactionCount)+" ms":"--";
+  }
+}
+
 function targetRadius(){
-  return Math.max(10,Math.min(25,W*LEVELS[selectedLevel].targetScale));
+  return Math.max(10,Math.min(24,W*LEVELS[selectedLevel].targetScale));
 }
 
 function focusZoneRadius(){return targetRadius()*2.25;}
 
-function distanceToTargetAt(x,y){
-  var dx=x-hoop.x;
-  var dy=y-hoop.y;
+function distance(x1,y1,x2,y2){
+  var dx=x1-x2;
+  var dy=y1-y2;
   return Math.sqrt(dx*dx+dy*dy);
 }
 
-function distanceToTarget(){
-  return distanceToTargetAt(cursor.x,cursor.y);
-}
+function focusDistance(x,y){return distance(x,y,hoop.x,hoop.y);}
 
-function isInsideFocusZone(){
-  return cursor.visible&&distanceToTarget()<=focusZoneRadius();
-}
-
-function updateHoop(t){
+function updateFocusHoop(t){
   if(shotInProgress){
     hoop.x=hoop.frozenX;
     hoop.y=hoop.frozenY;
     return;
   }
+
   var level=LEVELS[selectedLevel];
   hoop.x=hoop.baseX+Math.sin(t*level.speedX+phaseX)*(W*level.moveX);
   hoop.y=hoop.baseY+Math.sin(t*level.speedY+phaseY)*(H*level.moveY);
@@ -470,88 +704,256 @@ function updateHoop(t){
   if(hoop.y>H*.44){hoop.y=H*.44;}
 }
 
-function beginShot(pointX,pointY){
-  if(!gameRunning||!roundStarted||!acceptingShots||shotInProgress){return;}
+function updateFocusLock(t){
+  if(selectedMode!=="focus"||!gameRunning||!roundStarted||!acceptingInput||shotInProgress){
+    focusStart=0;
+    focusProgress=0;
+    return;
+  }
 
-  var shotX=(typeof pointX==="number"&&isFinite(pointX))?pointX:cursor.x;
-  var shotY=(typeof pointY==="number"&&isFinite(pointY))?pointY:cursor.y;
-  var shotTime=timeNow();
+  if(cursor.visible&&focusDistance(cursor.x,cursor.y)<=focusZoneRadius()){
+    if(!focusStart){focusStart=t;}
+    focusProgress=Math.min(1,(t-focusStart)/LEVELS[selectedLevel].hold);
+    if(focusProgress>=.9){
+      lastFocusLock=t;
+      setMessage("TARGET LOCKED — CLICK");
+    }else{
+      setMessage("Hold steady on the rim center...");
+    }
+  }else{
+    focusStart=0;
+    focusProgress=0;
+    setMessage("Track the center of the rim.");
+  }
+}
 
-  /*
-    The exact browser click position controls accuracy. This prevents the old
-    canvas-drawn crosshair from affecting the result on slower PICO browsers.
-  */
-  var error=distanceToTargetAt(shotX,shotY);
+function beginFocusShot(x,y){
+  if(selectedMode!=="focus"||!gameRunning||!roundStarted||!acceptingInput||shotInProgress){return;}
+
+  var t=now();
+  var error=focusDistance(x,y);
   var radius=targetRadius();
-
-  /*
-    Challenge mode moves quickly, and the native pointer event can arrive a
-    fraction after the green lock. A short grace window preserves genuine
-    focused shots without allowing random clicks.
-  */
-  var recentLock=lastFocusLock>0&&(shotTime-lastFocusLock)<=240;
-  var progressNeeded=selectedLevel==="challenge"?.62:.78;
-  var centeredFocusAssist=error<=radius*.72&&focusProgress>=progressNeeded;
-  var heldLongEnough=focusProgress>=.90||recentLock||centeredFocusAssist;
-
-  var made=heldLongEnough&&error<=radius;
+  var recentLock=lastFocusLock>0&&(t-lastFocusLock)<=240;
+  var needed=selectedLevel==="challenge"?.62:.78;
+  var centeredAssist=error<=radius*.72&&focusProgress>=needed;
+  var locked=focusProgress>=.9||recentLock||centeredAssist;
+  var made=locked&&error<=radius;
   var perfect=made&&error<=radius*.38;
 
-  clickMarker.x=shotX;
-  clickMarker.y=shotY;
-  clickMarker.until=shotTime+360;
-  clickMarker.made=made;
-
-  shots++;
+  attempts++;
   shotInProgress=true;
   hoop.frozenX=hoop.x;
   hoop.frozenY=hoop.y;
-  resultText="";
   focusStart=0;
   focusProgress=0;
   lastFocusLock=0;
 
-  var missDirection=shotX<hoop.x?-1:1;
-  if(Math.abs(shotX-hoop.x)<2){missDirection=Math.random()<.5?-1:1;}
+  clickMarker.x=x;
+  clickMarker.y=y;
+  clickMarker.until=t+360;
+  clickMarker.success=made;
+
+  var missDirection=x<hoop.x?-1:1;
+  if(Math.abs(x-hoop.x)<2){missDirection=Math.random()<.5?-1:1;}
 
   var endX=made?hoop.x:hoop.x+missDirection*Math.max(hoop.rx*.9,error*.72);
   var endY=made?hoop.y+hoop.ry*.25:hoop.y-hoop.ry*.15;
   var arcY=Math.min(ballHome.y,hoop.y)-H*.23;
 
   shot={
-    start:shotTime,
-    duration:820,
+    start:t,duration:820,
     sx:ballHome.x,sy:ballHome.y,
     cx:(ballHome.x+endX)*.5,cy:arcY,
     ex:endX,ey:endY,
-    made:made,perfect:perfect,resolved:false,
-    held:heldLongEnough,error:error,
-    clickX:shotX,clickY:shotY
+    made:made,perfect:perfect,resolved:false
   };
 
-  if(!heldLongEnough){
-    setMessage("Hold the moving center until it turns green, then click.");
-  }else if(!made){
-    setMessage("Registered click was off center. Recenter and try again.");
-  }else if(perfect){
-    setMessage("Perfect center focus!");
+  if(!locked){setMessage("Hold until the rim center turns green.");}
+  else if(!made){setMessage("Off center. Recenter and try again.");}
+  else if(perfect){setMessage("PERFECT FOCUS!");}
+  else{setMessage("Centered shot!");}
+
+  updateHud(t);
+}
+
+function resolveFocusShot(t){
+  if(!shot||shot.resolved){return;}
+  shot.resolved=true;
+
+  if(shot.made){
+    score++;
+    streak++;
+    if(streak>bestStreak){bestStreak=streak;}
+    if(shot.perfect){perfects++;}
+    resultText=shot.perfect?"PERFECT FOCUS":"MADE";
+    createParticles(hoop.x,hoop.y,true);
+    beep(true);
   }else{
-    setMessage("Centered shot!");
+    streak=0;
+    resultText="MISS";
+    createParticles(ball.x,ball.y,false);
+    beep(false);
   }
 
-  updateHud(shotTime);
+  resultUntil=t+700;
+  resetAt=t+1000;
+  updateHud(t);
+}
+
+function updateFocusShot(t){
+  if(!shotInProgress||!shot){return;}
+
+  var p=Math.min(1,(t-shot.start)/shot.duration);
+  var u=1-p;
+  ball.x=u*u*shot.sx+2*u*p*shot.cx+p*p*shot.ex;
+  ball.y=u*u*shot.sy+2*u*p*shot.cy+p*p*shot.ey;
+  ball.currentR=ball.r*(1-p*.35);
+
+  if(p>=1){resolveFocusShot(t);}
+
+  if(shot.resolved&&!shot.made){
+    var fall=Math.min(1,(t-(shot.start+shot.duration))/400);
+    ball.y=shot.ey+fall*fall*H*.4;
+    ball.x=shot.ex+(shot.ex<hoop.x?-1:1)*fall*W*.07;
+  }
+
+  if(resetAt&&t>=resetAt){
+    shotInProgress=false;
+    shot=null;
+    resetAt=0;
+    resultText="";
+    ball.x=ballHome.x;
+    ball.y=ballHome.y;
+    ball.currentR=ball.r;
+    if(gameRunning){setMessage("Track the center, lock focus, and click.");}
+  }
+}
+
+function dynamicVisibleMs(){
+  return 60000/selectedBpm;
+}
+
+function chooseDynamicPosition(){
+  var boardW=hoop.rx*3.4;
+  var boardH=hoop.rx*1.72;
+  var halfW=boardW*.55;
+  var halfH=boardH*.75;
+  var minX=halfW+24;
+  var maxX=W-halfW-24;
+  var minY=Math.max(135,halfH+50);
+  var maxY=H-Math.max(125,halfH+55);
+
+  if(maxX<=minX){minX=W*.3;maxX=W*.7;}
+  if(maxY<=minY){minY=H*.3;maxY=H*.65;}
+
+  var oldX=hoop.x;
+  var oldY=hoop.y;
+  var tries=0;
+  do{
+    hoop.x=minX+Math.random()*(maxX-minX);
+    hoop.y=minY+Math.random()*(maxY-minY);
+    tries++;
+  }while(tries<8&&distance(hoop.x,hoop.y,oldX,oldY)<Math.min(W,H)*.24);
+}
+
+function showDynamicTarget(t){
+  chooseDynamicPosition();
+  dynamic.visible=true;
+  dynamic.appearedAt=t;
+  dynamic.hideAt=t+dynamicVisibleMs();
+  dynamic.resolved=false;
+  dynamic.pulse=Math.random()*Math.PI*2;
+  attempts++;
+  setMessage("REACT — CLICK THE RIM CENTER!");
+  updateHud(t);
+}
+
+function hideDynamicTarget(t,wasHit){
+  dynamic.visible=false;
+  dynamic.resolved=true;
+  dynamic.nextAt=t+1000;
+  if(!wasHit){
+    streak=0;
+    resultText="TOO SLOW";
+    resultUntil=t+520;
+    setMessage("Target missed. Watch for the next pulse.");
+    beep(false);
+  }
+  updateHud(t);
+}
+
+function handleDynamicClick(x,y){
+  if(selectedMode!=="dynamic"||!gameRunning||!roundStarted||!acceptingInput){return;}
+
+  var t=now();
+
+  if(!dynamic.visible){
+    falseStarts++;
+    streak=0;
+    clickMarker.x=x;
+    clickMarker.y=y;
+    clickMarker.until=t+260;
+    clickMarker.success=false;
+    setMessage("WAIT — click only when the target appears.");
+    return;
+  }
+
+  var hitRadius=Math.max(18,hoop.rx*.42);
+  var hit=distance(x,y,hoop.x,hoop.y)<=hitRadius;
+  var reaction=t-dynamic.appearedAt;
+
+  clickMarker.x=x;
+  clickMarker.y=y;
+  clickMarker.until=t+360;
+  clickMarker.success=hit;
+
+  if(hit){
+    score++;
+    streak++;
+    if(streak>bestStreak){bestStreak=streak;}
+    totalReaction+=reaction;
+    reactionCount++;
+    if(!fastestReaction||reaction<fastestReaction){fastestReaction=reaction;}
+    resultText=Math.round(reaction)+" ms";
+    resultUntil=t+620;
+    createParticles(hoop.x,hoop.y,true);
+    beep(true);
+    setMessage("HIT — "+Math.round(reaction)+" ms");
+    dynamic.visible=false;
+    dynamic.resolved=true;
+    dynamic.nextAt=t+1000;
+  }else{
+    streak=0;
+    resultText="OFF TARGET";
+    resultUntil=t+520;
+    createParticles(x,y,false);
+    beep(false);
+    setMessage("Missed center. Watch for the next target.");
+    dynamic.visible=false;
+    dynamic.resolved=true;
+    dynamic.nextAt=t+1000;
+  }
+
+  updateHud(t);
+}
+
+function updateDynamic(t){
+  if(selectedMode!=="dynamic"||!gameRunning||!roundStarted){return;}
+
+  if(dynamic.visible&&t>=dynamic.hideAt){
+    hideDynamicTarget(t,false);
+  }else if(!dynamic.visible&&t>=dynamic.nextAt&&t<roundEnd){
+    showDynamicTarget(t);
+  }
 }
 
 function createParticles(x,y,success){
   var i;
-  for(i=0;i<18;i++){
+  for(i=0;i<16;i++){
     particles.push({
-      x:x,y:y,
-      vx:(Math.random()-.5)*(success?5:2.5),
+      x:x,y:y,vx:(Math.random()-.5)*(success?5:2.5),
       vy:-Math.random()*(success?5:2.5),
-      life:650+Math.random()*350,
-      born:timeNow(),
-      success:success
+      life:600+Math.random()*330,born:now(),success:success
     });
   }
 }
@@ -565,54 +967,207 @@ function beep(success){
     var gain=ac.createGain();
     osc.type=success?"sine":"triangle";
     osc.frequency.value=success?880:190;
-    gain.gain.value=.11;
+    gain.gain.value=.10;
     osc.connect(gain);
     gain.connect(ac.destination);
     osc.start();
-    gain.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.2);
-    osc.stop(ac.currentTime+.22);
+    gain.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.18);
+    osc.stop(ac.currentTime+.2);
   }catch(err){}
 }
 
-function updateFocus(t){
-  if(!gameRunning||!roundStarted||!acceptingShots||shotInProgress){
-    focusStart=0;
-    focusProgress=0;
+function startRound(e){
+  if(e&&e.stopPropagation){e.stopPropagation();}
+
+  score=0;
+  attempts=0;
+  streak=0;
+  bestStreak=0;
+  perfects=0;
+  falseStarts=0;
+  totalReaction=0;
+  reactionCount=0;
+  fastestReaction=0;
+
+  focusStart=0;
+  focusProgress=0;
+  lastFocusLock=0;
+  clickMarker.until=0;
+  particles=[];
+  resultText="";
+  resultUntil=0;
+
+  shot=null;
+  shotInProgress=false;
+  resetAt=0;
+  ball.x=ballHome.x;
+  ball.y=ballHome.y;
+  ball.currentR=ball.r;
+
+  dynamic.visible=false;
+  dynamic.appearedAt=0;
+  dynamic.hideAt=0;
+  dynamic.nextAt=0;
+  dynamic.resolved=false;
+
+  gameRunning=true;
+  roundStarted=false;
+  acceptingInput=false;
+  countdownEnd=now()+3000;
+  roundStart=0;
+  roundEnd=0;
+  lastDisplayedSecond=-1;
+
+  resultBox.style.display="none";
+  overlay.style.display="none";
+  backBtn.style.display="block";
+  hud.style.display="flex";
+  updateHud();
+  setMessage(selectedMode==="focus"?"Get ready to focus...":"Get ready to react...");
+
+  var root=document.documentElement;
+  var requestFull=root.requestFullscreen||root.mozRequestFullScreen||root.webkitRequestFullscreen;
+  if(requestFull){try{requestFull.call(root);}catch(err){}}
+}
+
+function beginTimedRound(t){
+  roundStarted=true;
+  acceptingInput=true;
+  roundStart=t;
+  roundEnd=t+selectedSeconds*1000;
+
+  if(selectedMode==="focus"){
+    setMessage("Track the center, lock focus, and click.");
+  }else{
+    dynamic.nextAt=t+250;
+    setMessage("Watch for the first target.");
+  }
+  updateHud(t);
+}
+
+function updateRound(t){
+  if(!gameRunning){return;}
+
+  if(!roundStarted){
+    if(t>=countdownEnd){beginTimedRound(t);}
     return;
   }
 
-  if(isInsideFocusZone()){
-    if(!focusStart){focusStart=t;}
-    focusProgress=Math.min(1,(t-focusStart)/LEVELS[selectedLevel].hold);
-    if(focusProgress>=.90){
-      lastFocusLock=t;
-      setMessage("TARGET LOCKED — CLICK");
-    }
-    else{setMessage("Hold steady on the moving center...");}
-  }else{
-    focusStart=0;
-    focusProgress=0;
-    setMessage("Track the center of the rim.");
+  if(t>=roundEnd){
+    finishRound();
+    return;
+  }
+
+  var remaining=Math.max(0,Math.ceil((roundEnd-t)/1000));
+  if(remaining!==lastDisplayedSecond){
+    lastDisplayedSecond=remaining;
+    updateHud(t);
   }
 }
 
-function updateShot(t){
-  if(!shotInProgress||!shot){return;}
-  var p=Math.min(1,(t-shot.start)/shot.duration);
-  var u=1-p;
-  ball.x=u*u*shot.sx+2*u*p*shot.cx+p*p*shot.ex;
-  ball.y=u*u*shot.sy+2*u*p*shot.cy+p*p*shot.ey;
-  ball.currentR=ball.r*(1-p*.35);
+function finishRound(){
+  if(!gameRunning){return;}
 
-  if(p>=1){resolveShot(t);}
+  gameRunning=false;
+  acceptingInput=false;
+  dynamic.visible=false;
+  shotInProgress=false;
+  shot=null;
 
-  if(shot.resolved&&!shot.made){
-    var fall=Math.min(1,(t-(shot.start+shot.duration))/400);
-    ball.y=shot.ey+fall*fall*H*.4;
-    ball.x=shot.ex+(shot.ex<hoop.x?-1:1)*fall*W*.07;
+  var accuracy=attempts?Math.round(score/attempts*100):0;
+  var player=ensurePlayer(profiles.players[activeProfile]);
+  var key;
+
+  if(selectedMode==="focus"){
+    var efficiency=selectedSeconds?score*60/selectedSeconds:0;
+    var f=player.focus;
+    key=focusRecordKey();
+
+    f.rounds++;
+    f.totalShots+=attempts;
+    f.totalMakes+=score;
+    f.totalSeconds+=selectedSeconds;
+    if(bestStreak>f.bestStreak){f.bestStreak=bestStreak;}
+    if(accuracy>f.bestAccuracy){f.bestAccuracy=accuracy;}
+    if(efficiency>f.bestEfficiency){f.bestEfficiency=efficiency;}
+    if(score>(f.bestRounds[key]||0)){f.bestRounds[key]=score;}
+    if(efficiency>(f.bestEfficiencies[key]||0)){f.bestEfficiencies[key]=efficiency;}
+
+    resultBox.innerHTML=
+      "<strong>Basketball Focus complete</strong><br>"+
+      "Makes: "+score+" of "+attempts+" · Accuracy: "+accuracy+"%<br>"+
+      "Perfect focus: "+perfects+" · Best streak: "+bestStreak+"<br>"+
+      "Focus Efficiency: "+formatOne(efficiency)+" makes per minute";
+  }else{
+    var hitsPerMin=selectedSeconds?score*60/selectedSeconds:0;
+    var averageReaction=reactionCount?totalReaction/reactionCount:0;
+    var d=player.dynamic;
+    key=dynamicRecordKey();
+
+    d.rounds++;
+    d.totalTargets+=attempts;
+    d.totalHits+=score;
+    d.totalSeconds+=selectedSeconds;
+    if(bestStreak>d.bestStreak){d.bestStreak=bestStreak;}
+    if(accuracy>d.bestAccuracy){d.bestAccuracy=accuracy;}
+    if(hitsPerMin>d.bestHitsPerMin){d.bestHitsPerMin=hitsPerMin;}
+    if(fastestReaction&&(!d.fastestReaction||fastestReaction<d.fastestReaction)){
+      d.fastestReaction=fastestReaction;
+    }
+    if(score>(d.bestRounds[key]||0)){d.bestRounds[key]=score;}
+    if(averageReaction&&(!d.bestReactions[key]||averageReaction<d.bestReactions[key])){
+      d.bestReactions[key]=averageReaction;
+    }
+
+    resultBox.innerHTML=
+      "<strong>Dynamic Vision complete</strong><br>"+
+      "Hits: "+score+" of "+attempts+" · Accuracy: "+accuracy+"%<br>"+
+      "Average reaction: "+formatMs(averageReaction)+" · Fastest: "+formatMs(fastestReaction)+"<br>"+
+      "Best streak: "+bestStreak+" · False starts: "+falseStarts+
+      " · Hit pace: "+formatOne(hitsPerMin)+"/min";
   }
 
-  if(resetAt&&t>=resetAt){resetBall();}
+  profiles.players[activeProfile]=player;
+  profiles.active=activeProfile;
+  saveProfiles();
+
+  resultBox.style.display="block";
+  startBtn.textContent=selectedMode==="focus"?"PLAY FOCUS AGAIN":"PLAY DYNAMIC AGAIN";
+  overlay.style.display="flex";
+  backBtn.style.display="none";
+  hud.style.display="none";
+  updateProfileStats();
+
+  var exitFull=document.exitFullscreen||document.mozCancelFullScreen||document.webkitExitFullscreen;
+  if(exitFull){try{exitFull.call(document);}catch(err){}}
+}
+
+function returnToSelection(e){
+  if(e){
+    if(e.preventDefault){e.preventDefault();}
+    if(e.stopPropagation){e.stopPropagation();}
+  }
+
+  gameRunning=false;
+  roundStarted=false;
+  acceptingInput=false;
+  shotInProgress=false;
+  shot=null;
+  dynamic.visible=false;
+  particles=[];
+  resultText="";
+  clickMarker.until=0;
+
+  overlay.style.display="flex";
+  resultBox.style.display="none";
+  backBtn.style.display="none";
+  hud.style.display="none";
+  startBtn.textContent=selectedMode==="focus"?"START FOCUS ROUND":"START DYNAMIC ROUND";
+  setMessage("Choose a player, training mode, and round time.");
+  updateProfileStats();
+
+  var exitFull=document.exitFullscreen||document.mozCancelFullScreen||document.webkitExitFullscreen;
+  if(exitFull){try{exitFull.call(document);}catch(err){}}
 }
 
 function drawCourt(){
@@ -627,13 +1182,13 @@ function drawCourt(){
   var i;
   for(i=0;i<12;i++){ctx.fillRect(0,H*.44+i*H*.045,W,1);}
 
-  ctx.strokeStyle="rgba(255,125,30,.28)";
+  ctx.strokeStyle="rgba(255,125,30,.22)";
   ctx.lineWidth=3;
   ctx.beginPath();
   ctx.ellipse(W*.5,H*.88,W*.27,H*.075,0,0,Math.PI*2);
   ctx.stroke();
 
-  ctx.strokeStyle="rgba(255,255,255,.12)";
+  ctx.strokeStyle="rgba(255,255,255,.1)";
   ctx.lineWidth=2;
   ctx.beginPath();
   ctx.moveTo(W*.5,H*.45);
@@ -641,29 +1196,45 @@ function drawCourt(){
   ctx.stroke();
 }
 
-function drawHoop(t){
+function drawBackboardAndRim(t,dynamicMode){
   var boardW=hoop.rx*3.4;
   var boardH=hoop.rx*1.72;
   var boardX=hoop.x-boardW/2;
   var boardY=hoop.y-boardH*.85;
+  var alpha=1;
 
-  ctx.fillStyle="rgba(235,245,255,.13)";
-  ctx.strokeStyle="rgba(235,245,255,.56)";
-  ctx.lineWidth=4;
+  if(dynamicMode){
+    var age=Math.max(0,t-dynamic.appearedAt);
+    alpha=.78+.22*Math.sin(age*.018+dynamic.pulse);
+    if(alpha<.55){alpha=.55;}
+  }
+
+  ctx.save();
+  ctx.globalAlpha=alpha;
+
+  ctx.fillStyle=dynamicMode?"rgba(235,250,255,.24)":"rgba(235,245,255,.13)";
+  ctx.strokeStyle=dynamicMode?"rgba(255,255,255,.98)":"rgba(235,245,255,.56)";
+  ctx.lineWidth=dynamicMode?5:4;
+  ctx.shadowColor=dynamicMode?"rgba(120,220,255,.8)":"transparent";
+  ctx.shadowBlur=dynamicMode?22:0;
   ctx.fillRect(boardX,boardY,boardW,boardH);
   ctx.strokeRect(boardX,boardY,boardW,boardH);
 
-  ctx.strokeStyle="rgba(255,255,255,.5)";
+  ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(255,255,255,.72)";
   ctx.lineWidth=3;
   ctx.strokeRect(hoop.x-hoop.rx*.58,hoop.y-hoop.rx*.52,hoop.rx*1.16,hoop.rx*.72);
 
-  ctx.strokeStyle="#ff681d";
+  ctx.strokeStyle=dynamicMode?"#ff8b22":"#ff681d";
   ctx.lineWidth=Math.max(6,hoop.rx*.1);
+  ctx.shadowColor=dynamicMode?"rgba(255,120,25,.9)":"transparent";
+  ctx.shadowBlur=dynamicMode?18:0;
   ctx.beginPath();
   ctx.ellipse(hoop.x,hoop.y,hoop.rx,hoop.ry,0,0,Math.PI*2);
   ctx.stroke();
 
-  ctx.strokeStyle="rgba(255,255,255,.48)";
+  ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(255,255,255,.55)";
   ctx.lineWidth=2;
   var n;
   for(n=-3;n<=3;n++){
@@ -676,35 +1247,48 @@ function drawHoop(t){
   ctx.ellipse(hoop.x,hoop.y+hoop.rx*.82,hoop.rx*.38,hoop.ry*.55,0,0,Math.PI*2);
   ctx.stroke();
 
-  var r=targetRadius();
-  var pulse=1+Math.sin(t/220)*.08;
-  var ready=focusProgress>=.92;
-  var inside=isInsideFocusZone();
-
-  ctx.save();
-  ctx.globalAlpha=ready ? .98 : .72;
-  ctx.strokeStyle=ready?"#46ff78":(inside?"#ffe46a":"#fff");
-  ctx.lineWidth=ready?5:3;
-  ctx.beginPath();
-  ctx.arc(hoop.x,hoop.y,r*pulse,0,Math.PI*2);
-  ctx.stroke();
-
-  ctx.fillStyle=ready?"#46ff78":(inside?"#ffe46a":"#fff");
-  ctx.beginPath();
-  ctx.arc(hoop.x,hoop.y,Math.max(3,r*.18),0,Math.PI*2);
-  ctx.fill();
-
-  if(inside&&!shotInProgress&&acceptingShots){
-    ctx.strokeStyle="rgba(70,255,120,.9)";
-    ctx.lineWidth=5;
+  if(dynamicMode){
+    var hitRadius=Math.max(18,hoop.rx*.42);
+    ctx.strokeStyle="#ffffff";
+    ctx.lineWidth=4;
     ctx.beginPath();
-    ctx.arc(hoop.x,hoop.y,focusZoneRadius(),-Math.PI/2,-Math.PI/2+Math.PI*2*focusProgress);
+    ctx.arc(hoop.x,hoop.y,hitRadius,0,Math.PI*2);
     ctx.stroke();
+    ctx.fillStyle="#ffffff";
+    ctx.beginPath();
+    ctx.arc(hoop.x,hoop.y,4,0,Math.PI*2);
+    ctx.fill();
+  }else{
+    var r=targetRadius();
+    var ready=focusProgress>=.9;
+    var inside=cursor.visible&&focusDistance(cursor.x,cursor.y)<=focusZoneRadius();
+    var pulse=1+Math.sin(t/220)*.08;
+
+    ctx.strokeStyle=ready?"#46ff78":(inside?"#ffe46a":"#ffffff");
+    ctx.lineWidth=ready?5:3;
+    ctx.beginPath();
+    ctx.arc(hoop.x,hoop.y,r*pulse,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle=ready?"#46ff78":(inside?"#ffe46a":"#ffffff");
+    ctx.beginPath();
+    ctx.arc(hoop.x,hoop.y,Math.max(3,r*.18),0,Math.PI*2);
+    ctx.fill();
+
+    if(inside&&!shotInProgress&&acceptingInput){
+      ctx.strokeStyle="rgba(70,255,120,.9)";
+      ctx.lineWidth=5;
+      ctx.beginPath();
+      ctx.arc(hoop.x,hoop.y,focusZoneRadius(),-Math.PI/2,-Math.PI/2+Math.PI*2*focusProgress);
+      ctx.stroke();
+    }
   }
+
   ctx.restore();
 }
 
-function drawBall(x,y,r){
+function drawBall(){
+  var x=ball.x,y=ball.y,r=ball.currentR||ball.r;
   var grad=ctx.createRadialGradient(x-r*.35,y-r*.45,r*.1,x,y,r);
   grad.addColorStop(0,"#ffb052");
   grad.addColorStop(.5,"#f37418");
@@ -746,26 +1330,22 @@ function drawChestGuide(){
   ctx.lineTo(ballHome.x+ball.r*2.2,ballHome.y);
   ctx.stroke();
   ctx.setLineDash([]);
+
   ctx.fillStyle="rgba(255,255,255,.52)";
   ctx.font="bold 11px Arial";
   ctx.textAlign="center";
   ctx.fillText("CHEST-HEIGHT BALL",ballHome.x,ballHome.y+ball.r+23);
 }
 
-function drawCursor(){
-  if(!cursor.visible||shotInProgress){return;}
+function drawDynamicWaiting(){
   ctx.save();
-  ctx.strokeStyle=isInsideFocusZone()?"rgba(255,235,90,.95)":"rgba(255,255,255,.72)";
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  ctx.arc(cursor.x,cursor.y,10,0,Math.PI*2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cursor.x-15,cursor.y);ctx.lineTo(cursor.x-5,cursor.y);
-  ctx.moveTo(cursor.x+5,cursor.y);ctx.lineTo(cursor.x+15,cursor.y);
-  ctx.moveTo(cursor.x,cursor.y-15);ctx.lineTo(cursor.x,cursor.y-5);
-  ctx.moveTo(cursor.x,cursor.y+5);ctx.lineTo(cursor.x,cursor.y+15);
-  ctx.stroke();
+  ctx.textAlign="center";
+  ctx.fillStyle="rgba(255,255,255,.48)";
+  ctx.font="bold "+Math.max(18,Math.min(30,W*.03))+"px Arial";
+  ctx.fillText("WATCH THE WHOLE COURT",W*.5,H*.53);
+  ctx.font="14px Arial";
+  ctx.fillStyle="rgba(255,180,110,.68)";
+  ctx.fillText("The next target appears after a fixed 1-second delay.",W*.5,H*.58);
   ctx.restore();
 }
 
@@ -774,7 +1354,7 @@ function drawClickMarker(t){
   var remaining=Math.max(0,(clickMarker.until-t)/360);
   ctx.save();
   ctx.globalAlpha=.35+.65*remaining;
-  ctx.strokeStyle=clickMarker.made?"#59ff84":"#ffcc66";
+  ctx.strokeStyle=clickMarker.success?"#59ff84":"#ffcc66";
   ctx.lineWidth=4;
   ctx.beginPath();
   ctx.arc(clickMarker.x,clickMarker.y,8+(1-remaining)*10,0,Math.PI*2);
@@ -809,10 +1389,10 @@ function drawResult(t){
   ctx.save();
   ctx.textAlign="center";
   ctx.font="bold "+Math.max(27,Math.min(50,W*.052))+"px Arial";
-  ctx.fillStyle=shot&&shot.made?"#59ff84":"#ffb06a";
+  ctx.fillStyle=resultText.indexOf("MISS")>=0||resultText.indexOf("OFF")>=0||resultText.indexOf("SLOW")>=0?"#ffb06a":"#59ff84";
   ctx.shadowColor="rgba(0,0,0,.9)";
   ctx.shadowBlur=12;
-  ctx.fillText(resultText,W*.5,H*.53);
+  ctx.fillText(resultText,W*.5,H*.55);
   ctx.restore();
 }
 
@@ -832,21 +1412,47 @@ function drawCountdown(t){
 
 function frame(t){
   ctx.clearRect(0,0,W,H);
-  updateRoundClock(t);
-  updateHoop(t);
-  updateFocus(t);
-  updateShot(t);
+  updateRound(t);
+
+  if(selectedMode==="focus"){
+    updateFocusHoop(t);
+    updateFocusLock(t);
+    updateFocusShot(t);
+  }else{
+    updateDynamic(t);
+  }
 
   drawCourt();
-  drawHoop(t);
-  drawChestGuide();
-  drawBall(ball.x,ball.y,ball.currentR||ball.r);
+
+  if(selectedMode==="focus"){
+    drawBackboardAndRim(t,false);
+    drawChestGuide();
+    drawBall();
+  }else if(dynamic.visible){
+    drawBackboardAndRim(t,true);
+  }else if(gameRunning&&roundStarted){
+    drawDynamicWaiting();
+  }
+
   drawClickMarker(t);
   updateParticles(t);
   drawResult(t);
   drawCountdown(t);
 
   window.requestAnimationFrame(frame);
+}
+
+function handleCanvasClick(e){
+  pointerPosition(e);
+  if(!gameRunning||!roundStarted||!acceptingInput){return;}
+
+  if(selectedMode==="focus"){
+    beginFocusShot(cursor.x,cursor.y);
+  }else{
+    handleDynamicClick(cursor.x,cursor.y);
+  }
+
+  if(e.preventDefault){e.preventDefault();}
 }
 
 profileSelect.addEventListener("change",function(){
@@ -863,11 +1469,25 @@ newProfileName.addEventListener("keydown",function(e){
   if(e.keyCode===13){addProfile();}
 },false);
 
-var levelButtons=document.querySelectorAll("[data-level]");
+var modeButtons=document.querySelectorAll("[data-mode]");
 var i;
+for(i=0;i<modeButtons.length;i++){
+  modeButtons[i].addEventListener("click",function(){
+    selectMode(this.getAttribute("data-mode"));
+  },false);
+}
+
+var levelButtons=document.querySelectorAll("[data-level]");
 for(i=0;i<levelButtons.length;i++){
   levelButtons[i].addEventListener("click",function(){
     selectLevel(this.getAttribute("data-level"));
+  },false);
+}
+
+var bpmButtons=document.querySelectorAll("[data-bpm]");
+for(i=0;i<bpmButtons.length;i++){
+  bpmButtons[i].addEventListener("click",function(){
+    selectBpm(this.getAttribute("data-bpm"));
   },false);
 }
 
@@ -883,23 +1503,8 @@ backBtn.addEventListener("click",returnToSelection,false);
 backBtn.addEventListener("touchstart",returnToSelection,false);
 
 canvas.addEventListener("mousemove",pointerPosition,false);
-canvas.addEventListener("click",function(e){
-  pointerPosition(e);
-  beginShot(cursor.x,cursor.y);
-  if(e.preventDefault){e.preventDefault();}
-},false);
-canvas.addEventListener("touchstart",function(e){
-  pointerPosition(e);
-  beginShot(cursor.x,cursor.y);
-  if(e.preventDefault){e.preventDefault();}
-},false);
-
-document.addEventListener("keydown",function(e){
-  if(e.keyCode===32||e.keyCode===13){
-    beginShot();
-    if(e.preventDefault){e.preventDefault();}
-  }
-},false);
+canvas.addEventListener("click",handleCanvasClick,false);
+canvas.addEventListener("touchstart",handleCanvasClick,false);
 
 window.addEventListener("resize",resize,false);
 
@@ -907,7 +1512,9 @@ activeProfile=profiles.active||"Guest";
 resize();
 refreshProfiles();
 selectLevel("steady");
+selectBpm(60);
 selectTime(60);
+selectMode("focus");
 updateHud();
 window.requestAnimationFrame(frame);
 
