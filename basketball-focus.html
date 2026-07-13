@@ -8,7 +8,7 @@
 *{box-sizing:border-box}
 html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#05070d;color:#fff;font-family:Arial,Helvetica,sans-serif;-webkit-user-select:none;user-select:none}
 button,input,select{font-family:Arial,Helvetica,sans-serif}
-#game{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#game{display:block;width:100%;height:100%;cursor:auto;touch-action:none}
 #backBtn{
   position:fixed;top:10px;left:10px;z-index:12;display:none;
   min-width:80px;padding:11px 13px;border:1px solid rgba(255,255,255,.28);
@@ -169,7 +169,7 @@ var LEVELS={
     moveY:.075,
     speedX:.00112,
     speedY:.00147,
-    description:"Smaller target with faster horizontal and vertical movement. Precision and timing both matter."
+    description:"Smaller target with faster horizontal and vertical movement. Follow the headset browser pointer, wait for green, and click the center."
   }
 };
 
@@ -193,6 +193,8 @@ var bestStreak=0;
 var perfects=0;
 var focusStart=0;
 var focusProgress=0;
+var lastFocusLock=0;
+var clickMarker={x:-1000,y:-1000,until:0,made:false};
 
 var cursor={x:-1000,y:-1000,visible:false};
 var hoop={baseX:0,baseY:0,x:0,y:0,rx:0,ry:0,frozenX:0,frozenY:0};
@@ -437,10 +439,14 @@ function targetRadius(){
 
 function focusZoneRadius(){return targetRadius()*2.25;}
 
-function distanceToTarget(){
-  var dx=cursor.x-hoop.x;
-  var dy=cursor.y-hoop.y;
+function distanceToTargetAt(x,y){
+  var dx=x-hoop.x;
+  var dy=y-hoop.y;
   return Math.sqrt(dx*dx+dy*dy);
+}
+
+function distanceToTarget(){
+  return distanceToTargetAt(cursor.x,cursor.y);
 }
 
 function isInsideFocusZone(){
@@ -464,14 +470,37 @@ function updateHoop(t){
   if(hoop.y>H*.44){hoop.y=H*.44;}
 }
 
-function beginShot(){
+function beginShot(pointX,pointY){
   if(!gameRunning||!roundStarted||!acceptingShots||shotInProgress){return;}
 
-  var error=distanceToTarget();
+  var shotX=(typeof pointX==="number"&&isFinite(pointX))?pointX:cursor.x;
+  var shotY=(typeof pointY==="number"&&isFinite(pointY))?pointY:cursor.y;
+  var shotTime=timeNow();
+
+  /*
+    The exact browser click position controls accuracy. This prevents the old
+    canvas-drawn crosshair from affecting the result on slower PICO browsers.
+  */
+  var error=distanceToTargetAt(shotX,shotY);
   var radius=targetRadius();
-  var heldLongEnough=focusProgress>=.92;
+
+  /*
+    Challenge mode moves quickly, and the native pointer event can arrive a
+    fraction after the green lock. A short grace window preserves genuine
+    focused shots without allowing random clicks.
+  */
+  var recentLock=lastFocusLock>0&&(shotTime-lastFocusLock)<=240;
+  var progressNeeded=selectedLevel==="challenge"?.62:.78;
+  var centeredFocusAssist=error<=radius*.72&&focusProgress>=progressNeeded;
+  var heldLongEnough=focusProgress>=.90||recentLock||centeredFocusAssist;
+
   var made=heldLongEnough&&error<=radius;
   var perfect=made&&error<=radius*.38;
+
+  clickMarker.x=shotX;
+  clickMarker.y=shotY;
+  clickMarker.until=shotTime+360;
+  clickMarker.made=made;
 
   shots++;
   shotInProgress=true;
@@ -480,257 +509,37 @@ function beginShot(){
   resultText="";
   focusStart=0;
   focusProgress=0;
+  lastFocusLock=0;
 
-  var missDirection=cursor.x<hoop.x?-1:1;
-  if(Math.abs(cursor.x-hoop.x)<2){missDirection=Math.random()<.5?-1:1;}
+  var missDirection=shotX<hoop.x?-1:1;
+  if(Math.abs(shotX-hoop.x)<2){missDirection=Math.random()<.5?-1:1;}
 
   var endX=made?hoop.x:hoop.x+missDirection*Math.max(hoop.rx*.9,error*.72);
   var endY=made?hoop.y+hoop.ry*.25:hoop.y-hoop.ry*.15;
   var arcY=Math.min(ballHome.y,hoop.y)-H*.23;
 
   shot={
-    start:timeNow(),
+    start:shotTime,
     duration:820,
     sx:ballHome.x,sy:ballHome.y,
     cx:(ballHome.x+endX)*.5,cy:arcY,
     ex:endX,ey:endY,
     made:made,perfect:perfect,resolved:false,
-    held:heldLongEnough,error:error
+    held:heldLongEnough,error:error,
+    clickX:shotX,clickY:shotY
   };
 
   if(!heldLongEnough){
-    setMessage("Too quick. Track the rim and hold until the center turns green.");
+    setMessage("Hold the moving center until it turns green, then click.");
   }else if(!made){
-    setMessage("Off center. Follow the moving rim and recenter.");
+    setMessage("Registered click was off center. Recenter and try again.");
   }else if(perfect){
     setMessage("Perfect center focus!");
   }else{
-    setMessage("Made shot!");
-  }
-  updateHud();
-}
-
-function resolveShot(t){
-  if(!shot||shot.resolved){return;}
-  shot.resolved=true;
-
-  if(shot.made){
-    makes++;
-    streak++;
-    if(streak>bestStreak){bestStreak=streak;}
-    if(shot.perfect){perfects++;resultText="PERFECT FOCUS";}
-    else{resultText="MADE";}
-    createParticles(hoop.x,hoop.y,true);
-    beep(true);
-  }else{
-    streak=0;
-    resultText=shot.held?"MISS — RECENTER":"MISS — HOLD STEADY";
-    createParticles(ball.x,ball.y,false);
-    beep(false);
+    setMessage("Centered shot!");
   }
 
-  resultUntil=t+650;
-  resetAt=t+900;
-  updateHud();
-}
-
-function resetBall(){
-  shotInProgress=false;
-  ball.x=ballHome.x;
-  ball.y=ballHome.y;
-  ball.currentR=ball.r;
-  shot=null;
-  resultText="";
-  resetAt=0;
-
-  if(!acceptingShots){
-    finishRound();
-  }else{
-    setMessage("Track the center, hold until green, then click.");
-  }
-}
-
-function startRound(){
-  makes=0;
-  shots=0;
-  streak=0;
-  bestStreak=0;
-  perfects=0;
-  focusStart=0;
-  focusProgress=0;
-  particles=[];
-  resultText="";
-  shot=null;
-  shotInProgress=false;
-  gameRunning=true;
-  roundStarted=false;
-  acceptingShots=false;
-  roundStart=0;
-  lastDisplayedSecond=-1;
-  phaseX=Math.random()*10;
-  phaseY=Math.random()*10;
-
-  ball.x=ballHome.x;
-  ball.y=ballHome.y;
-  ball.currentR=ball.r;
-  hoop.x=hoop.baseX;
-  hoop.y=hoop.baseY;
-
-  countdownEnd=timeNow()+3000;
-  resultBox.style.display="none";
-  overlay.style.display="none";
-  backBtn.style.display="block";
-  updateHud();
-  setMessage("Get ready...");
-
-  var root=document.documentElement;
-  var requestFull=root.requestFullscreen||root.mozRequestFullScreen||root.webkitRequestFullscreen;
-  if(requestFull){try{requestFull.call(root);}catch(err){}}
-}
-
-function startTimedPlay(t){
-  roundStarted=true;
-  acceptingShots=true;
-  roundStart=t;
-  roundEnd=t+selectedSeconds*1000;
-  hudTime.textContent=selectedSeconds;
-  setMessage("Track the center, hold until green, then click.");
-}
-
-function updateRoundClock(t){
-  if(!gameRunning){return;}
-
-  if(!roundStarted){
-    var count=Math.ceil((countdownEnd-t)/1000);
-    if(count>0){
-      hudTime.textContent=count;
-      setMessage(count===3?"READY":String(count));
-    }else{
-      startTimedPlay(t);
-    }
-    return;
-  }
-
-  var remaining=Math.max(0,Math.ceil((roundEnd-t)/1000));
-  if(remaining!==lastDisplayedSecond){
-    lastDisplayedSecond=remaining;
-    hudTime.textContent=remaining;
-    updateHud(t);
-  }
-
-  if(t>=roundEnd&&acceptingShots){
-    acceptingShots=false;
-    focusStart=0;
-    focusProgress=0;
-    hudTime.textContent="0";
-    if(shotInProgress){
-      setMessage("Time! Final shot...");
-    }else{
-      finishRound();
-    }
-  }
-}
-
-function saveRoundResult(){
-  var player=ensurePlayerShape(profiles.players[activeProfile]);
-  var accuracy=shots?Math.round(makes/shots*100):0;
-  var efficiency=finalEfficiency();
-  player.rounds++;
-  player.totalShots+=shots;
-  player.totalMakes+=makes;
-  player.totalSeconds+=selectedSeconds;
-  if(bestStreak>player.bestStreak){player.bestStreak=bestStreak;}
-  if(accuracy>player.bestAccuracy){player.bestAccuracy=accuracy;}
-  if(efficiency>player.bestEfficiency){player.bestEfficiency=efficiency;}
-  var key=recordKey();
-  if(!player.bestRounds[key]||makes>player.bestRounds[key]){player.bestRounds[key]=makes;}
-  if(!player.bestEfficiencies[key]||efficiency>player.bestEfficiencies[key]){player.bestEfficiencies[key]=efficiency;}
-  profiles.players[activeProfile]=player;
-  profiles.active=activeProfile;
-  saveProfiles();
-}
-
-function finishRound(){
-  if(!gameRunning){return;}
-  gameRunning=false;
-  roundStarted=false;
-  acceptingShots=false;
-  saveRoundResult();
-
-  var accuracy=shots?Math.round(makes/shots*100):0;
-  var efficiency=finalEfficiency();
-  var player=ensurePlayerShape(profiles.players[activeProfile]);
-  var career=player.totalShots?Math.round(player.totalMakes/player.totalShots*100):0;
-  var careerEfficiency=player.totalSeconds?(player.totalMakes*60/player.totalSeconds):0;
-  var best=player.bestRounds[recordKey()]||makes;
-  var bestEfficiency=player.bestEfficiencies[recordKey()]||efficiency;
-
-  resultBox.innerHTML=
-    "<strong>"+escapeHtml(activeProfile)+" — "+LEVELS[selectedLevel].label+" complete</strong><br>"+
-    "Makes: "+makes+" of "+shots+" · Accuracy: "+accuracy+"%<br>"+
-    "<strong>Focus Efficiency: "+formatEfficiency(efficiency)+" made baskets/minute</strong><br>"+
-    "Perfect focus shots: "+perfects+" · Best streak: "+bestStreak+"<br>"+
-    "Career accuracy: "+career+"% · Career efficiency: "+formatEfficiency(careerEfficiency)+"/min<br>"+
-    "Round records: "+best+" makes · "+formatEfficiency(bestEfficiency)+"/min<br>"+
-    "<strong>"+focusRating(accuracy)+"</strong>";
-  resultBox.style.display="block";
-  startBtn.textContent="PLAY AGAIN";
-  backBtn.style.display="none";
-  overlay.style.display="flex";
-  updateProfileStats();
-  updateHud();
-  setMessage("Round complete.");
-}
-
-
-function returnToSelection(e){
-  if(e){
-    if(e.preventDefault){e.preventDefault();}
-    if(e.stopPropagation){e.stopPropagation();}
-  }
-
-  /* Cancel the current round without saving it to the player profile. */
-  gameRunning=false;
-  roundStarted=false;
-  acceptingShots=false;
-  shotInProgress=false;
-  shot=null;
-  particles=[];
-  resultText="";
-  resultUntil=0;
-  resetAt=0;
-  countdownEnd=0;
-  roundStart=0;
-  roundEnd=0;
-  focusStart=0;
-  focusProgress=0;
-
-  ball.x=ballHome.x;
-  ball.y=ballHome.y;
-  ball.currentR=ball.r;
-  hoop.x=hoop.baseX;
-  hoop.y=hoop.baseY;
-
-  resultBox.style.display="none";
-  startBtn.textContent="START ROUND";
-  backBtn.style.display="none";
-  overlay.style.display="flex";
-  hudTime.textContent=selectedSeconds;
-  updateHud();
-  updateProfileStats();
-  setMessage("Choose a player, level, and round time.");
-
-  var exitFull=document.exitFullscreen||document.mozCancelFullScreen||document.webkitExitFullscreen;
-  if(exitFull){
-    try{exitFull.call(document);}catch(err){}
-  }
-}
-
-function focusRating(accuracy){
-  if(accuracy>=90){return"Elite focus and timing.";}
-  if(accuracy>=75){return"Strong tracking and center control.";}
-  if(accuracy>=55){return"Good focus. Hold the moving center a little longer.";}
-  return"Build consistency: track first, center second, click third.";
+  updateHud(shotTime);
 }
 
 function createParticles(x,y,success){
@@ -775,7 +584,10 @@ function updateFocus(t){
   if(isInsideFocusZone()){
     if(!focusStart){focusStart=t;}
     focusProgress=Math.min(1,(t-focusStart)/LEVELS[selectedLevel].hold);
-    if(focusProgress>=.92){setMessage("TARGET LOCKED — CLICK");}
+    if(focusProgress>=.90){
+      lastFocusLock=t;
+      setMessage("TARGET LOCKED — CLICK");
+    }
     else{setMessage("Hold steady on the moving center...");}
   }else{
     focusStart=0;
@@ -957,6 +769,19 @@ function drawCursor(){
   ctx.restore();
 }
 
+function drawClickMarker(t){
+  if(t>clickMarker.until){return;}
+  var remaining=Math.max(0,(clickMarker.until-t)/360);
+  ctx.save();
+  ctx.globalAlpha=.35+.65*remaining;
+  ctx.strokeStyle=clickMarker.made?"#59ff84":"#ffcc66";
+  ctx.lineWidth=4;
+  ctx.beginPath();
+  ctx.arc(clickMarker.x,clickMarker.y,8+(1-remaining)*10,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function updateParticles(t){
   var alive=[],i,p,age,sec;
   for(i=0;i<particles.length;i++){
@@ -1016,7 +841,7 @@ function frame(t){
   drawHoop(t);
   drawChestGuide();
   drawBall(ball.x,ball.y,ball.currentR||ball.r);
-  drawCursor();
+  drawClickMarker(t);
   updateParticles(t);
   drawResult(t);
   drawCountdown(t);
@@ -1060,12 +885,12 @@ backBtn.addEventListener("touchstart",returnToSelection,false);
 canvas.addEventListener("mousemove",pointerPosition,false);
 canvas.addEventListener("click",function(e){
   pointerPosition(e);
-  beginShot();
+  beginShot(cursor.x,cursor.y);
   if(e.preventDefault){e.preventDefault();}
 },false);
 canvas.addEventListener("touchstart",function(e){
   pointerPosition(e);
-  beginShot();
+  beginShot(cursor.x,cursor.y);
   if(e.preventDefault){e.preventDefault();}
 },false);
 
