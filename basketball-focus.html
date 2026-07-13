@@ -40,69 +40,107 @@ button,input,select{font-family:Arial,Helvetica,sans-serif}
 }
 #overlay{
   position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
-  padding:16px;background:radial-gradient(circle at center,rgba(62,18,0,.96),rgba(0,0,0,.99) 72%);
-  overflow:auto
+  padding:8px;background:radial-gradient(circle at center,rgba(62,18,0,.96),rgba(0,0,0,.99) 72%);
+  overflow:hidden
 }
 #panel{
-  width:94%;max-width:720px;padding:22px;border:1px solid rgba(255,126,32,.58);
-  border-radius:18px;background:rgba(8,10,17,.98);text-align:center;
-  box-shadow:0 0 42px rgba(255,90,10,.22)
+  width:96%;max-width:920px;height:calc(100vh - 16px);max-height:700px;
+  padding:11px 13px;border:1px solid rgba(255,126,32,.58);
+  border-radius:16px;background:rgba(8,10,17,.98);text-align:center;
+  box-shadow:0 0 42px rgba(255,90,10,.22);
+  display:flex;flex-direction:column;overflow:hidden
 }
-h1{margin:0 0 6px;font-size:28px;font-style:italic;letter-spacing:1px}
+h1{margin:0 0 2px;font-size:24px;font-style:italic;letter-spacing:1px;line-height:1.05}
 h1 span{color:#ff7e20}
 .subtitle{
-  margin-bottom:14px;color:#ffb274;font-size:11px;letter-spacing:2px;text-transform:uppercase
+  margin-bottom:6px;color:#ffb274;font-size:9px;letter-spacing:1.7px;
+  text-transform:uppercase;line-height:1.15;flex-shrink:0
+}
+#selectionGrid{
+  display:flex;gap:8px;flex:1;min-height:0;overflow:hidden
+}
+.selectionCol{
+  display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;min-height:0
 }
 .section{
-  margin:11px 0;padding:12px;border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;background:rgba(255,255,255,.035);text-align:left
+  margin:0;padding:8px 9px;border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;background:rgba(255,255,255,.035);text-align:left;
+  overflow:hidden;min-height:0
 }
+#profileSection{flex:1.28}
+#modeSection{flex:.72}
+#focusOptions,#dynamicOptions{flex:1.08}
+#timeSection{flex:.92}
 .sectionTitle{
-  margin-bottom:8px;color:#ff9b50;font-size:11px;font-weight:bold;
-  letter-spacing:1.2px;text-transform:uppercase
+  margin-bottom:5px;color:#ff9b50;font-size:10px;font-weight:bold;
+  letter-spacing:1.1px;text-transform:uppercase;line-height:1.1
 }
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.row>*{flex:1}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.row>*{flex:1;min-width:0}
 select,input{
-  width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(255,255,255,.22);
-  border-radius:9px;background:#151a25;color:#fff;font-size:15px
+  width:100%;height:35px;min-height:35px;padding:6px 8px;
+  border:1px solid rgba(255,255,255,.22);border-radius:8px;
+  background:#151a25;color:#fff;font-size:13px
 }
 .smallBtn{
-  min-width:0;padding:10px 12px;border:1px solid rgba(255,126,32,.45);
-  border-radius:9px;background:#2a1820;color:#fff;font-size:13px;font-weight:bold;cursor:pointer
+  min-width:0;height:35px;padding:6px 9px;border:1px solid rgba(255,126,32,.45);
+  border-radius:8px;background:#2a1820;color:#fff;font-size:11px;font-weight:bold;
+  cursor:pointer;white-space:nowrap
 }
 .smallBtn.secondary{background:#171c28;border-color:rgba(255,255,255,.18)}
-.choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .modeGrid{grid-template-columns:repeat(2,1fr)}
 .choiceBtn{
-  min-width:0;padding:11px 7px;border:1px solid rgba(255,255,255,.16);
-  border-radius:10px;background:#151a25;color:#dce2ed;font-size:13px;
-  font-weight:bold;cursor:pointer
+  min-width:0;height:38px;padding:5px 4px;border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;background:#151a25;color:#dce2ed;font-size:11px;
+  font-weight:bold;cursor:pointer;line-height:1.05
 }
 .choiceBtn.active{
   border-color:#ff8b37;background:#4a2411;color:#fff;
-  box-shadow:0 0 14px rgba(255,126,32,.24)
+  box-shadow:0 0 12px rgba(255,126,32,.22)
 }
-#modeInfo,#optionInfo,#profileStats{
-  margin-top:8px;color:#b9c2d0;font-size:12px;line-height:1.45
+#modeInfo,#optionInfo,#profileStats,#dynamicInfo{
+  margin-top:5px;color:#b9c2d0;font-size:10px;line-height:1.25
+}
+#profileStats{
+  max-height:54px;overflow:hidden
 }
 #resultBox{
-  display:none;margin:12px 0;padding:14px;border:1px solid rgba(89,255,132,.35);
-  border-radius:12px;background:rgba(28,80,43,.17);color:#e9fff0;
-  font-size:15px;line-height:1.55
+  display:none;margin:4px 0 6px;padding:7px 10px;min-height:0;max-height:78px;
+  overflow:hidden;border:1px solid rgba(89,255,132,.35);border-radius:10px;
+  background:rgba(28,80,43,.17);color:#e9fff0;font-size:12px;line-height:1.28;
+  flex-shrink:0
 }
 #startBtn{
-  width:100%;margin-top:10px;padding:14px 24px;border:0;border-radius:13px;
+  width:100%;height:42px;margin-top:7px;padding:8px 20px;border:0;border-radius:11px;
   background:linear-gradient(135deg,#ff6417,#ff9b50);color:#fff;
-  font-size:17px;font-weight:bold;letter-spacing:.7px;cursor:pointer;
-  box-shadow:0 0 24px rgba(255,100,23,.38)
+  font-size:15px;font-weight:bold;letter-spacing:.7px;cursor:pointer;
+  box-shadow:0 0 22px rgba(255,100,23,.35);flex-shrink:0
 }
-#smallNote{margin-top:12px;color:#8791a2;font-size:11px;line-height:1.45}
+#smallNote{
+  margin-top:4px;color:#8791a2;font-size:8px;line-height:1.15;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0
+}
 .hidden{display:none!important}
-@media(max-height:690px){
-  #panel{padding:13px}.section{margin:7px 0;padding:8px}
-  h1{font-size:23px}.subtitle{margin-bottom:7px}
-  #smallNote{margin-top:7px}
+@media(max-height:620px){
+  #panel{padding:7px 9px}
+  h1{font-size:20px}
+  .subtitle{display:none}
+  #selectionGrid,.selectionCol{gap:5px}
+  .section{padding:6px 7px}
+  .sectionTitle{margin-bottom:4px;font-size:9px}
+  select,input,.smallBtn{height:31px;min-height:31px}
+  .choiceBtn{height:33px;font-size:10px}
+  #modeInfo,#optionInfo,#profileStats,#dynamicInfo{font-size:9px;line-height:1.16}
+  #profileStats{max-height:42px}
+  #startBtn{height:37px;margin-top:5px}
+  #smallNote{display:none}
+}
+@media(max-height:520px){
+  #profileStats{display:none}
+  #modeInfo,#optionInfo,#dynamicInfo{max-height:24px;overflow:hidden}
+  .choiceBtn{height:29px}
+  #resultBox{max-height:58px;font-size:10px}
 }
 </style>
 </head>
@@ -131,60 +169,66 @@ select,input{
 
     <div id="resultBox"></div>
 
-    <div class="section">
-      <div class="sectionTitle">Player profile</div>
-      <div class="row">
-        <select id="profileSelect" aria-label="Player profile"></select>
-        <button class="smallBtn secondary" id="deleteProfileBtn" type="button">DELETE</button>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <input id="newProfileName" maxlength="18" placeholder="New player name">
-        <button class="smallBtn" id="addProfileBtn" type="button">ADD PLAYER</button>
-      </div>
-      <div id="profileStats">Profile statistics will appear here.</div>
-    </div>
+    <div id="selectionGrid">
+      <div class="selectionCol">
+        <div class="section" id="profileSection">
+          <div class="sectionTitle">Player profile</div>
+          <div class="row">
+            <select id="profileSelect" aria-label="Player profile"></select>
+            <button class="smallBtn secondary" id="deleteProfileBtn" type="button">DELETE</button>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <input id="newProfileName" maxlength="18" placeholder="New player name">
+            <button class="smallBtn" id="addProfileBtn" type="button">ADD PLAYER</button>
+          </div>
+          <div id="profileStats">Profile statistics will appear here.</div>
+        </div>
 
-    <div class="section">
-      <div class="sectionTitle">Training mode</div>
-      <div class="choiceGrid modeGrid">
-        <button class="choiceBtn active" data-mode="focus" type="button">BASKETBALL FOCUS</button>
-        <button class="choiceBtn" data-mode="dynamic" type="button">DYNAMIC VISION</button>
+        <div class="section" id="modeSection">
+          <div class="sectionTitle">Training mode</div>
+          <div class="choiceGrid modeGrid">
+            <button class="choiceBtn active" data-mode="focus" type="button">BASKETBALL FOCUS</button>
+            <button class="choiceBtn" data-mode="dynamic" type="button">DYNAMIC VISION</button>
+          </div>
+          <div id="modeInfo"></div>
+        </div>
       </div>
-      <div id="modeInfo"></div>
-    </div>
 
-    <div class="section" id="focusOptions">
-      <div class="sectionTitle">Focus difficulty</div>
-      <div class="choiceGrid">
-        <button class="choiceBtn active" data-level="steady" type="button">STEADY</button>
-        <button class="choiceBtn" data-level="focus" type="button">FOCUS</button>
-        <button class="choiceBtn" data-level="challenge" type="button">CHALLENGE</button>
-      </div>
-      <div id="optionInfo"></div>
-    </div>
+      <div class="selectionCol">
+        <div class="section" id="focusOptions">
+          <div class="sectionTitle">Focus difficulty</div>
+          <div class="choiceGrid">
+            <button class="choiceBtn active" data-level="steady" type="button">STEADY</button>
+            <button class="choiceBtn" data-level="focus" type="button">FOCUS</button>
+            <button class="choiceBtn" data-level="challenge" type="button">CHALLENGE</button>
+          </div>
+          <div id="optionInfo"></div>
+        </div>
 
-    <div class="section hidden" id="dynamicOptions">
-      <div class="sectionTitle">Target pulse speed</div>
-      <div class="choiceGrid">
-        <button class="choiceBtn active" data-bpm="60" type="button">60 BPM</button>
-        <button class="choiceBtn" data-bpm="80" type="button">80 BPM</button>
-        <button class="choiceBtn" data-bpm="100" type="button">100 BPM</button>
-      </div>
-      <div id="dynamicInfo" style="margin-top:8px;color:#b9c2d0;font-size:12px;line-height:1.45"></div>
-    </div>
+        <div class="section hidden" id="dynamicOptions">
+          <div class="sectionTitle">Target pulse speed</div>
+          <div class="choiceGrid">
+            <button class="choiceBtn active" data-bpm="60" type="button">60 BPM</button>
+            <button class="choiceBtn" data-bpm="80" type="button">80 BPM</button>
+            <button class="choiceBtn" data-bpm="100" type="button">100 BPM</button>
+          </div>
+          <div id="dynamicInfo"></div>
+        </div>
 
-    <div class="section">
-      <div class="sectionTitle">Timed round</div>
-      <div class="choiceGrid">
-        <button class="choiceBtn" data-time="30" type="button">30 SEC</button>
-        <button class="choiceBtn active" data-time="60" type="button">60 SEC</button>
-        <button class="choiceBtn" data-time="90" type="button">90 SEC</button>
+        <div class="section" id="timeSection">
+          <div class="sectionTitle">Timed round</div>
+          <div class="choiceGrid">
+            <button class="choiceBtn" data-time="30" type="button">30 SEC</button>
+            <button class="choiceBtn active" data-time="60" type="button">60 SEC</button>
+            <button class="choiceBtn" data-time="90" type="button">90 SEC</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <button id="startBtn" type="button">START ROUND</button>
     <div id="smallNote">
-      Dynamic Vision uses one bright target pulse per appearance rather than rapid full-screen flicker.
+      Static no-scroll menu · Dynamic Vision uses one bright target pulse per appearance.
       Profiles and records are stored only in this browser on this headset. No WebXR, WebVR, or outside scripts are required.
     </div>
   </div>
