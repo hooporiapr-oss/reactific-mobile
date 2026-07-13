@@ -9,7 +9,15 @@
 html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#05070d;color:#fff;font-family:Arial,Helvetica,sans-serif;-webkit-user-select:none;user-select:none}
 button,input,select{font-family:Arial,Helvetica,sans-serif}
 #game{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
-#hud{position:fixed;top:10px;left:8px;right:8px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;z-index:5;pointer-events:none}
+#backBtn{
+  position:fixed;top:10px;left:10px;z-index:12;display:none;
+  min-width:80px;padding:11px 13px;border:1px solid rgba(255,255,255,.28);
+  border-radius:10px;background:rgba(0,0,0,.78);color:#fff;
+  font-size:14px;font-weight:bold;letter-spacing:.4px;cursor:pointer;
+  box-shadow:0 0 14px rgba(0,0,0,.45)
+}
+#backBtn:active{transform:scale(.97)}
+#hud{position:fixed;top:10px;left:100px;right:8px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;z-index:5;pointer-events:none}
 .hudBox{min-width:72px;padding:5px 9px;border:1px solid rgba(255,126,32,.55);border-radius:9px;background:rgba(0,0,0,.68);text-align:center}
 .hudWide{min-width:110px}
 .hudLabel{font-size:9px;color:#ff9b50;font-weight:bold;letter-spacing:1px;text-transform:uppercase}
@@ -40,6 +48,7 @@ select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(2
 <body>
 
 <canvas id="game"></canvas>
+<button id="backBtn" type="button" aria-label="Return to selection screen">← BACK</button>
 
 <div id="hud">
   <div class="hudBox hudWide"><div class="hudLabel">Player</div><div class="hudValue" id="hudPlayer">Guest</div></div>
@@ -108,6 +117,7 @@ var overlay=document.getElementById("overlay");
 var resultBox=document.getElementById("resultBox");
 var message=document.getElementById("message");
 var startBtn=document.getElementById("startBtn");
+var backBtn=document.getElementById("backBtn");
 var profileSelect=document.getElementById("profileSelect");
 var newProfileName=document.getElementById("newProfileName");
 var addProfileBtn=document.getElementById("addProfileBtn");
@@ -569,6 +579,7 @@ function startRound(){
   countdownEnd=timeNow()+3000;
   resultBox.style.display="none";
   overlay.style.display="none";
+  backBtn.style.display="block";
   updateHud();
   setMessage("Get ready...");
 
@@ -664,10 +675,55 @@ function finishRound(){
     "<strong>"+focusRating(accuracy)+"</strong>";
   resultBox.style.display="block";
   startBtn.textContent="PLAY AGAIN";
+  backBtn.style.display="none";
   overlay.style.display="flex";
   updateProfileStats();
   updateHud();
   setMessage("Round complete.");
+}
+
+
+function returnToSelection(e){
+  if(e){
+    if(e.preventDefault){e.preventDefault();}
+    if(e.stopPropagation){e.stopPropagation();}
+  }
+
+  /* Cancel the current round without saving it to the player profile. */
+  gameRunning=false;
+  roundStarted=false;
+  acceptingShots=false;
+  shotInProgress=false;
+  shot=null;
+  particles=[];
+  resultText="";
+  resultUntil=0;
+  resetAt=0;
+  countdownEnd=0;
+  roundStart=0;
+  roundEnd=0;
+  focusStart=0;
+  focusProgress=0;
+
+  ball.x=ballHome.x;
+  ball.y=ballHome.y;
+  ball.currentR=ball.r;
+  hoop.x=hoop.baseX;
+  hoop.y=hoop.baseY;
+
+  resultBox.style.display="none";
+  startBtn.textContent="START ROUND";
+  backBtn.style.display="none";
+  overlay.style.display="flex";
+  hudTime.textContent=selectedSeconds;
+  updateHud();
+  updateProfileStats();
+  setMessage("Choose a player, level, and round time.");
+
+  var exitFull=document.exitFullscreen||document.mozCancelFullScreen||document.webkitExitFullscreen;
+  if(exitFull){
+    try{exitFull.call(document);}catch(err){}
+  }
 }
 
 function focusRating(accuracy){
@@ -998,6 +1054,8 @@ for(i=0;i<timeButtons.length;i++){
 }
 
 startBtn.addEventListener("click",startRound,false);
+backBtn.addEventListener("click",returnToSelection,false);
+backBtn.addEventListener("touchstart",returnToSelection,false);
 
 canvas.addEventListener("mousemove",pointerPosition,false);
 canvas.addEventListener("click",function(e){
