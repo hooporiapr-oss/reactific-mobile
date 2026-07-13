@@ -3,132 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Basketball Focus Trainer | Ritnome</title>
+<title>Basketball Focus Trainer Pro | Ritnome</title>
 <style>
-  * { box-sizing: border-box; }
-  html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-    background: #05070d;
-    color: #ffffff;
-    font-family: Arial, Helvetica, sans-serif;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  #game {
-    display: block;
-    width: 100%;
-    height: 100%;
-    cursor: crosshair;
-    touch-action: none;
-  }
-  #hud {
-    position: fixed;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    z-index: 5;
-    pointer-events: none;
-  }
-  .box {
-    min-width: 82px;
-    padding: 7px 12px;
-    border: 1px solid rgba(255, 126, 32, 0.55);
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.64);
-    text-align: center;
-  }
-  .label {
-    font-size: 10px;
-    color: #ff9b50;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .value {
-    margin-top: 2px;
-    font-size: 20px;
-    font-weight: bold;
-  }
-  #message {
-    position: fixed;
-    left: 50%;
-    bottom: 18px;
-    transform: translateX(-50%);
-    width: min(90%, 560px);
-    padding: 10px 16px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.68);
-    text-align: center;
-    font-size: 15px;
-    font-weight: bold;
-    letter-spacing: 0.3px;
-    z-index: 5;
-    pointer-events: none;
-  }
-  #overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at center, rgba(62, 18, 0, 0.95), rgba(0, 0, 0, 0.98) 70%);
-  }
-  #panel {
-    width: min(94vw, 560px);
-    padding: 28px;
-    border: 1px solid rgba(255, 126, 32, 0.55);
-    border-radius: 20px;
-    background: rgba(8, 10, 17, 0.95);
-    text-align: center;
-    box-shadow: 0 0 42px rgba(255, 90, 10, 0.22);
-  }
-  h1 {
-    margin: 0 0 8px;
-    font-size: 30px;
-    font-style: italic;
-    letter-spacing: 1px;
-  }
-  h1 span { color: #ff7e20; }
-  .subtitle {
-    margin-bottom: 20px;
-    color: #ffb274;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .instructions {
-    margin: 0 auto 22px;
-    max-width: 440px;
-    color: #d8dee9;
-    font-size: 16px;
-    line-height: 1.55;
-  }
-  button {
-    min-width: 190px;
-    padding: 15px 26px;
-    border: 0;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #ff6417, #ff9b50);
-    color: white;
-    font-size: 17px;
-    font-weight: bold;
-    letter-spacing: 0.7px;
-    cursor: pointer;
-    box-shadow: 0 0 24px rgba(255, 100, 23, 0.4);
-  }
-  #smallNote {
-    margin-top: 15px;
-    color: #8791a2;
-    font-size: 12px;
-    line-height: 1.45;
-  }
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#05070d;color:#fff;font-family:Arial,Helvetica,sans-serif;-webkit-user-select:none;user-select:none}
+button,input,select{font-family:Arial,Helvetica,sans-serif}
+#game{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#hud{position:fixed;top:10px;left:8px;right:8px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;z-index:5;pointer-events:none}
+.hudBox{min-width:72px;padding:5px 9px;border:1px solid rgba(255,126,32,.55);border-radius:9px;background:rgba(0,0,0,.68);text-align:center}
+.hudWide{min-width:110px}
+.hudLabel{font-size:9px;color:#ff9b50;font-weight:bold;letter-spacing:1px;text-transform:uppercase}
+.hudValue{margin-top:2px;font-size:17px;font-weight:bold;white-space:nowrap}
+#message{position:fixed;left:5%;right:5%;bottom:14px;max-width:680px;margin:auto;padding:9px 14px;border-radius:11px;background:rgba(0,0,0,.72);text-align:center;font-size:14px;font-weight:bold;letter-spacing:.2px;z-index:5;pointer-events:none}
+#overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at center,rgba(62,18,0,.96),rgba(0,0,0,.99) 72%);overflow:auto}
+#panel{width:94%;max-width:680px;padding:22px;border:1px solid rgba(255,126,32,.58);border-radius:18px;background:rgba(8,10,17,.97);text-align:center;box-shadow:0 0 42px rgba(255,90,10,.22)}
+h1{margin:0 0 6px;font-size:29px;font-style:italic;letter-spacing:1px}
+h1 span{color:#ff7e20}
+.subtitle{margin-bottom:15px;color:#ffb274;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.section{margin:12px 0;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035);text-align:left}
+.sectionTitle{margin-bottom:8px;color:#ff9b50;font-size:11px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+select,input{width:100%;min-height:42px;padding:9px 11px;border:1px solid rgba(255,255,255,.22);border-radius:9px;background:#151a25;color:#fff;font-size:15px}
+.smallBtn{min-width:0;padding:10px 12px;border:1px solid rgba(255,126,32,.45);border-radius:9px;background:#2a1820;color:#fff;font-size:13px;font-weight:bold;cursor:pointer}
+.smallBtn.secondary{background:#171c28;border-color:rgba(255,255,255,.18)}
+.choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.choiceBtn{min-width:0;padding:11px 7px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:#151a25;color:#dce2ed;font-size:13px;font-weight:bold;cursor:pointer}
+.choiceBtn.active{border-color:#ff8b37;background:#4a2411;color:#fff;box-shadow:0 0 14px rgba(255,126,32,.24)}
+#difficultyInfo,#profileStats{margin-top:8px;color:#b9c2d0;font-size:12px;line-height:1.45}
+#resultBox{display:none;margin:12px 0;padding:14px;border:1px solid rgba(89,255,132,.35);border-radius:12px;background:rgba(28,80,43,.17);color:#e9fff0;font-size:15px;line-height:1.55}
+#startBtn{width:100%;margin-top:10px;padding:14px 24px;border:0;border-radius:13px;background:linear-gradient(135deg,#ff6417,#ff9b50);color:#fff;font-size:17px;font-weight:bold;letter-spacing:.7px;cursor:pointer;box-shadow:0 0 24px rgba(255,100,23,.38)}
+#smallNote{margin-top:12px;color:#8791a2;font-size:11px;line-height:1.4}
+@media(max-height:650px){#panel{padding:14px}.section{margin:8px 0;padding:9px}h1{font-size:24px}.subtitle{margin-bottom:8px}}
 </style>
 </head>
 <body>
@@ -136,613 +42,953 @@
 <canvas id="game"></canvas>
 
 <div id="hud">
-  <div class="box"><div class="label">Makes</div><div class="value" id="makes">0</div></div>
-  <div class="box"><div class="label">Shots</div><div class="value" id="shots">0 / 20</div></div>
-  <div class="box"><div class="label">Streak</div><div class="value" id="streak">0</div></div>
-  <div class="box"><div class="label">Accuracy</div><div class="value" id="accuracy">0%</div></div>
+  <div class="hudBox hudWide"><div class="hudLabel">Player</div><div class="hudValue" id="hudPlayer">Guest</div></div>
+  <div class="hudBox"><div class="hudLabel">Level</div><div class="hudValue" id="hudLevel">Steady</div></div>
+  <div class="hudBox"><div class="hudLabel">Time</div><div class="hudValue" id="hudTime">60</div></div>
+  <div class="hudBox"><div class="hudLabel">Makes</div><div class="hudValue" id="hudMakes">0</div></div>
+  <div class="hudBox"><div class="hudLabel">Shots</div><div class="hudValue" id="hudShots">0</div></div>
+  <div class="hudBox"><div class="hudLabel">Streak</div><div class="hudValue" id="hudStreak">0</div></div>
+  <div class="hudBox"><div class="hudLabel">Accuracy</div><div class="hudValue" id="hudAccuracy">0%</div></div>
 </div>
 
-<div id="message">Aim at the exact center of the rim. Hold steady until the target turns green, then click.</div>
+<div id="message">Choose a player, level, and round time.</div>
 
 <div id="overlay">
   <div id="panel">
     <h1>Basketball <span>Focus</span></h1>
-    <div class="subtitle">Visual focus and steady-aim training</div>
-    <div class="instructions" id="overlayText">
-      The ball stays at chest height. Move the PICO pointer to the center of the rim,
-      hold it steady until the target turns green, then press the controller trigger.
-      Each session has 20 shots.
+    <div class="subtitle">Focus · timing · visual tracking</div>
+
+    <div id="resultBox"></div>
+
+    <div class="section">
+      <div class="sectionTitle">Player profile</div>
+      <div class="row">
+        <select id="profileSelect" aria-label="Player profile"></select>
+        <button class="smallBtn secondary" id="deleteProfileBtn" type="button">DELETE</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input id="newProfileName" maxlength="18" placeholder="New player name">
+        <button class="smallBtn" id="addProfileBtn" type="button">ADD PLAYER</button>
+      </div>
+      <div id="profileStats">Profile statistics will appear here.</div>
     </div>
-    <button id="startBtn">START TRAINING</button>
-    <div id="smallNote">
-      No WebXR or VR-display connection is required. This runs directly in the headset browser window.
+
+    <div class="section">
+      <div class="sectionTitle">Difficulty</div>
+      <div class="choiceGrid">
+        <button class="choiceBtn active" data-level="steady" type="button">STEADY</button>
+        <button class="choiceBtn" data-level="focus" type="button">FOCUS</button>
+        <button class="choiceBtn" data-level="challenge" type="button">CHALLENGE</button>
+      </div>
+      <div id="difficultyInfo"></div>
     </div>
+
+    <div class="section">
+      <div class="sectionTitle">Timed round</div>
+      <div class="choiceGrid">
+        <button class="choiceBtn" data-time="30" type="button">30 SEC</button>
+        <button class="choiceBtn active" data-time="60" type="button">60 SEC</button>
+        <button class="choiceBtn" data-time="90" type="button">90 SEC</button>
+      </div>
+    </div>
+
+    <button id="startBtn" type="button">START ROUND</button>
+    <div id="smallNote">Profiles and records are stored only in this browser on this headset. No WebXR, WebVR, or outside scripts are required.</div>
   </div>
 </div>
 
 <script>
-(function () {
-  "use strict";
+(function(){
+"use strict";
 
-  var canvas = document.getElementById("game");
-  var ctx = canvas.getContext("2d");
-  var overlay = document.getElementById("overlay");
-  var startBtn = document.getElementById("startBtn");
-  var overlayText = document.getElementById("overlayText");
-  var message = document.getElementById("message");
+var canvas=document.getElementById("game");
+var ctx=canvas.getContext("2d");
+var overlay=document.getElementById("overlay");
+var resultBox=document.getElementById("resultBox");
+var message=document.getElementById("message");
+var startBtn=document.getElementById("startBtn");
+var profileSelect=document.getElementById("profileSelect");
+var newProfileName=document.getElementById("newProfileName");
+var addProfileBtn=document.getElementById("addProfileBtn");
+var deleteProfileBtn=document.getElementById("deleteProfileBtn");
+var difficultyInfo=document.getElementById("difficultyInfo");
+var profileStats=document.getElementById("profileStats");
 
-  var makesEl = document.getElementById("makes");
-  var shotsEl = document.getElementById("shots");
-  var streakEl = document.getElementById("streak");
-  var accuracyEl = document.getElementById("accuracy");
+var hudPlayer=document.getElementById("hudPlayer");
+var hudLevel=document.getElementById("hudLevel");
+var hudTime=document.getElementById("hudTime");
+var hudMakes=document.getElementById("hudMakes");
+var hudShots=document.getElementById("hudShots");
+var hudStreak=document.getElementById("hudStreak");
+var hudAccuracy=document.getElementById("hudAccuracy");
 
-  var W = 0;
-  var H = 0;
-  var DPR = 1;
+var STORAGE_KEY="ritnome_basketball_focus_profiles_v2";
+var W=0,H=0,DPR=1;
+var selectedLevel="steady";
+var selectedSeconds=60;
+var activeProfile="Guest";
 
-  var SESSION_SHOTS = 20;
-  var FOCUS_REQUIRED = 650;
-  var gameRunning = false;
-  var shotInProgress = false;
-  var resetAt = 0;
+var LEVELS={
+  steady:{
+    label:"Steady",
+    hold:800,
+    targetScale:.022,
+    moveX:0,
+    moveY:0,
+    speedX:0,
+    speedY:0,
+    description:"Stationary rim, larger center target, and a longer steady hold. Best for learning the focus sequence."
+  },
+  focus:{
+    label:"Focus",
+    hold:620,
+    targetScale:.018,
+    moveX:.16,
+    moveY:0,
+    speedX:.00072,
+    speedY:0,
+    description:"The rim moves slowly from side to side. Track it, center the pointer, hold, and click."
+  },
+  challenge:{
+    label:"Challenge",
+    hold:440,
+    targetScale:.014,
+    moveX:.23,
+    moveY:.075,
+    speedX:.00112,
+    speedY:.00147,
+    description:"Smaller target with faster horizontal and vertical movement. Precision and timing both matter."
+  }
+};
 
-  var makes = 0;
-  var shots = 0;
-  var streak = 0;
-  var bestStreak = 0;
-  var focusStart = 0;
-  var focusProgress = 0;
+var profiles=loadProfiles();
+var gameRunning=false;
+var roundStarted=false;
+var acceptingShots=false;
+var shotInProgress=false;
+var countdownEnd=0;
+var roundEnd=0;
+var resetAt=0;
+var lastDisplayedSecond=-1;
+var phaseX=Math.random()*10;
+var phaseY=Math.random()*10;
 
-  var cursor = { x: -1000, y: -1000, visible: false };
-  var hoop = { x: 0, y: 0, rx: 0, ry: 0 };
-  var ballHome = { x: 0, y: 0 };
-  var ball = { x: 0, y: 0, r: 28, active: false };
-  var shot = null;
-  var particles = [];
-  var resultText = "";
-  var resultUntil = 0;
+var makes=0;
+var shots=0;
+var streak=0;
+var bestStreak=0;
+var perfects=0;
+var focusStart=0;
+var focusProgress=0;
 
-  var now = function () {
-    return (window.performance && performance.now) ? performance.now() : new Date().getTime();
+var cursor={x:-1000,y:-1000,visible:false};
+var hoop={baseX:0,baseY:0,x:0,y:0,rx:0,ry:0,frozenX:0,frozenY:0};
+var ballHome={x:0,y:0};
+var ball={x:0,y:0,r:28,currentR:28};
+var shot=null;
+var particles=[];
+var resultText="";
+var resultUntil=0;
+
+function timeNow(){
+  return(window.performance&&performance.now)?performance.now():(new Date()).getTime();
+}
+
+function defaultProfiles(){
+  return{
+    active:"Guest",
+    players:{
+      "Guest":{
+        rounds:0,totalShots:0,totalMakes:0,bestStreak:0,bestAccuracy:0,bestRounds:{}
+      }
+    }
+  };
+}
+
+function loadProfiles(){
+  var data=null;
+  try{
+    data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+  }catch(err){data=null;}
+  if(!data||!data.players){data=defaultProfiles();}
+  if(!data.players.Guest){
+    data.players.Guest={rounds:0,totalShots:0,totalMakes:0,bestStreak:0,bestAccuracy:0,bestRounds:{}};
+  }
+  if(!data.active||!data.players[data.active]){data.active="Guest";}
+  return data;
+}
+
+function saveProfiles(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(profiles));}catch(err){}
+}
+
+function cleanName(value){
+  value=String(value||"").replace(/^\s+|\s+$/g,"").replace(/\s+/g," ");
+  value=value.replace(/[<>]/g,"");
+  if(value.length>18){value=value.substring(0,18);}
+  return value;
+}
+
+function ensurePlayerShape(player){
+  if(!player){player={};}
+  if(typeof player.rounds!=="number"){player.rounds=0;}
+  if(typeof player.totalShots!=="number"){player.totalShots=0;}
+  if(typeof player.totalMakes!=="number"){player.totalMakes=0;}
+  if(typeof player.bestStreak!=="number"){player.bestStreak=0;}
+  if(typeof player.bestAccuracy!=="number"){player.bestAccuracy=0;}
+  if(!player.bestRounds){player.bestRounds={};}
+  return player;
+}
+
+function sortedProfileNames(){
+  var names=[],name;
+  for(name in profiles.players){
+    if(profiles.players.hasOwnProperty(name)){names.push(name);}
+  }
+  names.sort(function(a,b){
+    if(a==="Guest"){return-1;}
+    if(b==="Guest"){return 1;}
+    return a.toLowerCase()<b.toLowerCase()?-1:1;
+  });
+  return names;
+}
+
+function refreshProfiles(){
+  var names=sortedProfileNames();
+  var html="",i;
+  for(i=0;i<names.length;i++){
+    html+='<option value="'+escapeHtml(names[i])+'">'+escapeHtml(names[i])+"</option>";
+  }
+  profileSelect.innerHTML=html;
+  if(!profiles.players[activeProfile]){activeProfile=profiles.active||"Guest";}
+  profileSelect.value=activeProfile;
+  profiles.active=activeProfile;
+  saveProfiles();
+  updateProfileStats();
+  updateHud();
+}
+
+function escapeHtml(text){
+  return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function addProfile(){
+  var name=cleanName(newProfileName.value);
+  if(!name){
+    profileStats.innerHTML="<strong>Enter a player name first.</strong>";
+    return;
+  }
+  if(!profiles.players[name]){
+    profiles.players[name]={rounds:0,totalShots:0,totalMakes:0,bestStreak:0,bestAccuracy:0,bestRounds:{}};
+  }
+  activeProfile=name;
+  profiles.active=name;
+  newProfileName.value="";
+  saveProfiles();
+  refreshProfiles();
+}
+
+function deleteProfile(){
+  if(activeProfile==="Guest"){
+    profileStats.innerHTML="<strong>The Guest profile cannot be deleted.</strong>";
+    return;
+  }
+  if(profiles.players[activeProfile]){delete profiles.players[activeProfile];}
+  activeProfile="Guest";
+  profiles.active="Guest";
+  saveProfiles();
+  refreshProfiles();
+}
+
+function recordKey(){
+  return selectedLevel+"_"+selectedSeconds;
+}
+
+function updateProfileStats(){
+  var player=ensurePlayerShape(profiles.players[activeProfile]);
+  profiles.players[activeProfile]=player;
+  var careerAccuracy=player.totalShots?Math.round(player.totalMakes/player.totalShots*100):0;
+  var best=player.bestRounds[recordKey()]||0;
+  profileStats.innerHTML=
+    "<strong>"+escapeHtml(activeProfile)+"</strong> · Rounds "+player.rounds+
+    " · Career "+careerAccuracy+"% · Best streak "+player.bestStreak+
+    " · Best "+LEVELS[selectedLevel].label+" "+selectedSeconds+"s result: "+best+" makes";
+}
+
+function selectLevel(level){
+  if(!LEVELS[level]){return;}
+  selectedLevel=level;
+  var buttons=document.querySelectorAll("[data-level]");
+  var i;
+  for(i=0;i<buttons.length;i++){
+    buttons[i].className="choiceBtn"+(buttons[i].getAttribute("data-level")===level?" active":"");
+  }
+  difficultyInfo.textContent=LEVELS[level].description;
+  updateProfileStats();
+  updateHud();
+}
+
+function selectTime(seconds){
+  selectedSeconds=parseInt(seconds,10)||60;
+  var buttons=document.querySelectorAll("[data-time]");
+  var i;
+  for(i=0;i<buttons.length;i++){
+    buttons[i].className="choiceBtn"+(parseInt(buttons[i].getAttribute("data-time"),10)===selectedSeconds?" active":"");
+  }
+  updateProfileStats();
+  hudTime.textContent=selectedSeconds;
+}
+
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,1.25);
+  W=window.innerWidth;
+  H=window.innerHeight;
+  canvas.width=Math.floor(W*DPR);
+  canvas.height=Math.floor(H*DPR);
+  canvas.style.width=W+"px";
+  canvas.style.height=H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+
+  hoop.baseX=W*.5;
+  hoop.baseY=H*.30;
+  hoop.rx=Math.max(52,Math.min(88,W*.086));
+  hoop.ry=hoop.rx*.23;
+  if(!gameRunning){
+    hoop.x=hoop.baseX;
+    hoop.y=hoop.baseY;
+  }
+
+  ballHome.x=W*.5;
+  ballHome.y=H*.75;
+  ball.r=Math.max(23,Math.min(37,W*.036));
+  if(!shotInProgress){
+    ball.x=ballHome.x;
+    ball.y=ballHome.y;
+    ball.currentR=ball.r;
+  }
+}
+
+function updateHud(){
+  hudPlayer.textContent=activeProfile;
+  hudLevel.textContent=LEVELS[selectedLevel].label;
+  hudMakes.textContent=makes;
+  hudShots.textContent=shots;
+  hudStreak.textContent=streak;
+  hudAccuracy.textContent=shots?Math.round(makes/shots*100)+"%":"0%";
+}
+
+function setMessage(text){message.textContent=text;}
+
+function pointerPosition(e){
+  var rect=canvas.getBoundingClientRect();
+  var clientX=e.clientX;
+  var clientY=e.clientY;
+  if(e.touches&&e.touches.length){
+    clientX=e.touches[0].clientX;
+    clientY=e.touches[0].clientY;
+  }
+  if(typeof clientX==="number"&&typeof clientY==="number"){
+    cursor.x=clientX-rect.left;
+    cursor.y=clientY-rect.top;
+    cursor.visible=true;
+  }
+}
+
+function targetRadius(){
+  return Math.max(10,Math.min(25,W*LEVELS[selectedLevel].targetScale));
+}
+
+function focusZoneRadius(){return targetRadius()*2.25;}
+
+function distanceToTarget(){
+  var dx=cursor.x-hoop.x;
+  var dy=cursor.y-hoop.y;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+
+function isInsideFocusZone(){
+  return cursor.visible&&distanceToTarget()<=focusZoneRadius();
+}
+
+function updateHoop(t){
+  if(shotInProgress){
+    hoop.x=hoop.frozenX;
+    hoop.y=hoop.frozenY;
+    return;
+  }
+  var level=LEVELS[selectedLevel];
+  hoop.x=hoop.baseX+Math.sin(t*level.speedX+phaseX)*(W*level.moveX);
+  hoop.y=hoop.baseY+Math.sin(t*level.speedY+phaseY)*(H*level.moveY);
+
+  var edge=hoop.rx*1.9;
+  if(hoop.x<edge){hoop.x=edge;}
+  if(hoop.x>W-edge){hoop.x=W-edge;}
+  if(hoop.y<H*.19){hoop.y=H*.19;}
+  if(hoop.y>H*.44){hoop.y=H*.44;}
+}
+
+function beginShot(){
+  if(!gameRunning||!roundStarted||!acceptingShots||shotInProgress){return;}
+
+  var error=distanceToTarget();
+  var radius=targetRadius();
+  var heldLongEnough=focusProgress>=.92;
+  var made=heldLongEnough&&error<=radius;
+  var perfect=made&&error<=radius*.38;
+
+  shots++;
+  shotInProgress=true;
+  hoop.frozenX=hoop.x;
+  hoop.frozenY=hoop.y;
+  resultText="";
+  focusStart=0;
+  focusProgress=0;
+
+  var missDirection=cursor.x<hoop.x?-1:1;
+  if(Math.abs(cursor.x-hoop.x)<2){missDirection=Math.random()<.5?-1:1;}
+
+  var endX=made?hoop.x:hoop.x+missDirection*Math.max(hoop.rx*.9,error*.72);
+  var endY=made?hoop.y+hoop.ry*.25:hoop.y-hoop.ry*.15;
+  var arcY=Math.min(ballHome.y,hoop.y)-H*.23;
+
+  shot={
+    start:timeNow(),
+    duration:820,
+    sx:ballHome.x,sy:ballHome.y,
+    cx:(ballHome.x+endX)*.5,cy:arcY,
+    ex:endX,ey:endY,
+    made:made,perfect:perfect,resolved:false,
+    held:heldLongEnough,error:error
   };
 
-  function resize() {
-    DPR = Math.min(window.devicePixelRatio || 1, 1.25);
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = Math.floor(W * DPR);
-    canvas.height = Math.floor(H * DPR);
-    canvas.style.width = W + "px";
-    canvas.style.height = H + "px";
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-    hoop.x = W * 0.5;
-    hoop.y = H * 0.29;
-    hoop.rx = Math.max(55, Math.min(92, W * 0.09));
-    hoop.ry = hoop.rx * 0.23;
-
-    ballHome.x = W * 0.5;
-    ballHome.y = H * 0.73;
-    ball.r = Math.max(24, Math.min(38, W * 0.037));
-
-    if (!shotInProgress) {
-      ball.x = ballHome.x;
-      ball.y = ballHome.y;
-    }
+  if(!heldLongEnough){
+    setMessage("Too quick. Track the rim and hold until the center turns green.");
+  }else if(!made){
+    setMessage("Off center. Follow the moving rim and recenter.");
+  }else if(perfect){
+    setMessage("Perfect center focus!");
+  }else{
+    setMessage("Made shot!");
   }
-
-  function updateHud() {
-    makesEl.textContent = makes;
-    shotsEl.textContent = shots + " / " + SESSION_SHOTS;
-    streakEl.textContent = streak;
-    accuracyEl.textContent = shots ? Math.round((makes / shots) * 100) + "%" : "0%";
-  }
-
-  function setMessage(text) {
-    message.textContent = text;
-  }
-
-  function pointerPosition(e) {
-    var rect = canvas.getBoundingClientRect();
-    var clientX = e.clientX;
-    var clientY = e.clientY;
-
-    if (e.touches && e.touches.length) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    }
-
-    if (typeof clientX === "number" && typeof clientY === "number") {
-      cursor.x = clientX - rect.left;
-      cursor.y = clientY - rect.top;
-      cursor.visible = true;
-    }
-  }
-
-  function distanceToTarget() {
-    var dx = cursor.x - hoop.x;
-    var dy = cursor.y - hoop.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  function targetRadius() {
-    return Math.max(12, Math.min(22, W * 0.018));
-  }
-
-  function focusZoneRadius() {
-    return targetRadius() * 2.4;
-  }
-
-  function isInsideFocusZone() {
-    return cursor.visible && distanceToTarget() <= focusZoneRadius();
-  }
-
-  function isInsideMakeZone() {
-    return cursor.visible && distanceToTarget() <= targetRadius();
-  }
-
-  function createParticles(x, y, success) {
-    var i;
-    for (i = 0; i < 20; i++) {
-      particles.push({
-        x: x,
-        y: y,
-        vx: (Math.random() - 0.5) * (success ? 5 : 2.5),
-        vy: -Math.random() * (success ? 5 : 2.5),
-        life: 700 + Math.random() * 400,
-        born: now(),
-        success: success
-      });
-    }
-  }
-
-  function beep(success) {
-    var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) { return; }
-    try {
-      var ac = beep.context || (beep.context = new AudioContextClass());
-      var osc = ac.createOscillator();
-      var gain = ac.createGain();
-      osc.type = success ? "sine" : "triangle";
-      osc.frequency.value = success ? 880 : 190;
-      gain.gain.value = 0.12;
-      osc.connect(gain);
-      gain.connect(ac.destination);
-      osc.start();
-      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.22);
-      osc.stop(ac.currentTime + 0.24);
-    } catch (err) {}
-  }
-
-  function beginShot() {
-    if (!gameRunning || shotInProgress || shots >= SESSION_SHOTS) { return; }
-
-    var error = distanceToTarget();
-    var radius = targetRadius();
-    var heldLongEnough = focusProgress >= 0.92;
-    var made = heldLongEnough && error <= radius;
-
-    shots++;
-    shotInProgress = true;
-    ball.active = true;
-    resultText = "";
-    focusStart = 0;
-    focusProgress = 0;
-
-    var missDirection = cursor.x < hoop.x ? -1 : 1;
-    if (Math.abs(cursor.x - hoop.x) < 2) {
-      missDirection = Math.random() < 0.5 ? -1 : 1;
-    }
-
-    var endX = made ? hoop.x : hoop.x + missDirection * Math.max(hoop.rx * 0.85, error * 0.72);
-    var endY = made ? hoop.y + hoop.ry * 0.25 : hoop.y - hoop.ry * 0.2;
-    var arcY = Math.min(ballHome.y, hoop.y) - H * 0.23;
-
-    shot = {
-      start: now(),
-      duration: 900,
-      sx: ballHome.x,
-      sy: ballHome.y,
-      cx: (ballHome.x + endX) * 0.5,
-      cy: arcY,
-      ex: endX,
-      ey: endY,
-      made: made,
-      resolved: false,
-      error: error,
-      held: heldLongEnough
-    };
-
-    if (!heldLongEnough) {
-      setMessage("Too quick. Hold the target steady until it turns green.");
-    } else if (!made) {
-      setMessage("Off center. Keep your pointer on the middle of the rim.");
-    } else {
-      setMessage("Centered shot!");
-    }
-
-    updateHud();
-  }
-
-  function resolveShot(t) {
-    if (!shot || shot.resolved) { return; }
-
-    shot.resolved = true;
-    if (shot.made) {
-      makes++;
-      streak++;
-      if (streak > bestStreak) { bestStreak = streak; }
-      resultText = shot.error <= targetRadius() * 0.42 ? "PERFECT FOCUS" : "MADE";
-      createParticles(hoop.x, hoop.y, true);
-      beep(true);
-    } else {
-      streak = 0;
-      resultText = shot.held ? "MISS — RECENTER" : "MISS — HOLD STEADY";
-      createParticles(ball.x, ball.y, false);
-      beep(false);
-    }
-
-    resultUntil = t + 900;
-    resetAt = t + 1250;
-    updateHud();
-  }
-
-  function resetBall() {
-    shotInProgress = false;
-    ball.active = false;
-    ball.x = ballHome.x;
-    ball.y = ballHome.y;
-    shot = null;
-    resultText = "";
-    resetAt = 0;
-
-    if (shots >= SESSION_SHOTS) {
-      finishSession();
-    } else {
-      setMessage("Aim at the center, hold until green, then click.");
-    }
-  }
-
-  function finishSession() {
-    gameRunning = false;
-    var accuracy = shots ? Math.round((makes / shots) * 100) : 0;
-    overlayText.innerHTML =
-      "<strong>Session complete</strong><br><br>" +
-      "Makes: " + makes + " of " + shots + "<br>" +
-      "Accuracy: " + accuracy + "%<br>" +
-      "Best streak: " + bestStreak + "<br><br>" +
-      focusRating(accuracy);
-    startBtn.textContent = "TRAIN AGAIN";
-    overlay.style.display = "flex";
-  }
-
-  function focusRating(accuracy) {
-    if (accuracy >= 90) { return "Excellent visual focus and control."; }
-    if (accuracy >= 75) { return "Strong focus. Keep tightening the center aim."; }
-    if (accuracy >= 55) { return "Good start. Slow down and hold the center longer."; }
-    return "Build consistency by holding steady before every click.";
-  }
-
-  function startGame(e) {
-    if (e && e.stopPropagation) { e.stopPropagation(); }
-
-    makes = 0;
-    shots = 0;
-    streak = 0;
-    bestStreak = 0;
-    focusStart = 0;
-    focusProgress = 0;
-    shotInProgress = false;
-    gameRunning = true;
-    particles = [];
-    resultText = "";
-    ball.x = ballHome.x;
-    ball.y = ballHome.y;
-
-    updateHud();
-    overlay.style.display = "none";
-    setMessage("Aim at the exact center of the rim. Hold steady until green, then click.");
-
-    var root = document.documentElement;
-    var requestFull = root.requestFullscreen || root.mozRequestFullScreen || root.webkitRequestFullscreen;
-    if (requestFull) {
-      try { requestFull.call(root); } catch (err) {}
-    }
-  }
-
-  function drawCourt() {
-    var sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#090d18");
-    sky.addColorStop(0.58, "#16111a");
-    sky.addColorStop(1, "#3a1c0b");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = "rgba(255,255,255,0.035)";
-    var i;
-    for (i = 0; i < 12; i++) {
-      ctx.fillRect(0, H * 0.44 + i * H * 0.045, W, 1);
-    }
-
-    ctx.strokeStyle = "rgba(255,125,30,0.28)";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(W * 0.5, H * 0.87, W * 0.27, H * 0.075, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(W * 0.5, H * 0.44);
-    ctx.lineTo(W * 0.5, H);
-    ctx.stroke();
-  }
-
-  function drawHoop(t) {
-    var boardW = hoop.rx * 3.4;
-    var boardH = hoop.rx * 1.72;
-    var boardX = hoop.x - boardW / 2;
-    var boardY = hoop.y - boardH * 0.85;
-
-    ctx.fillStyle = "rgba(235,245,255,0.13)";
-    ctx.strokeStyle = "rgba(235,245,255,0.56)";
-    ctx.lineWidth = 4;
-    ctx.fillRect(boardX, boardY, boardW, boardH);
-    ctx.strokeRect(boardX, boardY, boardW, boardH);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(hoop.x - hoop.rx * 0.58, hoop.y - hoop.rx * 0.52, hoop.rx * 1.16, hoop.rx * 0.72);
-
-    ctx.strokeStyle = "#ff681d";
-    ctx.lineWidth = Math.max(6, hoop.rx * 0.1);
-    ctx.beginPath();
-    ctx.ellipse(hoop.x, hoop.y, hoop.rx, hoop.ry, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.48)";
-    ctx.lineWidth = 2;
-    var n;
-    for (n = -3; n <= 3; n++) {
-      ctx.beginPath();
-      ctx.moveTo(hoop.x + n * hoop.rx * 0.22, hoop.y + hoop.ry * 0.75);
-      ctx.lineTo(hoop.x + n * hoop.rx * 0.12, hoop.y + hoop.rx * 0.82);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.ellipse(hoop.x, hoop.y + hoop.rx * 0.82, hoop.rx * 0.38, hoop.ry * 0.55, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    var targetR = targetRadius();
-    var pulse = 1 + Math.sin(t / 220) * 0.08;
-    var ready = focusProgress >= 0.92;
-    var inside = isInsideFocusZone();
-
-    ctx.save();
-    ctx.globalAlpha = ready ? 0.95 : 0.68;
-    ctx.strokeStyle = ready ? "#46ff78" : (inside ? "#ffe46a" : "#ffffff");
-    ctx.lineWidth = ready ? 5 : 3;
-    ctx.beginPath();
-    ctx.arc(hoop.x, hoop.y, targetR * pulse, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.fillStyle = ready ? "#46ff78" : (inside ? "#ffe46a" : "#ffffff");
-    ctx.beginPath();
-    ctx.arc(hoop.x, hoop.y, Math.max(3, targetR * 0.18), 0, Math.PI * 2);
-    ctx.fill();
-
-    if (inside && !shotInProgress) {
-      ctx.strokeStyle = "rgba(70,255,120,0.9)";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.arc(
-        hoop.x,
-        hoop.y,
-        focusZoneRadius(),
-        -Math.PI / 2,
-        -Math.PI / 2 + Math.PI * 2 * focusProgress
-      );
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function drawBall(x, y, r) {
-    var grad = ctx.createRadialGradient(x - r * 0.35, y - r * 0.45, r * 0.1, x, y, r);
-    grad.addColorStop(0, "#ffb052");
-    grad.addColorStop(0.5, "#f37418");
-    grad.addColorStop(1, "#9f3500");
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(35,15,5,0.92)";
-    ctx.lineWidth = Math.max(2, r * 0.075);
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.98, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x - r, y);
-    ctx.quadraticCurveTo(x, y - r * 0.35, x + r, y);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x, y - r);
-    ctx.quadraticCurveTo(x - r * 0.35, y, x, y + r);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x, y - r);
-    ctx.quadraticCurveTo(x + r * 0.35, y, x, y + r);
-    ctx.stroke();
-  }
-
-  function drawChestGuide() {
-    if (shotInProgress) { return; }
-    ctx.strokeStyle = "rgba(255,255,255,0.16)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([7, 8]);
-    ctx.beginPath();
-    ctx.moveTo(ballHome.x - ball.r * 2.2, ballHome.y);
-    ctx.lineTo(ballHome.x + ball.r * 2.2, ballHome.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = "rgba(255,255,255,0.54)";
-    ctx.font = "bold 12px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("CHEST-HEIGHT START POSITION", ballHome.x, ballHome.y + ball.r + 25);
-  }
-
-  function drawCursor() {
-    if (!cursor.visible || shotInProgress) { return; }
-    ctx.save();
-    ctx.strokeStyle = isInsideFocusZone() ? "rgba(255,235,90,0.95)" : "rgba(255,255,255,0.72)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(cursor.x, cursor.y, 10, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cursor.x - 15, cursor.y);
-    ctx.lineTo(cursor.x - 5, cursor.y);
-    ctx.moveTo(cursor.x + 5, cursor.y);
-    ctx.lineTo(cursor.x + 15, cursor.y);
-    ctx.moveTo(cursor.x, cursor.y - 15);
-    ctx.lineTo(cursor.x, cursor.y - 5);
-    ctx.moveTo(cursor.x, cursor.y + 5);
-    ctx.lineTo(cursor.x, cursor.y + 15);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function updateFocus(t) {
-    if (!gameRunning || shotInProgress || shots >= SESSION_SHOTS) {
-      focusStart = 0;
-      focusProgress = 0;
-      return;
-    }
-
-    if (isInsideFocusZone()) {
-      if (!focusStart) { focusStart = t; }
-      focusProgress = Math.min(1, (t - focusStart) / FOCUS_REQUIRED);
-      if (focusProgress >= 0.92) {
-        setMessage("Target locked. Click the controller trigger.");
-      } else {
-        setMessage("Hold steady on the center...");
-      }
-    } else {
-      focusStart = 0;
-      focusProgress = 0;
-      setMessage("Move the pointer to the exact center of the rim.");
-    }
-  }
-
-  function updateShot(t) {
-    if (!shotInProgress || !shot) { return; }
-
-    var p = Math.min(1, (t - shot.start) / shot.duration);
-    var u = 1 - p;
-    ball.x = u * u * shot.sx + 2 * u * p * shot.cx + p * p * shot.ex;
-    ball.y = u * u * shot.sy + 2 * u * p * shot.cy + p * p * shot.ey;
-
-    var scale = 1 - p * 0.35;
-    ball.currentR = ball.r * scale;
-
-    if (p >= 1) {
-      resolveShot(t);
-    }
-
-    if (shot.resolved && !shot.made) {
-      var fall = Math.min(1, (t - (shot.start + shot.duration)) / 450);
-      ball.y = shot.ey + fall * fall * H * 0.42;
-      ball.x = shot.ex + (shot.ex < hoop.x ? -1 : 1) * fall * W * 0.08;
-    }
-
-    if (resetAt && t >= resetAt) {
-      resetBall();
-    }
-  }
-
-  function updateParticles(t) {
-    var alive = [];
-    var i;
-    for (i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      var age = t - p.born;
-      if (age < p.life) {
-        var sec = age / 1000;
-        p.x += p.vx;
-        p.y += p.vy + sec * 0.15;
-        p.vy += 0.08;
-        alive.push(p);
-
-        ctx.globalAlpha = 1 - age / p.life;
-        ctx.fillStyle = p.success ? "#59ff84" : "#ffad64";
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.success ? 4 : 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    ctx.globalAlpha = 1;
-    particles = alive;
-  }
-
-  function drawResult(t) {
-    if (!resultText || t > resultUntil) { return; }
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.font = "bold " + Math.max(28, Math.min(52, W * 0.055)) + "px Arial";
-    ctx.fillStyle = shot && shot.made ? "#59ff84" : "#ffb06a";
-    ctx.shadowColor = "rgba(0,0,0,0.9)";
-    ctx.shadowBlur = 12;
-    ctx.fillText(resultText, W * 0.5, H * 0.52);
-    ctx.restore();
-  }
-
-  function frame(t) {
-    ctx.clearRect(0, 0, W, H);
-    updateFocus(t);
-    updateShot(t);
-
-    drawCourt();
-    drawHoop(t);
-    drawChestGuide();
-    drawBall(ball.x, ball.y, ball.currentR || ball.r);
-    drawCursor();
-    updateParticles(t);
-    drawResult(t);
-
-    window.requestAnimationFrame(frame);
-  }
-
-  canvas.addEventListener("mousemove", pointerPosition, false);
-  canvas.addEventListener("mousedown", function (e) {
-    pointerPosition(e);
-    beginShot();
-    if (e.preventDefault) { e.preventDefault(); }
-  }, false);
-
-  canvas.addEventListener("touchstart", function (e) {
-    pointerPosition(e);
-    beginShot();
-    if (e.preventDefault) { e.preventDefault(); }
-  }, false);
-
-  document.addEventListener("keydown", function (e) {
-    if (e.keyCode === 32 || e.keyCode === 13) {
-      beginShot();
-      if (e.preventDefault) { e.preventDefault(); }
-    }
-  }, false);
-
-  startBtn.addEventListener("click", startGame, false);
-  window.addEventListener("resize", resize, false);
-
-  resize();
   updateHud();
+}
+
+function resolveShot(t){
+  if(!shot||shot.resolved){return;}
+  shot.resolved=true;
+
+  if(shot.made){
+    makes++;
+    streak++;
+    if(streak>bestStreak){bestStreak=streak;}
+    if(shot.perfect){perfects++;resultText="PERFECT FOCUS";}
+    else{resultText="MADE";}
+    createParticles(hoop.x,hoop.y,true);
+    beep(true);
+  }else{
+    streak=0;
+    resultText=shot.held?"MISS — RECENTER":"MISS — HOLD STEADY";
+    createParticles(ball.x,ball.y,false);
+    beep(false);
+  }
+
+  resultUntil=t+650;
+  resetAt=t+900;
+  updateHud();
+}
+
+function resetBall(){
+  shotInProgress=false;
+  ball.x=ballHome.x;
+  ball.y=ballHome.y;
+  ball.currentR=ball.r;
+  shot=null;
+  resultText="";
+  resetAt=0;
+
+  if(!acceptingShots){
+    finishRound();
+  }else{
+    setMessage("Track the center, hold until green, then click.");
+  }
+}
+
+function startRound(){
+  makes=0;
+  shots=0;
+  streak=0;
+  bestStreak=0;
+  perfects=0;
+  focusStart=0;
+  focusProgress=0;
+  particles=[];
+  resultText="";
+  shot=null;
+  shotInProgress=false;
+  gameRunning=true;
+  roundStarted=false;
+  acceptingShots=false;
+  lastDisplayedSecond=-1;
+  phaseX=Math.random()*10;
+  phaseY=Math.random()*10;
+
+  ball.x=ballHome.x;
+  ball.y=ballHome.y;
+  ball.currentR=ball.r;
+  hoop.x=hoop.baseX;
+  hoop.y=hoop.baseY;
+
+  countdownEnd=timeNow()+3000;
+  resultBox.style.display="none";
+  overlay.style.display="none";
+  updateHud();
+  setMessage("Get ready...");
+
+  var root=document.documentElement;
+  var requestFull=root.requestFullscreen||root.mozRequestFullScreen||root.webkitRequestFullscreen;
+  if(requestFull){try{requestFull.call(root);}catch(err){}}
+}
+
+function startTimedPlay(t){
+  roundStarted=true;
+  acceptingShots=true;
+  roundEnd=t+selectedSeconds*1000;
+  hudTime.textContent=selectedSeconds;
+  setMessage("Track the center, hold until green, then click.");
+}
+
+function updateRoundClock(t){
+  if(!gameRunning){return;}
+
+  if(!roundStarted){
+    var count=Math.ceil((countdownEnd-t)/1000);
+    if(count>0){
+      hudTime.textContent=count;
+      setMessage(count===3?"READY":String(count));
+    }else{
+      startTimedPlay(t);
+    }
+    return;
+  }
+
+  var remaining=Math.max(0,Math.ceil((roundEnd-t)/1000));
+  if(remaining!==lastDisplayedSecond){
+    lastDisplayedSecond=remaining;
+    hudTime.textContent=remaining;
+  }
+
+  if(t>=roundEnd&&acceptingShots){
+    acceptingShots=false;
+    focusStart=0;
+    focusProgress=0;
+    hudTime.textContent="0";
+    if(shotInProgress){
+      setMessage("Time! Final shot...");
+    }else{
+      finishRound();
+    }
+  }
+}
+
+function saveRoundResult(){
+  var player=ensurePlayerShape(profiles.players[activeProfile]);
+  var accuracy=shots?Math.round(makes/shots*100):0;
+  player.rounds++;
+  player.totalShots+=shots;
+  player.totalMakes+=makes;
+  if(bestStreak>player.bestStreak){player.bestStreak=bestStreak;}
+  if(accuracy>player.bestAccuracy){player.bestAccuracy=accuracy;}
+  var key=recordKey();
+  if(!player.bestRounds[key]||makes>player.bestRounds[key]){player.bestRounds[key]=makes;}
+  profiles.players[activeProfile]=player;
+  profiles.active=activeProfile;
+  saveProfiles();
+}
+
+function finishRound(){
+  if(!gameRunning){return;}
+  gameRunning=false;
+  roundStarted=false;
+  acceptingShots=false;
+  saveRoundResult();
+
+  var accuracy=shots?Math.round(makes/shots*100):0;
+  var player=ensurePlayerShape(profiles.players[activeProfile]);
+  var career=player.totalShots?Math.round(player.totalMakes/player.totalShots*100):0;
+  var best=player.bestRounds[recordKey()]||makes;
+
+  resultBox.innerHTML=
+    "<strong>"+escapeHtml(activeProfile)+" — "+LEVELS[selectedLevel].label+" complete</strong><br>"+
+    "Makes: "+makes+" of "+shots+" · Accuracy: "+accuracy+"%<br>"+
+    "Perfect focus shots: "+perfects+" · Best streak: "+bestStreak+"<br>"+
+    "Career accuracy: "+career+"% · Record for this round: "+best+" makes<br>"+
+    "<strong>"+focusRating(accuracy)+"</strong>";
+  resultBox.style.display="block";
+  startBtn.textContent="PLAY AGAIN";
+  overlay.style.display="flex";
+  updateProfileStats();
+  updateHud();
+  setMessage("Round complete.");
+}
+
+function focusRating(accuracy){
+  if(accuracy>=90){return"Elite focus and timing.";}
+  if(accuracy>=75){return"Strong tracking and center control.";}
+  if(accuracy>=55){return"Good focus. Hold the moving center a little longer.";}
+  return"Build consistency: track first, center second, click third.";
+}
+
+function createParticles(x,y,success){
+  var i;
+  for(i=0;i<18;i++){
+    particles.push({
+      x:x,y:y,
+      vx:(Math.random()-.5)*(success?5:2.5),
+      vy:-Math.random()*(success?5:2.5),
+      life:650+Math.random()*350,
+      born:timeNow(),
+      success:success
+    });
+  }
+}
+
+function beep(success){
+  var AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC){return;}
+  try{
+    var ac=beep.context||(beep.context=new AC());
+    var osc=ac.createOscillator();
+    var gain=ac.createGain();
+    osc.type=success?"sine":"triangle";
+    osc.frequency.value=success?880:190;
+    gain.gain.value=.11;
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.2);
+    osc.stop(ac.currentTime+.22);
+  }catch(err){}
+}
+
+function updateFocus(t){
+  if(!gameRunning||!roundStarted||!acceptingShots||shotInProgress){
+    focusStart=0;
+    focusProgress=0;
+    return;
+  }
+
+  if(isInsideFocusZone()){
+    if(!focusStart){focusStart=t;}
+    focusProgress=Math.min(1,(t-focusStart)/LEVELS[selectedLevel].hold);
+    if(focusProgress>=.92){setMessage("TARGET LOCKED — CLICK");}
+    else{setMessage("Hold steady on the moving center...");}
+  }else{
+    focusStart=0;
+    focusProgress=0;
+    setMessage("Track the center of the rim.");
+  }
+}
+
+function updateShot(t){
+  if(!shotInProgress||!shot){return;}
+  var p=Math.min(1,(t-shot.start)/shot.duration);
+  var u=1-p;
+  ball.x=u*u*shot.sx+2*u*p*shot.cx+p*p*shot.ex;
+  ball.y=u*u*shot.sy+2*u*p*shot.cy+p*p*shot.ey;
+  ball.currentR=ball.r*(1-p*.35);
+
+  if(p>=1){resolveShot(t);}
+
+  if(shot.resolved&&!shot.made){
+    var fall=Math.min(1,(t-(shot.start+shot.duration))/400);
+    ball.y=shot.ey+fall*fall*H*.4;
+    ball.x=shot.ex+(shot.ex<hoop.x?-1:1)*fall*W*.07;
+  }
+
+  if(resetAt&&t>=resetAt){resetBall();}
+}
+
+function drawCourt(){
+  var sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#090d18");
+  sky.addColorStop(.58,"#16111a");
+  sky.addColorStop(1,"#3a1c0b");
+  ctx.fillStyle=sky;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle="rgba(255,255,255,.035)";
+  var i;
+  for(i=0;i<12;i++){ctx.fillRect(0,H*.44+i*H*.045,W,1);}
+
+  ctx.strokeStyle="rgba(255,125,30,.28)";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.ellipse(W*.5,H*.88,W*.27,H*.075,0,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.strokeStyle="rgba(255,255,255,.12)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(W*.5,H*.45);
+  ctx.lineTo(W*.5,H);
+  ctx.stroke();
+}
+
+function drawHoop(t){
+  var boardW=hoop.rx*3.4;
+  var boardH=hoop.rx*1.72;
+  var boardX=hoop.x-boardW/2;
+  var boardY=hoop.y-boardH*.85;
+
+  ctx.fillStyle="rgba(235,245,255,.13)";
+  ctx.strokeStyle="rgba(235,245,255,.56)";
+  ctx.lineWidth=4;
+  ctx.fillRect(boardX,boardY,boardW,boardH);
+  ctx.strokeRect(boardX,boardY,boardW,boardH);
+
+  ctx.strokeStyle="rgba(255,255,255,.5)";
+  ctx.lineWidth=3;
+  ctx.strokeRect(hoop.x-hoop.rx*.58,hoop.y-hoop.rx*.52,hoop.rx*1.16,hoop.rx*.72);
+
+  ctx.strokeStyle="#ff681d";
+  ctx.lineWidth=Math.max(6,hoop.rx*.1);
+  ctx.beginPath();
+  ctx.ellipse(hoop.x,hoop.y,hoop.rx,hoop.ry,0,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.strokeStyle="rgba(255,255,255,.48)";
+  ctx.lineWidth=2;
+  var n;
+  for(n=-3;n<=3;n++){
+    ctx.beginPath();
+    ctx.moveTo(hoop.x+n*hoop.rx*.22,hoop.y+hoop.ry*.75);
+    ctx.lineTo(hoop.x+n*hoop.rx*.12,hoop.y+hoop.rx*.82);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.ellipse(hoop.x,hoop.y+hoop.rx*.82,hoop.rx*.38,hoop.ry*.55,0,0,Math.PI*2);
+  ctx.stroke();
+
+  var r=targetRadius();
+  var pulse=1+Math.sin(t/220)*.08;
+  var ready=focusProgress>=.92;
+  var inside=isInsideFocusZone();
+
+  ctx.save();
+  ctx.globalAlpha=ready ? .98 : .72;
+  ctx.strokeStyle=ready?"#46ff78":(inside?"#ffe46a":"#fff");
+  ctx.lineWidth=ready?5:3;
+  ctx.beginPath();
+  ctx.arc(hoop.x,hoop.y,r*pulse,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.fillStyle=ready?"#46ff78":(inside?"#ffe46a":"#fff");
+  ctx.beginPath();
+  ctx.arc(hoop.x,hoop.y,Math.max(3,r*.18),0,Math.PI*2);
+  ctx.fill();
+
+  if(inside&&!shotInProgress&&acceptingShots){
+    ctx.strokeStyle="rgba(70,255,120,.9)";
+    ctx.lineWidth=5;
+    ctx.beginPath();
+    ctx.arc(hoop.x,hoop.y,focusZoneRadius(),-Math.PI/2,-Math.PI/2+Math.PI*2*focusProgress);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBall(x,y,r){
+  var grad=ctx.createRadialGradient(x-r*.35,y-r*.45,r*.1,x,y,r);
+  grad.addColorStop(0,"#ffb052");
+  grad.addColorStop(.5,"#f37418");
+  grad.addColorStop(1,"#9f3500");
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.strokeStyle="rgba(35,15,5,.92)";
+  ctx.lineWidth=Math.max(2,r*.075);
+  ctx.beginPath();
+  ctx.arc(x,y,r*.98,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x-r,y);
+  ctx.quadraticCurveTo(x,y-r*.35,x+r,y);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x,y-r);
+  ctx.quadraticCurveTo(x-r*.35,y,x,y+r);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x,y-r);
+  ctx.quadraticCurveTo(x+r*.35,y,x,y+r);
+  ctx.stroke();
+}
+
+function drawChestGuide(){
+  if(shotInProgress){return;}
+  ctx.strokeStyle="rgba(255,255,255,.15)";
+  ctx.lineWidth=2;
+  ctx.setLineDash([7,8]);
+  ctx.beginPath();
+  ctx.moveTo(ballHome.x-ball.r*2.2,ballHome.y);
+  ctx.lineTo(ballHome.x+ball.r*2.2,ballHome.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="rgba(255,255,255,.52)";
+  ctx.font="bold 11px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("CHEST-HEIGHT BALL",ballHome.x,ballHome.y+ball.r+23);
+}
+
+function drawCursor(){
+  if(!cursor.visible||shotInProgress){return;}
+  ctx.save();
+  ctx.strokeStyle=isInsideFocusZone()?"rgba(255,235,90,.95)":"rgba(255,255,255,.72)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(cursor.x,cursor.y,10,0,Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cursor.x-15,cursor.y);ctx.lineTo(cursor.x-5,cursor.y);
+  ctx.moveTo(cursor.x+5,cursor.y);ctx.lineTo(cursor.x+15,cursor.y);
+  ctx.moveTo(cursor.x,cursor.y-15);ctx.lineTo(cursor.x,cursor.y-5);
+  ctx.moveTo(cursor.x,cursor.y+5);ctx.lineTo(cursor.x,cursor.y+15);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function updateParticles(t){
+  var alive=[],i,p,age,sec;
+  for(i=0;i<particles.length;i++){
+    p=particles[i];
+    age=t-p.born;
+    if(age<p.life){
+      sec=age/1000;
+      p.x+=p.vx;
+      p.y+=p.vy+sec*.15;
+      p.vy+=.08;
+      alive.push(p);
+      ctx.globalAlpha=1-age/p.life;
+      ctx.fillStyle=p.success?"#59ff84":"#ffad64";
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.success?4:3,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha=1;
+  particles=alive;
+}
+
+function drawResult(t){
+  if(!resultText||t>resultUntil){return;}
+  ctx.save();
+  ctx.textAlign="center";
+  ctx.font="bold "+Math.max(27,Math.min(50,W*.052))+"px Arial";
+  ctx.fillStyle=shot&&shot.made?"#59ff84":"#ffb06a";
+  ctx.shadowColor="rgba(0,0,0,.9)";
+  ctx.shadowBlur=12;
+  ctx.fillText(resultText,W*.5,H*.53);
+  ctx.restore();
+}
+
+function drawCountdown(t){
+  if(!gameRunning||roundStarted){return;}
+  var count=Math.ceil((countdownEnd-t)/1000);
+  if(count<1){return;}
+  ctx.save();
+  ctx.textAlign="center";
+  ctx.font="bold "+Math.max(72,Math.min(130,W*.13))+"px Arial";
+  ctx.fillStyle="#fff";
+  ctx.shadowColor="rgba(255,100,23,.8)";
+  ctx.shadowBlur=30;
+  ctx.fillText(String(count),W*.5,H*.54);
+  ctx.restore();
+}
+
+function frame(t){
+  ctx.clearRect(0,0,W,H);
+  updateRoundClock(t);
+  updateHoop(t);
+  updateFocus(t);
+  updateShot(t);
+
+  drawCourt();
+  drawHoop(t);
+  drawChestGuide();
+  drawBall(ball.x,ball.y,ball.currentR||ball.r);
+  drawCursor();
+  updateParticles(t);
+  drawResult(t);
+  drawCountdown(t);
+
   window.requestAnimationFrame(frame);
+}
+
+profileSelect.addEventListener("change",function(){
+  activeProfile=profileSelect.value||"Guest";
+  profiles.active=activeProfile;
+  saveProfiles();
+  updateProfileStats();
+  updateHud();
+},false);
+
+addProfileBtn.addEventListener("click",addProfile,false);
+deleteProfileBtn.addEventListener("click",deleteProfile,false);
+newProfileName.addEventListener("keydown",function(e){
+  if(e.keyCode===13){addProfile();}
+},false);
+
+var levelButtons=document.querySelectorAll("[data-level]");
+var i;
+for(i=0;i<levelButtons.length;i++){
+  levelButtons[i].addEventListener("click",function(){
+    selectLevel(this.getAttribute("data-level"));
+  },false);
+}
+
+var timeButtons=document.querySelectorAll("[data-time]");
+for(i=0;i<timeButtons.length;i++){
+  timeButtons[i].addEventListener("click",function(){
+    selectTime(this.getAttribute("data-time"));
+  },false);
+}
+
+startBtn.addEventListener("click",startRound,false);
+
+canvas.addEventListener("mousemove",pointerPosition,false);
+canvas.addEventListener("click",function(e){
+  pointerPosition(e);
+  beginShot();
+  if(e.preventDefault){e.preventDefault();}
+},false);
+canvas.addEventListener("touchstart",function(e){
+  pointerPosition(e);
+  beginShot();
+  if(e.preventDefault){e.preventDefault();}
+},false);
+
+document.addEventListener("keydown",function(e){
+  if(e.keyCode===32||e.keyCode===13){
+    beginShot();
+    if(e.preventDefault){e.preventDefault();}
+  }
+},false);
+
+window.addEventListener("resize",resize,false);
+
+activeProfile=profiles.active||"Guest";
+resize();
+refreshProfiles();
+selectLevel("steady");
+selectTime(60);
+updateHud();
+window.requestAnimationFrame(frame);
+
 })();
 </script>
 </body>
