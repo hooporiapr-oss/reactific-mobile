@@ -36,10 +36,9 @@ canvas{display:block}
   <div class="box"><div class="label">Streak</div><div class="value" id="streak">0</div></div>
 </div>
 
-<!-- Three.js r110 still contains the native WebVR renderer required by older Firefox Reality. -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.110.0/build/three.min.js"></script>
+<!-- The engine is loaded with several fallbacks because old Firefox Reality may reject some modern CDNs. -->
 <script>
-(function(){
+function startPicoBasketball(){
   'use strict';
 
   var statusEl = document.getElementById('status');
@@ -55,12 +54,6 @@ canvas{display:block}
     showError('JavaScript error: ' + message + ' (line ' + line + ')');
     return false;
   };
-
-  if (!window.THREE) {
-    statusEl.textContent = 'The 3D engine did not load.';
-    showError('The headset may be unable to reach cdn.jsdelivr.net. Download three.min.js r110 and host it beside this HTML file, then change the script source to ./three.min.js.');
-    return;
-  }
 
   if (!navigator.getVRDisplays) {
     statusEl.textContent = 'This browser is not exposing the original WebVR API.';
@@ -79,7 +72,6 @@ canvas{display:block}
   renderer.setPixelRatio(1);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.vr.enabled = true;
-  renderer.vr.setReferenceSpaceType('local-floor');
   document.body.appendChild(renderer.domElement);
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x252535, 1.0));
@@ -438,6 +430,57 @@ canvas{display:block}
     statusEl.textContent = 'The original PICO VR display was not detected.';
     showError(error && error.message ? error.message : String(error));
   });
+}
+
+(function loadLegacyEngine(){
+  var statusEl = document.getElementById('status');
+  var errorEl = document.getElementById('error');
+  var enterBtn = document.getElementById('enterBtn');
+  var sources = [
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js',
+    'https://cdn.jsdelivr.net/npm/three@0.110.0/build/three.min.js',
+    'https://unpkg.com/three@0.110.0/build/three.min.js',
+    './three.min.js'
+  ];
+  var index = 0;
+
+  enterBtn.disabled = true;
+  enterBtn.textContent = 'LOADING...';
+  statusEl.textContent = 'Loading the legacy 3D engine...';
+
+  function tryNext(){
+    if (window.THREE) {
+      enterBtn.disabled = false;
+      enterBtn.textContent = 'ENTER VR';
+      statusEl.textContent = '3D engine loaded. Checking the PICO VR display...';
+      errorEl.textContent = '';
+      startPicoBasketball();
+      return;
+    }
+
+    if (index >= sources.length) {
+      enterBtn.textContent = 'ENGINE FAILED';
+      statusEl.textContent = 'The 3D engine could not be loaded.';
+      errorEl.textContent = 'The old browser could not download Three.js from any source. Upload three.min.js beside this HTML file and reload the page.';
+      return;
+    }
+
+    var source = sources[index++];
+    statusEl.textContent = 'Loading legacy engine source ' + index + ' of ' + sources.length + '...';
+    var script = document.createElement('script');
+    script.src = source;
+    script.async = true;
+    script.onload = function(){
+      if (window.THREE) tryNext();
+      else tryNext();
+    };
+    script.onerror = function(){
+      tryNext();
+    };
+    document.head.appendChild(script);
+  }
+
+  tryNext();
 })();
 </script>
 </body>
