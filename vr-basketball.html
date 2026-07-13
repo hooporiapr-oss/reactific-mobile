@@ -191,11 +191,12 @@ var MAX_HISTORY = 4;
 function resetBall(){
   state.flying = false;
   state.held = false;
+  state.controller = null;
+  state.grip = null;
   state.scoredThisShot = false;
   state.passedThroughPlane = false;
   state.velocity.set(0,0,0);
   posHistory = [];
-  var p = renderer.xr.getCamera ? camera.position : camera.position;
   // place near player's default hand height in front of them
   ball.position.set(0, 1.1, -0.4);
 }
@@ -236,32 +237,48 @@ function updateHUD(){
 }
 
 // ---------- Controller setup ----------
+// IMPORTANT: getController() returns the POINTING/aiming ray space, which can be offset
+// from where your hand physically is. getControllerGrip() is the actual physical hand/controller
+// position — that's what we need for "reach out and grab the ball" to feel right.
 var controller0 = renderer.xr.getController(0);
 var controller1 = renderer.xr.getController(1);
+var grip0 = renderer.xr.getControllerGrip(0);
+var grip1 = renderer.xr.getControllerGrip(1);
 scene.add(controller0);
 scene.add(controller1);
+scene.add(grip0);
+scene.add(grip1);
 
-// Simple visual for controllers (small cone pointing forward)
+// Map each target-ray controller to its matching grip (physical hand position)
+var gripFor = new Map();
+gripFor.set(controller0, grip0);
+gripFor.set(controller1, grip1);
+
+// Visual for controllers (small ball-ish marker at the actual grip/hand position)
 function makeControllerMesh(){
-  var geo = new THREE.ConeGeometry(0.02, 0.08, 8);
-  geo.rotateX(-Math.PI/2);
-  var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xff1e3c, emissive:0x330008 }));
+  var mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.035, 12, 12),
+    new THREE.MeshStandardMaterial({ color: 0xff1e3c, emissive:0x330008 })
+  );
   return mesh;
 }
-controller0.add(makeControllerMesh());
-controller1.add(makeControllerMesh());
+grip0.add(makeControllerMesh());
+grip1.add(makeControllerMesh());
 
 var activeInputSource = null; // XRInputSource currently holding the ball
+var GRAB_RADIUS = 0.5; // generous — real-world VR reaching is never pixel-perfect
 
 function onSelectStart(event){
   var controller = event.target;
-  var controllerPos = new THREE.Vector3();
-  controller.getWorldPosition(controllerPos);
-  var dist = controllerPos.distanceTo(ball.position);
+  var grip = gripFor.get(controller) || controller;
+  var gripPos = new THREE.Vector3();
+  grip.getWorldPosition(gripPos);
+  var dist = gripPos.distanceTo(ball.position);
   // Must be reasonably close to the ball to grab it (basketball-in-hand feel, not a laser grab)
-  if (!state.flying && dist < 0.35) {
+  if (!state.flying && dist < GRAB_RADIUS) {
     state.held = true;
     state.controller = controller;
+    state.grip = grip;
     activeInputSource = event.data;
     posHistory = [];
     grabSound();
@@ -320,10 +337,10 @@ var clock = new THREE.Clock();
 renderer.setAnimationLoop(function(){
   var dt = Math.min(clock.getDelta(), 0.05);
 
-  if (state.held && state.controller) {
+  if (state.held && state.grip) {
     var cpos = new THREE.Vector3();
-    state.controller.getWorldPosition(cpos);
-    var offset = HAND_OFFSET.clone().applyQuaternion(state.controller.quaternion);
+    state.grip.getWorldPosition(cpos);
+    var offset = HAND_OFFSET.clone().applyQuaternion(state.grip.quaternion);
     ball.position.copy(cpos).add(offset);
 
     posHistory.push({ pos: cpos.clone(), t: performance.now() });
