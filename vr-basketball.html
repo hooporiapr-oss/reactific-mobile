@@ -2,557 +2,442 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>VR Basketball Prototype | Ritnome</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>VR Basketball - Original PICO WebVR</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden}
-#overlay{
-  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:radial-gradient(ellipse at center,#180000 0%,#000 70%);z-index:10;text-align:center;padding:24px;
-}
-.logo{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(255,30,60,.8);margin-bottom:8px}
-.logo span{color:#ff1e3c}
-.sub{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#ff6b7f;margin-bottom:24px}
-#enterBtn{padding:16px 34px;border:none;border-radius:16px;background:linear-gradient(135deg,#ff1e3c,#ff6b7f);color:#fff;font-size:1.05rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,30,60,.6)}
-#enterBtn:disabled{opacity:.4;cursor:not-allowed}
-#status{margin-top:16px;font-size:.7rem;color:#8892a0;letter-spacing:.05em;max-width:340px;line-height:1.6}
-#hud{
-  position:fixed;top:16px;left:0;right:0;display:none;justify-content:center;gap:10px;z-index:5;pointer-events:none;
-}
-.hud-box{background:rgba(0,0,0,.6);border:1px solid rgba(255,30,60,.4);border-radius:10px;padding:6px 16px;text-align:center}
-.hud-label{font-size:.55rem;color:#ff1e3c;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-.hud-val{font-size:1.2rem;font-weight:900;color:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Arial,sans-serif}
 canvas{display:block}
+#overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px;background:radial-gradient(ellipse at center,#210000 0%,#000 72%)}
+#title{font-size:30px;font-weight:900;font-style:italic;letter-spacing:.06em}
+#title span{color:#ff2948}
+#sub{margin:8px 0 24px;color:#ff8597;font-size:12px;letter-spacing:.13em;text-transform:uppercase}
+#enterBtn{min-width:210px;padding:17px 28px;border:0;border-radius:14px;background:#ff2948;color:#fff;font-size:18px;font-weight:900;cursor:pointer}
+#enterBtn:active{transform:scale(.98)}
+#status{max-width:520px;margin-top:16px;color:#c8ced8;font-size:13px;line-height:1.5}
+#error{max-width:560px;margin-top:12px;color:#ffdf68;font-size:12px;line-height:1.45;white-space:pre-wrap}
+#hud{position:fixed;z-index:10;top:12px;left:0;right:0;display:flex;justify-content:center;gap:8px;pointer-events:none}
+.box{min-width:76px;padding:6px 10px;border:1px solid rgba(255,41,72,.5);border-radius:8px;background:rgba(0,0,0,.55);text-align:center}
+.label{font-size:9px;color:#ff647c;text-transform:uppercase;font-weight:900}
+.value{font-size:20px;font-weight:900}
 </style>
 </head>
 <body>
-
 <div id="overlay">
-  <div class="logo">VR <span>BASKETBALL</span></div>
-  <div class="sub">Prototype · Real Shot Physics</div>
-  <button id="enterBtn" disabled>Checking WebXR…</button>
-  <div id="status">Checking this headset for WebXR or legacy WebVR support…</div>
+  <div id="title">VR <span>BASKETBALL</span></div>
+  <div id="sub">Original PICO · Native WebVR build</div>
+  <button id="enterBtn" type="button">ENTER VR</button>
+  <div id="status">Loading the legacy VR engine…</div>
+  <div id="error"></div>
 </div>
-
 <div id="hud">
-  <div class="hud-box"><div class="hud-label">Makes</div><div class="hud-val" id="hMakes">0</div></div>
-  <div class="hud-box"><div class="hud-label">Misses</div><div class="hud-val" id="hMisses">0</div></div>
-  <div class="hud-box"><div class="hud-label">Streak</div><div class="hud-val" id="hStreak">0</div></div>
+  <div class="box"><div class="label">Makes</div><div class="value" id="makes">0</div></div>
+  <div class="box"><div class="label">Misses</div><div class="value" id="misses">0</div></div>
+  <div class="box"><div class="label">Streak</div><div class="value" id="streak">0</div></div>
 </div>
 
-<div id="debugHud" style="display:none;position:fixed;bottom:10px;left:0;right:0;text-align:center;z-index:5;pointer-events:none;font-size:.65rem;color:#0f0;background:rgba(0,0,0,.7);padding:8px;line-height:1.6">
-  <div id="dbgTrigger">Trigger presses detected: 0</div>
-  <div id="dbgRaw">Raw input sources: --</div>
-  <div id="dbgDist">Distance to ball: --</div>
-  <div id="dbgGrip">Grip pos: --</div>
-  <div id="dbgBall">Ball pos: --</div>
-</div>
-
-<!-- Legacy bridge: exposes a WebXR-style API on browsers that only implement WebVR 1.1. -->
-<script src="https://cdn.jsdelivr.net/npm/webxr-polyfill@2.0.3/build/webxr-polyfill.min.js"></script>
-<script>
-window.__PICO_LEGACY_WEBVR__ = !navigator.xr && !!navigator.getVRDisplays;
-if (!navigator.xr && window.WebXRPolyfill) {
-  try {
-    window.__webXRPolyfill = new WebXRPolyfill({ webvr: true, cardboard: false });
-  } catch (e) {
-    console.error('WebXR polyfill failed:', e);
-  }
-}
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Three.js r110 still contains the native WebVR renderer required by older Firefox Reality. -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.110.0/build/three.min.js"></script>
 <script>
 (function(){
-var $ = id => document.getElementById(id);
+  'use strict';
 
-// ---------- WebXR / legacy WebVR availability check ----------
-var legacyWebVR = !!window.__PICO_LEGACY_WEBVR__;
-if (navigator.xr) {
-  navigator.xr.isSessionSupported('immersive-vr').then(function(supported){
-    if (supported) {
-      $('enterBtn').disabled = false;
-      $('enterBtn').textContent = '🏀 Enter VR';
-      $('status').textContent = legacyWebVR
-        ? 'Legacy PICO mode: press and hold the controller trigger, aim, then release to shoot.'
-        : 'Hold the controller trigger near the ball, pull back, and release to shoot.';
-    } else {
-      $('status').textContent = 'The browser is present, but immersive VR was rejected by this headset.';
-    }
-  }).catch(function(err){
-    $('status').textContent = 'Could not check VR support: ' + (err && err.message ? err.message : err);
-  });
-} else if (navigator.getVRDisplays) {
-  $('status').textContent = 'Legacy WebVR was detected, but the WebXR compatibility bridge did not load.';
-} else {
-  $('status').textContent = 'This browser exposes neither WebXR nor legacy WebVR.';
-}
+  var statusEl = document.getElementById('status');
+  var errorEl = document.getElementById('error');
+  var overlay = document.getElementById('overlay');
+  var enterBtn = document.getElementById('enterBtn');
 
-// ---------- Three.js scene ----------
-var scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a12);
-scene.fog = new THREE.Fog(0x0a0a12, 8, 30);
+  function showError(message){
+    errorEl.textContent = message;
+  }
 
-var camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.05, 100);
-camera.position.set(0, 1.6, 0.6); // sensible eye-height default before VR session starts (VR overrides this per-frame automatically)
+  window.onerror = function(message, source, line, column){
+    showError('JavaScript error: ' + message + ' (line ' + line + ')');
+    return false;
+  };
 
-var renderer = new THREE.WebGLRenderer({ antialias: !legacyWebVR });
-// Older standalone PICO GPUs can stall when rendering at the headset's full device pixel ratio.
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, legacyWebVR ? 1 : 1.5));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true;
-renderer.xr.setReferenceSpaceType('local-floor');
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
+  if (!window.THREE) {
+    statusEl.textContent = 'The 3D engine did not load.';
+    showError('The headset may be unable to reach cdn.jsdelivr.net. Download three.min.js r110 and host it beside this HTML file, then change the script source to ./three.min.js.');
+    return;
+  }
 
-window.addEventListener('resize', function(){
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
+  if (!navigator.getVRDisplays) {
+    statusEl.textContent = 'This browser is not exposing the original WebVR API.';
+    showError('Open this page inside Firefox Reality on the PICO headset. A normal desktop or mobile browser may not provide getVRDisplays().');
+  }
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x090910);
+  scene.fog = new THREE.Fog(0x090910, 8, 25);
+
+  var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 50);
+  camera.position.set(0, 1.6, 0.4);
+  scene.add(camera);
+
+  var renderer = new THREE.WebGLRenderer({antialias:false, alpha:false});
+  renderer.setPixelRatio(1);
   renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  renderer.vr.enabled = true;
+  renderer.vr.setReferenceSpaceType('local-floor');
+  document.body.appendChild(renderer.domElement);
 
-// Lighting
-scene.add(new THREE.HemisphereLight(0xffffff, 0x222233, 0.9));
-var dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
-dirLight.position.set(3, 8, 4);
-dirLight.castShadow = true;
-scene.add(dirLight);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x252535, 1.0));
+  var light = new THREE.DirectionalLight(0xffffff, 0.75);
+  light.position.set(2, 6, 3);
+  scene.add(light);
 
-// Floor
-var floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 20),
-  new THREE.MeshStandardMaterial({ color: 0x161620, roughness: 0.95 })
-);
-floor.rotation.x = -Math.PI/2;
-floor.receiveShadow = true;
-scene.add(floor);
-
-// Court markings (simple ring under the hoop, cosmetic)
-var courtRing = new THREE.Mesh(
-  new THREE.RingGeometry(1.6, 1.7, 48),
-  new THREE.MeshBasicMaterial({ color: 0xff1e3c, side: THREE.DoubleSide, transparent:true, opacity:0.5 })
-);
-courtRing.rotation.x = -Math.PI/2;
-courtRing.position.set(0, 0.01, -3.2);
-scene.add(courtRing);
-
-// ---------- Hoop ----------
-var HOOP_HEIGHT = 2.6;      // rim height (meters) — real hoop is 3.05m, lowered for a comfortable room-scale prototype
-var HOOP_DIST   = -3.2;     // distance in front of player start
-var HOOP_RADIUS = 0.28;
-
-var hoopGroup = new THREE.Group();
-hoopGroup.position.set(0, 0, HOOP_DIST);
-scene.add(hoopGroup);
-
-// Backboard
-var backboard = new THREE.Mesh(
-  new THREE.BoxGeometry(1.2, 0.8, 0.05),
-  new THREE.MeshStandardMaterial({ color: 0xffffff, transparent:true, opacity:0.25 })
-);
-backboard.position.set(0, HOOP_HEIGHT + 0.35, -0.35);
-hoopGroup.add(backboard);
-
-// Rim (torus)
-var rim = new THREE.Mesh(
-  new THREE.TorusGeometry(HOOP_RADIUS, 0.02, 12, 32),
-  new THREE.MeshStandardMaterial({ color: 0xff6600, metalness:0.3, roughness:0.5 })
-);
-rim.rotation.x = Math.PI/2;
-rim.position.set(0, HOOP_HEIGHT, 0);
-hoopGroup.add(rim);
-
-// Net (simple visual cue, cosmetic wireframe cone)
-var net = new THREE.Mesh(
-  new THREE.ConeGeometry(HOOP_RADIUS*0.95, 0.35, 12, 1, true),
-  new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe:true, transparent:true, opacity:0.5 })
-);
-net.position.set(0, HOOP_HEIGHT - 0.18, 0);
-hoopGroup.add(net);
-
-// Pole
-var pole = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.05, 0.05, HOOP_HEIGHT + 0.8, 8),
-  new THREE.MeshStandardMaterial({ color: 0x333340 })
-);
-pole.position.set(0, (HOOP_HEIGHT + 0.8)/2, -0.6);
-hoopGroup.add(pole);
-
-// ---------- Ball ----------
-var BALL_RADIUS = 0.12;
-var ballMat = new THREE.MeshStandardMaterial({ color: 0xff7518, roughness:0.7 });
-var ball = new THREE.Mesh(new THREE.SphereGeometry(BALL_RADIUS, 24, 24), ballMat);
-ball.castShadow = true;
-
-// ---------- IN-SCENE diagnostic panel (HTML overlays are NOT visible inside a VR headset — this is) ----------
-// Floats in front of the player. RED = idle. Flashes BRIGHT WHITE the instant ANY raw trigger press is detected.
-var diagPanel = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.6, 0.3),
-  new THREE.MeshBasicMaterial({ color: 0xff1e3c, side: THREE.DoubleSide })
-);
-diagPanel.position.set(0, 1.9, -1.2);
-scene.add(diagPanel);
-var diagFlashUntil = 0;
-function flashDiagPanel(){
-  diagPanel.material.color.set(0xffffff);
-  diagFlashUntil = performance.now() + 400;
-}
-scene.add(ball);
-
-// Ball seam lines (cosmetic)
-var seamMat = new THREE.LineBasicMaterial({ color: 0x1a1a1a });
-[0, Math.PI/2].forEach(function(rotY){
-  var pts = [];
-  for (var a=0;a<=Math.PI*2+0.01;a+=0.1) pts.push(new THREE.Vector3(Math.sin(a)*BALL_RADIUS*1.01, Math.cos(a)*BALL_RADIUS*1.01, 0));
-  var geo = new THREE.BufferGeometry().setFromPoints(pts);
-  var line = new THREE.Line(geo, seamMat);
-  line.rotation.y = rotY;
-  ball.add(line);
-});
-
-// ---------- Game state ----------
-var HAND_OFFSET = new THREE.Vector3(0, 0, -0.12); // ball sits slightly in front of controller
-var SPAWN_LOCAL = new THREE.Vector3(0, 1.1, -0.4);  // relative to player rig, where ball resets to (negative Z = in front, matching hoop direction)
-
-var state = {
-  held: false,
-  controller: null,
-  flying: false,
-  velocity: new THREE.Vector3(),
-  scoredThisShot: false,
-  passedThroughPlane: false,
-  makes: 0,
-  misses: 0,
-  streak: 0
-};
-
-var GRAVITY = -9.8;
-var posHistory = []; // last few frames of controller world position, for velocity-at-release calc
-var MAX_HISTORY = 4;
-
-function resetBall(){
-  state.flying = false;
-  state.held = false;
-  state.controller = null;
-  state.grip = null;
-  state.scoredThisShot = false;
-  state.passedThroughPlane = false;
-  state.legacyAimGrab = false;
-  state.velocity.set(0,0,0);
-  posHistory = [];
-  // place near player's default hand height in front of them
-  ball.position.set(0, 1.1, -0.4);
-}
-resetBall();
-
-function vibrate(inputSource, intensity, durationMs){
-  try{
-    var gp = inputSource && inputSource.gamepad;
-    if (gp && gp.hapticActuators && gp.hapticActuators[0]) {
-      gp.hapticActuators[0].pulse(intensity, durationMs);
-    } else if (gp && gp.vibrationActuator) {
-      gp.vibrationActuator.playEffect('dual-rumble', { duration: durationMs, strongMagnitude: intensity, weakMagnitude: intensity });
-    }
-  }catch(e){}
-}
-
-var audioCtx = null;
-function getAC(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return audioCtx; }
-function tone(freq, dur, vol, type){
-  var c = getAC(); if(!c) return;
-  try{
-    var o = c.createOscillator(), g = c.createGain();
-    o.type = type||'sine'; o.frequency.value = freq;
-    o.connect(g); g.connect(c.destination);
-    g.gain.setValueAtTime(vol||0.2, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + (dur||0.15));
-    o.start(); o.stop(c.currentTime + (dur||0.15) + 0.02);
-  }catch(e){}
-}
-function swishSound(){ [880,1100,1300].forEach(function(f,i){ setTimeout(function(){ tone(f,0.12,0.18) }, i*60) }); }
-function missSound(){ tone(200, 0.25, 0.15, 'sawtooth'); }
-function grabSound(){ tone(500, 0.06, 0.1); }
-
-function updateHUD(){
-  $('hMakes').textContent = state.makes;
-  $('hMisses').textContent = state.misses;
-  $('hStreak').textContent = state.streak;
-}
-
-// ---------- Controller setup ----------
-// IMPORTANT: getController() returns the POINTING/aiming ray space, which can be offset
-// from where your hand physically is. getControllerGrip() is the actual physical hand/controller
-// position — that's what we need for "reach out and grab the ball" to feel right.
-var controller0 = renderer.xr.getController(0);
-var controller1 = renderer.xr.getController(1);
-var grip0 = renderer.xr.getControllerGrip(0);
-var grip1 = renderer.xr.getControllerGrip(1);
-scene.add(controller0);
-scene.add(controller1);
-scene.add(grip0);
-scene.add(grip1);
-
-// Map each target-ray controller to its matching grip (physical hand position)
-var gripFor = new Map();
-gripFor.set(controller0, grip0);
-gripFor.set(controller1, grip1);
-
-// Some older PICO/WebVR combinations expose a pointing ray but no usable grip pose.
-// Use the grip only when Three.js marks it visible; otherwise use the target-ray controller.
-function getUsableControllerSpace(controller){
-  var grip = gripFor.get(controller);
-  return (grip && grip.visible) ? grip : controller;
-}
-function hasUsableGrip(controller){
-  var grip = gripFor.get(controller);
-  return !!(grip && grip.visible);
-}
-
-// Visual for controllers (small ball-ish marker at the actual grip/hand position)
-function makeControllerMesh(){
-  var mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.035, 12, 12),
-    new THREE.MeshStandardMaterial({ color: 0xff1e3c, emissive:0x330008 })
+  var floor = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(16, 16),
+    new THREE.MeshLambertMaterial({color:0x171720})
   );
-  return mesh;
-}
-grip0.add(makeControllerMesh());
-grip1.add(makeControllerMesh());
+  floor.rotation.x = -Math.PI / 2;
+  scene.add(floor);
 
-var activeInputSource = null; // XRInputSource currently holding the ball
-var GRAB_RADIUS = 0.5; // generous — real-world VR reaching is never pixel-perfect
-var debugTriggerCount = 0;
+  var HOOP_Z = -3.2;
+  var HOOP_Y = 2.55;
+  var HOOP_RADIUS = 0.30;
 
-function reportTrigger(source){
-  debugTriggerCount++;
-  var dbgT = document.getElementById('dbgTrigger');
-  if (dbgT) dbgT.textContent = 'Trigger presses detected: ' + debugTriggerCount + ' (via ' + source + ', last: ' + new Date().toLocaleTimeString() + ')';
-}
+  var hoop = new THREE.Group();
+  hoop.position.z = HOOP_Z;
+  scene.add(hoop);
 
-function tryGrab(controller, inputSource){
-  if (state.held || state.flying) return;
-  var handSpace = getUsableControllerSpace(controller);
-  var handPos = new THREE.Vector3();
-  handSpace.getWorldPosition(handPos);
-  var dist = handPos.distanceTo(ball.position);
+  var board = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(1.25, 0.82, 0.05),
+    new THREE.MeshLambertMaterial({color:0xffffff, transparent:true, opacity:0.32})
+  );
+  board.position.set(0, HOOP_Y + 0.35, -0.35);
+  hoop.add(board);
 
-  // A 3DoF/legacy controller cannot report a true hand position. In that case,
-  // allow trigger-to-grab from anywhere and use the controller aiming ray.
-  var legacyAimGrab = legacyWebVR || !hasUsableGrip(controller);
-  if (dist < GRAB_RADIUS || legacyAimGrab) {
+  var rim = new THREE.Mesh(
+    new THREE.TorusBufferGeometry(HOOP_RADIUS, 0.025, 10, 28),
+    new THREE.MeshLambertMaterial({color:0xff6a00})
+  );
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = HOOP_Y;
+  hoop.add(rim);
+
+  var pole = new THREE.Mesh(
+    new THREE.CylinderBufferGeometry(0.055, 0.055, HOOP_Y + 0.8, 8),
+    new THREE.MeshLambertMaterial({color:0x44444e})
+  );
+  pole.position.set(0, (HOOP_Y + 0.8) / 2, -0.62);
+  hoop.add(pole);
+
+  var net = new THREE.Mesh(
+    new THREE.ConeBufferGeometry(HOOP_RADIUS * 0.92, 0.35, 10, 1, true),
+    new THREE.MeshBasicMaterial({color:0xffffff, wireframe:true, transparent:true, opacity:0.45})
+  );
+  net.position.set(0, HOOP_Y - 0.18, 0);
+  hoop.add(net);
+
+  var BALL_RADIUS = 0.12;
+  var ballMat = new THREE.MeshLambertMaterial({color:0xff7518, emissive:0x000000});
+  var ball = new THREE.Mesh(new THREE.SphereBufferGeometry(BALL_RADIUS, 16, 12), ballMat);
+  scene.add(ball);
+
+  var diagnostic = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(0.5, 0.22),
+    new THREE.MeshBasicMaterial({color:0x0000ff, side:THREE.DoubleSide})
+  );
+  diagnostic.position.set(0, 1.9, -1.2);
+  scene.add(diagnostic);
+
+  var controller0 = new THREE.Group();
+  var controller1 = new THREE.Group();
+  scene.add(controller0);
+  scene.add(controller1);
+
+  function addControllerVisual(controller){
+    var marker = new THREE.Mesh(
+      new THREE.SphereBufferGeometry(0.045, 10, 8),
+      new THREE.MeshBasicMaterial({color:0xff2948})
+    );
+    controller.add(marker);
+    var rayGeo = new THREE.BufferGeometry();
+    rayGeo.addAttribute('position', new THREE.Float32BufferAttribute([0,0,0, 0,0,-1], 3));
+    var ray = new THREE.Line(rayGeo, new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.55}));
+    ray.scale.z = 0.7;
+    controller.add(ray);
+  }
+  addControllerVisual(controller0);
+  addControllerVisual(controller1);
+
+  var controllers = [controller0, controller1];
+  var previousPressed = [false, false];
+  var controllerGamepads = [null, null];
+  var vrDisplay = null;
+  var startingVR = false;
+  var clock = new THREE.Clock();
+  var history = [];
+  var state = {
+    held:false,
+    controller:null,
+    flying:false,
+    velocity:new THREE.Vector3(),
+    scored:false,
+    crossed:false,
+    makes:0,
+    misses:0,
+    streak:0
+  };
+
+  function updateHud(){
+    document.getElementById('makes').textContent = state.makes;
+    document.getElementById('misses').textContent = state.misses;
+    document.getElementById('streak').textContent = state.streak;
+  }
+
+  function resetBall(){
+    state.held = false;
+    state.controller = null;
+    state.flying = false;
+    state.velocity.set(0,0,0);
+    state.scored = false;
+    state.crossed = false;
+    history.length = 0;
+    ball.position.set(0, 1.12, -0.55);
+  }
+  resetBall();
+
+  function getRawGamepads(){
+    var result = [];
+    var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    var i, gp;
+    for (i = 0; i < pads.length; i++) {
+      gp = pads[i];
+      if (!gp) continue;
+      if (gp.pose || gp.hand || gp.displayId !== undefined) result.push(gp);
+    }
+    return result;
+  }
+
+  function buttonIsPressed(gamepad){
+    if (!gamepad || !gamepad.buttons) return false;
+    var preferred = [1, 0, 2, 3];
+    var i, index, button;
+    for (i = 0; i < preferred.length; i++) {
+      index = preferred[i];
+      button = gamepad.buttons[index];
+      if (button && (button.pressed || button.value > 0.55)) return true;
+    }
+    for (i = 0; i < gamepad.buttons.length; i++) {
+      button = gamepad.buttons[i];
+      if (button && (button.pressed || button.value > 0.75)) return true;
+    }
+    return false;
+  }
+
+  var headPos = new THREE.Vector3();
+  var headQuat = new THREE.Quaternion();
+  var tempOffset = new THREE.Vector3();
+  var tempQuat = new THREE.Quaternion();
+  var tempPos = new THREE.Vector3();
+
+  function updateControllerPose(controller, gamepad, index){
+    if (!gamepad || !gamepad.pose) {
+      controller.visible = false;
+      return;
+    }
+
+    var pose = gamepad.pose;
+    controller.visible = true;
+
+    if (pose.orientation) {
+      controller.quaternion.fromArray(pose.orientation);
+    }
+
+    if (pose.position && pose.hasPosition !== false) {
+      controller.position.fromArray(pose.position);
+      if (renderer.vr && renderer.vr.getStandingMatrix) {
+        controller.position.applyMatrix4(renderer.vr.getStandingMatrix());
+      }
+    } else {
+      camera.getWorldPosition(headPos);
+      camera.getWorldQuaternion(headQuat);
+      tempOffset.set(index === 0 ? 0.24 : -0.24, -0.32, -0.42).applyQuaternion(headQuat);
+      controller.position.copy(headPos).add(tempOffset);
+    }
+
+    controller.updateMatrix();
+    controller.updateMatrixWorld(true);
+  }
+
+  function grab(controller){
+    if (state.held || state.flying || !controller.visible) return;
     state.held = true;
     state.controller = controller;
-    state.grip = handSpace;
-    state.legacyAimGrab = legacyAimGrab;
-    activeInputSource = inputSource;
-    posHistory = [];
-    grabSound();
-    vibrate(inputSource, 0.3, 40);
-    ballMat.color.set(0xff7518);
-    ballMat.emissive.set(0x000000);
+    state.scored = false;
+    state.crossed = false;
+    history.length = 0;
+    diagnostic.material.color.setHex(0xffffff);
   }
-}
 
-function doRelease(controller){
-  if (state.held && state.controller === controller) {
-    var v = new THREE.Vector3();
-    if (posHistory.length >= 2) {
-      var a = posHistory[0], b = posHistory[posHistory.length-1];
-      var dt = (b.t - a.t) / 1000;
-      if (dt > 0) {
-        v.subVectors(b.pos, a.pos).divideScalar(dt);
-      }
+  function release(controller){
+    if (!state.held || state.controller !== controller) return;
+
+    var velocity = new THREE.Vector3();
+    if (history.length >= 2) {
+      var first = history[0];
+      var last = history[history.length - 1];
+      var seconds = (last.t - first.t) / 1000;
+      if (seconds > 0.01) velocity.subVectors(last.p, first.p).divideScalar(seconds);
     }
 
-    var speed = v.length();
-    // True positional throwing is impossible when the old controller only reports rotation.
-    // Use the controller's aiming direction as a playable fallback shot.
-    if (speed < 1.0 || state.legacyAimGrab) {
-      var worldQ = new THREE.Quaternion();
-      controller.getWorldQuaternion(worldQ);
-      var aim = new THREE.Vector3(0, 0, -1).applyQuaternion(worldQ).normalize();
-      aim.y = Math.max(aim.y, 0.18);
-      aim.normalize();
-      v.copy(aim).multiplyScalar(5.4);
-      v.y += 1.4;
-      speed = v.length();
+    if (velocity.length() < 1.0) {
+      controller.getWorldQuaternion(tempQuat);
+      velocity.set(0, 0, -1).applyQuaternion(tempQuat).normalize();
+      velocity.y = Math.max(velocity.y, 0.17);
+      velocity.normalize().multiplyScalar(5.8);
+      velocity.y += 1.5;
     }
 
-    state.velocity.copy(v);
-    state.flying = true;
+    state.velocity.copy(velocity);
     state.held = false;
-    state.legacyAimGrab = false;
-    state.scoredThisShot = false;
-    state.passedThroughPlane = false;
-    vibrate(activeInputSource, Math.min(1, speed/6), 60);
-    activeInputSource = null;
-  }
-}
-
-// Path B: raw per-frame gamepad button polling (more reliable across imperfect WebXR implementations)
-var prevPressed = [false, false];
-var controllersByIndex = [controller0, controller1];
-var gripsByIndex = [grip0, grip1];
-
-var panelRestColor = 0x0000ff; // starts blue = "no input sources seen yet"
-
-function pollRawGamepadInput(){
-  var session = renderer.xr.getSession();
-  if (!session) return;
-  var sources = session.inputSources;
-  var rawInfo = [];
-
-  // Continuously-updated resting color — tells us WHY nothing is registering, at a glance, no press needed:
-  //   BLUE   = zero input sources detected at all (controllers not seen by the session)
-  //   ORANGE = input sources exist, but none report a gamepad/trigger (e.g. hand-tracking mode, no physical buttons)
-  //   RED    = normal — gamepad(s) found, waiting for a press (flashes WHITE on press)
-  if (sources.length === 0) {
-    panelRestColor = 0x0000ff;
-  } else {
-    var anyGamepad = false;
-    for (var k = 0; k < sources.length; k++) { if (sources[k].gamepad) anyGamepad = true; }
-    panelRestColor = anyGamepad ? 0xff1e3c : 0xffa500;
+    state.controller = null;
+    state.flying = true;
+    state.scored = false;
+    state.crossed = false;
+    history.length = 0;
   }
 
-  for (var i = 0; i < sources.length && i < 2; i++) {
-    var src = sources[i];
-    var hasGamepad = !!src.gamepad;
-    var pressed = false;
-    var pressedButton = -1;
-    // PICO generations do not all map the primary trigger to button 0.
-    if (hasGamepad && src.gamepad.buttons) {
-      for (var bi = 0; bi < src.gamepad.buttons.length; bi++) {
-        if (src.gamepad.buttons[bi] && src.gamepad.buttons[bi].pressed) {
-          pressed = true;
-          pressedButton = bi;
-          break;
+  function updateInputs(){
+    var pads = getRawGamepads();
+    var i, pressed;
+
+    diagnostic.material.color.setHex(pads.length ? 0xff2948 : 0x0000ff);
+
+    for (i = 0; i < 2; i++) {
+      controllerGamepads[i] = pads[i] || null;
+      updateControllerPose(controllers[i], controllerGamepads[i], i);
+      pressed = buttonIsPressed(controllerGamepads[i]);
+
+      if (pressed && !previousPressed[i]) grab(controllers[i]);
+      if (!pressed && previousPressed[i]) release(controllers[i]);
+      previousPressed[i] = pressed;
+    }
+  }
+
+  function updateGame(delta){
+    if (state.held && state.controller) {
+      state.controller.getWorldPosition(tempPos);
+      state.controller.getWorldQuaternion(tempQuat);
+      tempOffset.set(0, 0, -0.38).applyQuaternion(tempQuat);
+      ball.position.copy(tempPos).add(tempOffset);
+      history.push({p:tempPos.clone(), t:performance.now()});
+      if (history.length > 5) history.shift();
+    } else if (state.flying) {
+      state.velocity.y -= 9.8 * delta;
+      ball.position.addScaledVector(state.velocity, delta);
+
+      var dx = ball.position.x;
+      var dz = ball.position.z - HOOP_Z;
+      var horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+
+      if (!state.crossed && state.velocity.y < 0 && ball.position.y <= HOOP_Y && ball.position.y > HOOP_Y - 0.26) {
+        state.crossed = true;
+        if (horizontalDistance < HOOP_RADIUS * 0.80) {
+          state.scored = true;
+          state.makes++;
+          state.streak++;
+          updateHud();
         }
       }
-    }
-    rawInfo.push('src' + i + '[' + (src.handedness||'?') + ']: gamepad=' + hasGamepad + ' pressed=' + pressed + ' button=' + pressedButton);
 
-    if (pressed && !prevPressed[i]) {
-      reportTrigger('raw-poll');
-      flashDiagPanel();
-      tryGrab(controllersByIndex[i], src);
-    } else if (!pressed && prevPressed[i]) {
-      doRelease(controllersByIndex[i]);
+      if (ball.position.y < 0.05 || ball.position.length() > 14) {
+        if (!state.scored) {
+          state.misses++;
+          state.streak = 0;
+          updateHud();
+        }
+        resetBall();
+      }
     }
-    prevPressed[i] = pressed;
   }
-  var dbgRawEl = document.getElementById('dbgRaw');
-  if (dbgRawEl) dbgRawEl.textContent = 'Raw input sources (' + sources.length + '): ' + (rawInfo.join(' | ') || 'none detected');
-}
 
-// Path A: standard WebXR select events (kept as backup — may not fire on all browsers)
-function onSelectStart(event){ reportTrigger('event'); flashDiagPanel(); tryGrab(event.target, event.data); }
-function onSelectEnd(event){ doRelease(event.target); }
-controller0.addEventListener('selectstart', onSelectStart);
-controller0.addEventListener('selectend', onSelectEnd);
-controller1.addEventListener('selectstart', onSelectStart);
-controller1.addEventListener('selectend', onSelectEnd);
+  function render(){
+    var delta = Math.min(clock.getDelta(), 0.05);
+    updateInputs();
+    updateGame(delta);
+    renderer.render(scene, camera);
+  }
+  renderer.setAnimationLoop(render);
 
-// ---------- Enter VR ----------
-$('enterBtn').addEventListener('click', function(){
-  // local-floor is optional here because some legacy WebVR bridges reject it as required.
-  navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }).then(function(session){
-    return renderer.xr.setSession(session).then(function(){
-      $('overlay').style.display = 'none';
-      $('hud').style.display = 'flex';
-      $('debugHud').style.display = 'block';
-      session.addEventListener('end', function(){
-        $('overlay').style.display = 'flex';
-        $('hud').style.display = 'none';
-      });
+  function findDisplay(){
+    if (!navigator.getVRDisplays) return Promise.reject(new Error('WebVR API is unavailable.'));
+    return navigator.getVRDisplays().then(function(displays){
+      if (!displays || displays.length === 0) throw new Error('No VR display was found by Firefox Reality.');
+      vrDisplay = displays[0];
+      renderer.vr.setDevice(vrDisplay);
+      statusEl.textContent = 'PICO detected. Press ENTER VR, then hold the controller trigger, aim, and release.';
+      showError('');
+      return vrDisplay;
     });
-  }).catch(function(err){
-    $('status').textContent = 'Failed to start VR session: ' + (err && err.message ? err.message : err);
+  }
+
+  function enterVR(event){
+    if (event) {
+      if (event.preventDefault) event.preventDefault();
+      if (event.stopPropagation) event.stopPropagation();
+    }
+
+    if (startingVR || (vrDisplay && vrDisplay.isPresenting)) return;
+    startingVR = true;
+    statusEl.textContent = 'Starting native WebVR…';
+    enterBtn.textContent = 'STARTING…';
+    showError('');
+
+    var ready = vrDisplay ? Promise.resolve(vrDisplay) : findDisplay();
+    ready.then(function(display){
+      return display.requestPresent([{source:renderer.domElement}]);
+    }).then(function(){
+      startingVR = false;
+      overlay.style.display = 'none';
+      enterBtn.textContent = 'ENTER VR';
+    }).catch(function(error){
+      startingVR = false;
+      enterBtn.textContent = 'ENTER VR';
+      statusEl.textContent = 'VR did not start.';
+      showError(error && error.message ? error.message : String(error));
+    });
+  }
+
+  enterBtn.onclick = enterVR;
+  enterBtn.addEventListener('pointerup', function(event){
+    if (event.pointerType) enterVR(event);
+  }, false);
+  enterBtn.addEventListener('touchend', enterVR, false);
+
+  window.addEventListener('vrdisplaypresentchange', function(){
+    if (vrDisplay && vrDisplay.isPresenting) {
+      startingVR = false;
+      overlay.style.display = 'none';
+    } else {
+      overlay.style.display = 'flex';
+      statusEl.textContent = 'VR session ended. Press ENTER VR to return.';
+    }
+  }, false);
+
+  window.addEventListener('vrdisplayactivate', function(event){
+    vrDisplay = event.display || vrDisplay;
+    if (vrDisplay) {
+      renderer.vr.setDevice(vrDisplay);
+      vrDisplay.requestPresent([{source:renderer.domElement}]).catch(function(error){
+        showError(error && error.message ? error.message : String(error));
+      });
+    }
+  }, false);
+
+  window.addEventListener('resize', function(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }, false);
+
+  findDisplay().catch(function(error){
+    statusEl.textContent = 'The original PICO VR display was not detected.';
+    showError(error && error.message ? error.message : String(error));
   });
-});
-
-// ---------- Frame loop ----------
-var clock = new THREE.Clock();
-
-renderer.setAnimationLoop(function(){
-  var dt = Math.min(clock.getDelta(), 0.05);
-
-  pollRawGamepadInput();
-
-  // Panel flash decay — fades back to its diagnostic resting color after a brief flash
-  if (performance.now() > diagFlashUntil) {
-    diagPanel.material.color.set(panelRestColor);
-  }
-
-  // Ball glows bright green when a controller is within grab range — visible proof the distance check is passing
-  if (!state.held && !state.flying) {
-    var gg0 = new THREE.Vector3(); getUsableControllerSpace(controller0).getWorldPosition(gg0);
-    var gg1 = new THREE.Vector3(); getUsableControllerSpace(controller1).getWorldPosition(gg1);
-    var inRange = gg0.distanceTo(ball.position) < GRAB_RADIUS || gg1.distanceTo(ball.position) < GRAB_RADIUS;
-    ballMat.color.set(inRange ? 0x00ff00 : 0xff7518);
-    ballMat.emissive.set(inRange ? 0x004400 : 0x000000);
-  }
-
-  // Live debug readout — nearest controller grip distance to ball, updated every frame
-  if ($('debugHud') && $('debugHud').style.display !== 'none') {
-    var g0 = new THREE.Vector3(); getUsableControllerSpace(controller0).getWorldPosition(g0);
-    var g1 = new THREE.Vector3(); getUsableControllerSpace(controller1).getWorldPosition(g1);
-    var d0 = g0.distanceTo(ball.position);
-    var d1 = g1.distanceTo(ball.position);
-    var nearest = Math.min(d0, d1);
-    document.getElementById('dbgDist').textContent = 'Distance to ball — grip0: ' + d0.toFixed(2) + 'm, grip1: ' + d1.toFixed(2) + 'm (grab needs < ' + GRAB_RADIUS + 'm)';
-    document.getElementById('dbgGrip').textContent = 'Grip0: (' + g0.x.toFixed(2) + ', ' + g0.y.toFixed(2) + ', ' + g0.z.toFixed(2) + ')  Grip1: (' + g1.x.toFixed(2) + ', ' + g1.y.toFixed(2) + ', ' + g1.z.toFixed(2) + ')';
-    document.getElementById('dbgBall').textContent = 'Ball pos: (' + ball.position.x.toFixed(2) + ', ' + ball.position.y.toFixed(2) + ', ' + ball.position.z.toFixed(2) + ')  Held: ' + state.held;
-  }
-
-  if (state.held && state.grip) {
-    var cpos = new THREE.Vector3();
-    var cquat = new THREE.Quaternion();
-    state.grip.getWorldPosition(cpos);
-    state.grip.getWorldQuaternion(cquat);
-
-    var holdDistance = state.legacyAimGrab ? 0.42 : 0.12;
-    var offset = new THREE.Vector3(0, 0, -holdDistance).applyQuaternion(cquat);
-    ball.position.copy(cpos).add(offset);
-
-    posHistory.push({ pos: cpos.clone(), t: performance.now() });
-    if (posHistory.length > MAX_HISTORY) posHistory.shift();
-  } else if (state.flying) {
-    state.velocity.y += GRAVITY * dt;
-    ball.position.addScaledVector(state.velocity, dt);
-
-    // Rim/score detection: check if ball crosses the hoop's horizontal plane, moving downward, within radius
-    var localX = ball.position.x - hoopGroup.position.x;
-    var localZ = ball.position.z - hoopGroup.position.z;
-    var horizDist = Math.sqrt(localX*localX + localZ*localZ);
-    var ballY = ball.position.y;
-
-    if (!state.passedThroughPlane && state.velocity.y < 0 && ballY <= HOOP_HEIGHT && ballY > HOOP_HEIGHT - 0.25) {
-      state.passedThroughPlane = true;
-      if (horizDist < HOOP_RADIUS * 0.85 && !state.scoredThisShot) {
-        state.scoredThisShot = true;
-        state.makes++; state.streak++;
-        updateHUD();
-        swishSound();
-        if (activeInputSource) vibrate(activeInputSource, 0.6, 100);
-        var s = renderer.xr.getSession ? renderer.xr.getSession() : null;
-        if (s) { s.inputSources.forEach(function(src){ vibrate(src, 0.6, 100); }); }
-      }
-    }
-
-    // Ball hit floor or drifted far away -> resolve as miss if not scored, then reset
-    if (ball.position.y < 0.05 || ball.position.length() > 15) {
-      if (!state.scoredThisShot) {
-        state.misses++; state.streak = 0;
-        updateHUD();
-        missSound();
-      }
-      resetBall();
-    }
-  }
-
-  renderer.render(scene, camera);
-});
-
 })();
 </script>
 </body>
