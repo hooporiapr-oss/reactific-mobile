@@ -345,12 +345,26 @@ var prevPressed = [false, false];
 var controllersByIndex = [controller0, controller1];
 var gripsByIndex = [grip0, grip1];
 
+var panelRestColor = 0x0000ff; // starts blue = "no input sources seen yet"
+
 function pollRawGamepadInput(){
   var session = renderer.xr.getSession();
-  var dbgRaw = document.getElementById('dbgTrigger');
   if (!session) return;
   var sources = session.inputSources;
   var rawInfo = [];
+
+  // Continuously-updated resting color — tells us WHY nothing is registering, at a glance, no press needed:
+  //   BLUE   = zero input sources detected at all (controllers not seen by the session)
+  //   ORANGE = input sources exist, but none report a gamepad/trigger (e.g. hand-tracking mode, no physical buttons)
+  //   RED    = normal — gamepad(s) found, waiting for a press (flashes WHITE on press)
+  if (sources.length === 0) {
+    panelRestColor = 0x0000ff;
+  } else {
+    var anyGamepad = false;
+    for (var k = 0; k < sources.length; k++) { if (sources[k].gamepad) anyGamepad = true; }
+    panelRestColor = anyGamepad ? 0xff1e3c : 0xffa500;
+  }
+
   for (var i = 0; i < sources.length && i < 2; i++) {
     var src = sources[i];
     var hasGamepad = !!src.gamepad;
@@ -405,9 +419,9 @@ renderer.setAnimationLoop(function(){
 
   pollRawGamepadInput();
 
-  // Panel flash decay — fades back to red after a brief flash
+  // Panel flash decay — fades back to its diagnostic resting color after a brief flash
   if (performance.now() > diagFlashUntil) {
-    diagPanel.material.color.set(0xff1e3c);
+    diagPanel.material.color.set(panelRestColor);
   }
 
   // Ball glows bright green when a controller is within grab range — visible proof the distance check is passing
