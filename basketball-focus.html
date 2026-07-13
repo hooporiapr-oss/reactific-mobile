@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Basketball Focus Trainer | Ritnome</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #05070d;
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #game {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    touch-action: none;
+  }
+  #hud {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .box {
+    min-width: 82px;
+    padding: 7px 12px;
+    border: 1px solid rgba(255, 126, 32, 0.55);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.64);
+    text-align: center;
+  }
+  .label {
+    font-size: 10px;
+    color: #ff9b50;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .value {
+    margin-top: 2px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  #message {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    width: min(90%, 560px);
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.68);
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  #overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at center, rgba(62, 18, 0, 0.95), rgba(0, 0, 0, 0.98) 70%);
+  }
+  #panel {
+    width: min(94vw, 560px);
+    padding: 28px;
+    border: 1px solid rgba(255, 126, 32, 0.55);
+    border-radius: 20px;
+    background: rgba(8, 10, 17, 0.95);
+    text-align: center;
+    box-shadow: 0 0 42px rgba(255, 90, 10, 0.22);
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+  h1 span { color: #ff7e20; }
+  .subtitle {
+    margin-bottom: 20px;
+    color: #ffb274;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .instructions {
+    margin: 0 auto 22px;
+    max-width: 440px;
+    color: #d8dee9;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  button {
+    min-width: 190px;
+    padding: 15px 26px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ff6417, #ff9b50);
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    letter-spacing: 0.7px;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(255, 100, 23, 0.4);
+  }
+  #smallNote {
+    margin-top: 15px;
+    color: #8791a2;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="box"><div class="label">Makes</div><div class="value" id="makes">0</div></div>
+  <div class="box"><div class="label">Shots</div><div class="value" id="shots">0 / 20</div></div>
+  <div class="box"><div class="label">Streak</div><div class="value" id="streak">0</div></div>
+  <div class="box"><div class="label">Accuracy</div><div class="value" id="accuracy">0%</div></div>
+</div>
+
+<div id="message">Aim at the exact center of the rim. Hold steady until the target turns green, then click.</div>
+
+<div id="overlay">
+  <div id="panel">
+    <h1>Basketball <span>Focus</span></h1>
+    <div class="subtitle">Visual focus and steady-aim training</div>
+    <div class="instructions" id="overlayText">
+      The ball stays at chest height. Move the PICO pointer to the center of the rim,
+      hold it steady until the target turns green, then press the controller trigger.
+      Each session has 20 shots.
+    </div>
+    <button id="startBtn">START TRAINING</button>
+    <div id="smallNote">
+      No WebXR or VR-display connection is required. This runs directly in the headset browser window.
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("game");
+  var ctx = canvas.getContext("2d");
+  var overlay = document.getElementById("overlay");
+  var startBtn = document.getElementById("startBtn");
+  var overlayText = document.getElementById("overlayText");
+  var message = document.getElementById("message");
+
+  var makesEl = document.getElementById("makes");
+  var shotsEl = document.getElementById("shots");
+  var streakEl = document.getElementById("streak");
+  var accuracyEl = document.getElementById("accuracy");
+
+  var W = 0;
+  var H = 0;
+  var DPR = 1;
+
+  var SESSION_SHOTS = 20;
+  var FOCUS_REQUIRED = 650;
+  var gameRunning = false;
+  var shotInProgress = false;
+  var resetAt = 0;
+
+  var makes = 0;
+  var shots = 0;
+  var streak = 0;
+  var bestStreak = 0;
+  var focusStart = 0;
+  var focusProgress = 0;
+
+  var cursor = { x: -1000, y: -1000, visible: false };
+  var hoop = { x: 0, y: 0, rx: 0, ry: 0 };
+  var ballHome = { x: 0, y: 0 };
+  var ball = { x: 0, y: 0, r: 28, active: false };
+  var shot = null;
+  var particles = [];
+  var resultText = "";
+  var resultUntil = 0;
+
+  var now = function () {
+    return (window.performance && performance.now) ? performance.now() : new Date().getTime();
+  };
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 1.25);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    hoop.x = W * 0.5;
+    hoop.y = H * 0.29;
+    hoop.rx = Math.max(55, Math.min(92, W * 0.09));
+    hoop.ry = hoop.rx * 0.23;
+
+    ballHome.x = W * 0.5;
+    ballHome.y = H * 0.73;
+    ball.r = Math.max(24, Math.min(38, W * 0.037));
+
+    if (!shotInProgress) {
+      ball.x = ballHome.x;
+      ball.y = ballHome.y;
+    }
+  }
+
+  function updateHud() {
+    makesEl.textContent = makes;
+    shotsEl.textContent = shots + " / " + SESSION_SHOTS;
+    streakEl.textContent = streak;
+    accuracyEl.textContent = shots ? Math.round((makes / shots) * 100) + "%" : "0%";
+  }
+
+  function setMessage(text) {
+    message.textContent = text;
+  }
+
+  function pointerPosition(e) {
+    var rect = canvas.getBoundingClientRect();
+    var clientX = e.clientX;
+    var clientY = e.clientY;
+
+    if (e.touches && e.touches.length) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+
+    if (typeof clientX === "number" && typeof clientY === "number") {
+      cursor.x = clientX - rect.left;
+      cursor.y = clientY - rect.top;
+      cursor.visible = true;
+    }
+  }
+
+  function distanceToTarget() {
+    var dx = cursor.x - hoop.x;
+    var dy = cursor.y - hoop.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function targetRadius() {
+    return Math.max(12, Math.min(22, W * 0.018));
+  }
+
+  function focusZoneRadius() {
+    return targetRadius() * 2.4;
+  }
+
+  function isInsideFocusZone() {
+    return cursor.visible && distanceToTarget() <= focusZoneRadius();
+  }
+
+  function isInsideMakeZone() {
+    return cursor.visible && distanceToTarget() <= targetRadius();
+  }
+
+  function createParticles(x, y, success) {
+    var i;
+    for (i = 0; i < 20; i++) {
+      particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * (success ? 5 : 2.5),
+        vy: -Math.random() * (success ? 5 : 2.5),
+        life: 700 + Math.random() * 400,
+        born: now(),
+        success: success
+      });
+    }
+  }
+
+  function beep(success) {
+    var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) { return; }
+    try {
+      var ac = beep.context || (beep.context = new AudioContextClass());
+      var osc = ac.createOscillator();
+      var gain = ac.createGain();
+      osc.type = success ? "sine" : "triangle";
+      osc.frequency.value = success ? 880 : 190;
+      gain.gain.value = 0.12;
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.22);
+      osc.stop(ac.currentTime + 0.24);
+    } catch (err) {}
+  }
+
+  function beginShot() {
+    if (!gameRunning || shotInProgress || shots >= SESSION_SHOTS) { return; }
+
+    var error = distanceToTarget();
+    var radius = targetRadius();
+    var heldLongEnough = focusProgress >= 0.92;
+    var made = heldLongEnough && error <= radius;
+
+    shots++;
+    shotInProgress = true;
+    ball.active = true;
+    resultText = "";
+    focusStart = 0;
+    focusProgress = 0;
+
+    var missDirection = cursor.x < hoop.x ? -1 : 1;
+    if (Math.abs(cursor.x - hoop.x) < 2) {
+      missDirection = Math.random() < 0.5 ? -1 : 1;
+    }
+
+    var endX = made ? hoop.x : hoop.x + missDirection * Math.max(hoop.rx * 0.85, error * 0.72);
+    var endY = made ? hoop.y + hoop.ry * 0.25 : hoop.y - hoop.ry * 0.2;
+    var arcY = Math.min(ballHome.y, hoop.y) - H * 0.23;
+
+    shot = {
+      start: now(),
+      duration: 900,
+      sx: ballHome.x,
+      sy: ballHome.y,
+      cx: (ballHome.x + endX) * 0.5,
+      cy: arcY,
+      ex: endX,
+      ey: endY,
+      made: made,
+      resolved: false,
+      error: error,
+      held: heldLongEnough
+    };
+
+    if (!heldLongEnough) {
+      setMessage("Too quick. Hold the target steady until it turns green.");
+    } else if (!made) {
+      setMessage("Off center. Keep your pointer on the middle of the rim.");
+    } else {
+      setMessage("Centered shot!");
+    }
+
+    updateHud();
+  }
+
+  function resolveShot(t) {
+    if (!shot || shot.resolved) { return; }
+
+    shot.resolved = true;
+    if (shot.made) {
+      makes++;
+      streak++;
+      if (streak > bestStreak) { bestStreak = streak; }
+      resultText = shot.error <= targetRadius() * 0.42 ? "PERFECT FOCUS" : "MADE";
+      createParticles(hoop.x, hoop.y, true);
+      beep(true);
+    } else {
+      streak = 0;
+      resultText = shot.held ? "MISS — RECENTER" : "MISS — HOLD STEADY";
+      createParticles(ball.x, ball.y, false);
+      beep(false);
+    }
+
+    resultUntil = t + 900;
+    resetAt = t + 1250;
+    updateHud();
+  }
+
+  function resetBall() {
+    shotInProgress = false;
+    ball.active = false;
+    ball.x = ballHome.x;
+    ball.y = ballHome.y;
+    shot = null;
+    resultText = "";
+    resetAt = 0;
+
+    if (shots >= SESSION_SHOTS) {
+      finishSession();
+    } else {
+      setMessage("Aim at the center, hold until green, then click.");
+    }
+  }
+
+  function finishSession() {
+    gameRunning = false;
+    var accuracy = shots ? Math.round((makes / shots) * 100) : 0;
+    overlayText.innerHTML =
+      "<strong>Session complete</strong><br><br>" +
+      "Makes: " + makes + " of " + shots + "<br>" +
+      "Accuracy: " + accuracy + "%<br>" +
+      "Best streak: " + bestStreak + "<br><br>" +
+      focusRating(accuracy);
+    startBtn.textContent = "TRAIN AGAIN";
+    overlay.style.display = "flex";
+  }
+
+  function focusRating(accuracy) {
+    if (accuracy >= 90) { return "Excellent visual focus and control."; }
+    if (accuracy >= 75) { return "Strong focus. Keep tightening the center aim."; }
+    if (accuracy >= 55) { return "Good start. Slow down and hold the center longer."; }
+    return "Build consistency by holding steady before every click.";
+  }
+
+  function startGame(e) {
+    if (e && e.stopPropagation) { e.stopPropagation(); }
+
+    makes = 0;
+    shots = 0;
+    streak = 0;
+    bestStreak = 0;
+    focusStart = 0;
+    focusProgress = 0;
+    shotInProgress = false;
+    gameRunning = true;
+    particles = [];
+    resultText = "";
+    ball.x = ballHome.x;
+    ball.y = ballHome.y;
+
+    updateHud();
+    overlay.style.display = "none";
+    setMessage("Aim at the exact center of the rim. Hold steady until green, then click.");
+
+    var root = document.documentElement;
+    var requestFull = root.requestFullscreen || root.mozRequestFullScreen || root.webkitRequestFullscreen;
+    if (requestFull) {
+      try { requestFull.call(root); } catch (err) {}
+    }
+  }
+
+  function drawCourt() {
+    var sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#090d18");
+    sky.addColorStop(0.58, "#16111a");
+    sky.addColorStop(1, "#3a1c0b");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = "rgba(255,255,255,0.035)";
+    var i;
+    for (i = 0; i < 12; i++) {
+      ctx.fillRect(0, H * 0.44 + i * H * 0.045, W, 1);
+    }
+
+    ctx.strokeStyle = "rgba(255,125,30,0.28)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(W * 0.5, H * 0.87, W * 0.27, H * 0.075, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W * 0.5, H * 0.44);
+    ctx.lineTo(W * 0.5, H);
+    ctx.stroke();
+  }
+
+  function drawHoop(t) {
+    var boardW = hoop.rx * 3.4;
+    var boardH = hoop.rx * 1.72;
+    var boardX = hoop.x - boardW / 2;
+    var boardY = hoop.y - boardH * 0.85;
+
+    ctx.fillStyle = "rgba(235,245,255,0.13)";
+    ctx.strokeStyle = "rgba(235,245,255,0.56)";
+    ctx.lineWidth = 4;
+    ctx.fillRect(boardX, boardY, boardW, boardH);
+    ctx.strokeRect(boardX, boardY, boardW, boardH);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(hoop.x - hoop.rx * 0.58, hoop.y - hoop.rx * 0.52, hoop.rx * 1.16, hoop.rx * 0.72);
+
+    ctx.strokeStyle = "#ff681d";
+    ctx.lineWidth = Math.max(6, hoop.rx * 0.1);
+    ctx.beginPath();
+    ctx.ellipse(hoop.x, hoop.y, hoop.rx, hoop.ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.48)";
+    ctx.lineWidth = 2;
+    var n;
+    for (n = -3; n <= 3; n++) {
+      ctx.beginPath();
+      ctx.moveTo(hoop.x + n * hoop.rx * 0.22, hoop.y + hoop.ry * 0.75);
+      ctx.lineTo(hoop.x + n * hoop.rx * 0.12, hoop.y + hoop.rx * 0.82);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.ellipse(hoop.x, hoop.y + hoop.rx * 0.82, hoop.rx * 0.38, hoop.ry * 0.55, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    var targetR = targetRadius();
+    var pulse = 1 + Math.sin(t / 220) * 0.08;
+    var ready = focusProgress >= 0.92;
+    var inside = isInsideFocusZone();
+
+    ctx.save();
+    ctx.globalAlpha = ready ? 0.95 : 0.68;
+    ctx.strokeStyle = ready ? "#46ff78" : (inside ? "#ffe46a" : "#ffffff");
+    ctx.lineWidth = ready ? 5 : 3;
+    ctx.beginPath();
+    ctx.arc(hoop.x, hoop.y, targetR * pulse, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = ready ? "#46ff78" : (inside ? "#ffe46a" : "#ffffff");
+    ctx.beginPath();
+    ctx.arc(hoop.x, hoop.y, Math.max(3, targetR * 0.18), 0, Math.PI * 2);
+    ctx.fill();
+
+    if (inside && !shotInProgress) {
+      ctx.strokeStyle = "rgba(70,255,120,0.9)";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(
+        hoop.x,
+        hoop.y,
+        focusZoneRadius(),
+        -Math.PI / 2,
+        -Math.PI / 2 + Math.PI * 2 * focusProgress
+      );
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawBall(x, y, r) {
+    var grad = ctx.createRadialGradient(x - r * 0.35, y - r * 0.45, r * 0.1, x, y, r);
+    grad.addColorStop(0, "#ffb052");
+    grad.addColorStop(0.5, "#f37418");
+    grad.addColorStop(1, "#9f3500");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(35,15,5,0.92)";
+    ctx.lineWidth = Math.max(2, r * 0.075);
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.98, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x - r, y);
+    ctx.quadraticCurveTo(x, y - r * 0.35, x + r, y);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x - r * 0.35, y, x, y + r);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x + r * 0.35, y, x, y + r);
+    ctx.stroke();
+  }
+
+  function drawChestGuide() {
+    if (shotInProgress) { return; }
+    ctx.strokeStyle = "rgba(255,255,255,0.16)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([7, 8]);
+    ctx.beginPath();
+    ctx.moveTo(ballHome.x - ball.r * 2.2, ballHome.y);
+    ctx.lineTo(ballHome.x + ball.r * 2.2, ballHome.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "rgba(255,255,255,0.54)";
+    ctx.font = "bold 12px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("CHEST-HEIGHT START POSITION", ballHome.x, ballHome.y + ball.r + 25);
+  }
+
+  function drawCursor() {
+    if (!cursor.visible || shotInProgress) { return; }
+    ctx.save();
+    ctx.strokeStyle = isInsideFocusZone() ? "rgba(255,235,90,0.95)" : "rgba(255,255,255,0.72)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cursor.x, cursor.y, 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cursor.x - 15, cursor.y);
+    ctx.lineTo(cursor.x - 5, cursor.y);
+    ctx.moveTo(cursor.x + 5, cursor.y);
+    ctx.lineTo(cursor.x + 15, cursor.y);
+    ctx.moveTo(cursor.x, cursor.y - 15);
+    ctx.lineTo(cursor.x, cursor.y - 5);
+    ctx.moveTo(cursor.x, cursor.y + 5);
+    ctx.lineTo(cursor.x, cursor.y + 15);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function updateFocus(t) {
+    if (!gameRunning || shotInProgress || shots >= SESSION_SHOTS) {
+      focusStart = 0;
+      focusProgress = 0;
+      return;
+    }
+
+    if (isInsideFocusZone()) {
+      if (!focusStart) { focusStart = t; }
+      focusProgress = Math.min(1, (t - focusStart) / FOCUS_REQUIRED);
+      if (focusProgress >= 0.92) {
+        setMessage("Target locked. Click the controller trigger.");
+      } else {
+        setMessage("Hold steady on the center...");
+      }
+    } else {
+      focusStart = 0;
+      focusProgress = 0;
+      setMessage("Move the pointer to the exact center of the rim.");
+    }
+  }
+
+  function updateShot(t) {
+    if (!shotInProgress || !shot) { return; }
+
+    var p = Math.min(1, (t - shot.start) / shot.duration);
+    var u = 1 - p;
+    ball.x = u * u * shot.sx + 2 * u * p * shot.cx + p * p * shot.ex;
+    ball.y = u * u * shot.sy + 2 * u * p * shot.cy + p * p * shot.ey;
+
+    var scale = 1 - p * 0.35;
+    ball.currentR = ball.r * scale;
+
+    if (p >= 1) {
+      resolveShot(t);
+    }
+
+    if (shot.resolved && !shot.made) {
+      var fall = Math.min(1, (t - (shot.start + shot.duration)) / 450);
+      ball.y = shot.ey + fall * fall * H * 0.42;
+      ball.x = shot.ex + (shot.ex < hoop.x ? -1 : 1) * fall * W * 0.08;
+    }
+
+    if (resetAt && t >= resetAt) {
+      resetBall();
+    }
+  }
+
+  function updateParticles(t) {
+    var alive = [];
+    var i;
+    for (i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      var age = t - p.born;
+      if (age < p.life) {
+        var sec = age / 1000;
+        p.x += p.vx;
+        p.y += p.vy + sec * 0.15;
+        p.vy += 0.08;
+        alive.push(p);
+
+        ctx.globalAlpha = 1 - age / p.life;
+        ctx.fillStyle = p.success ? "#59ff84" : "#ffad64";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.success ? 4 : 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    particles = alive;
+  }
+
+  function drawResult(t) {
+    if (!resultText || t > resultUntil) { return; }
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.font = "bold " + Math.max(28, Math.min(52, W * 0.055)) + "px Arial";
+    ctx.fillStyle = shot && shot.made ? "#59ff84" : "#ffb06a";
+    ctx.shadowColor = "rgba(0,0,0,0.9)";
+    ctx.shadowBlur = 12;
+    ctx.fillText(resultText, W * 0.5, H * 0.52);
+    ctx.restore();
+  }
+
+  function frame(t) {
+    ctx.clearRect(0, 0, W, H);
+    updateFocus(t);
+    updateShot(t);
+
+    drawCourt();
+    drawHoop(t);
+    drawChestGuide();
+    drawBall(ball.x, ball.y, ball.currentR || ball.r);
+    drawCursor();
+    updateParticles(t);
+    drawResult(t);
+
+    window.requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener("mousemove", pointerPosition, false);
+  canvas.addEventListener("mousedown", function (e) {
+    pointerPosition(e);
+    beginShot();
+    if (e.preventDefault) { e.preventDefault(); }
+  }, false);
+
+  canvas.addEventListener("touchstart", function (e) {
+    pointerPosition(e);
+    beginShot();
+    if (e.preventDefault) { e.preventDefault(); }
+  }, false);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.keyCode === 32 || e.keyCode === 13) {
+      beginShot();
+      if (e.preventDefault) { e.preventDefault(); }
+    }
+  }, false);
+
+  startBtn.addEventListener("click", startGame, false);
+  window.addEventListener("resize", resize, false);
+
+  resize();
+  updateHud();
+  window.requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
