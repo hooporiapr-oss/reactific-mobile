@@ -142,7 +142,10 @@ $('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await 
 $('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 var cells=[];
-var lastInputAt=0;
+var lastConfirmedHitAt=0;
+var hoveredCell=-1;
+var inputListenersAttached=false;
+
 function getInputPoint(e){
   var x=e.clientX,y=e.clientY;
   if(e.touches&&e.touches.length){
@@ -152,46 +155,120 @@ function getInputPoint(e){
   }
   return{x:x,y:y};
 }
-function pointInsideExpandedTarget(x,y){
-  if(currentTarget<0||!cells[currentTarget])return false;
-  if(typeof x!=='number'||typeof y!=='number')return false;
-  var r=cells[currentTarget].getBoundingClientRect();
-  var pad=Math.max(10,Math.min(22,Math.min(r.width,r.height)*.28));
-  return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;
-}
-function processCourtInput(e){
-  if(e&&e.preventDefault)e.preventDefault();
-  var t=performance.now?performance.now():Date.now();
-  if(t-lastInputAt<85)return;
-  lastInputAt=t;
-  if(phase!=='waiting-tap')return;
 
-  var point=getInputPoint(e||{});
-  var node=e.target||e.srcElement;
-  var idx=-1;
-  while(node&&node!==$('court')){
+function cellIndexFromNode(node){
+  while(node&&node!==$('court')&&node!==document.body){
     if(node.dataset&&typeof node.dataset.i!=='undefined'){
-      idx=Number(node.dataset.i);break;
+      return Number(node.dataset.i);
     }
     node=node.parentNode;
   }
-  if(idx===currentTarget||pointInsideExpandedTarget(point.x,point.y)){
-    handleTap(currentTarget);
+  return-1;
+}
+
+function pointInsideExpandedTarget(x,y){
+  if(currentTarget<0||!cells[currentTarget])return false;
+  if(typeof x!=='number'||typeof y!=='number'||!isFinite(x)||!isFinite(y))return false;
+  var r=cells[currentTarget].getBoundingClientRect();
+  var pad=Math.max(14,Math.min(28,Math.min(r.width,r.height)*.34));
+  return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;
+}
+
+function updateHoveredCell(e){
+  var idx=cellIndexFromNode(e.target||e.srcElement);
+  if(idx>=0){hoveredCell=idx;return;}
+
+  var point=getInputPoint(e||{});
+  if(typeof point.x==='number'&&typeof point.y==='number'&&document.elementFromPoint){
+    idx=cellIndexFromNode(document.elementFromPoint(point.x,point.y));
+    if(idx>=0){hoveredCell=idx;}
   }
 }
+
+function processCourtInput(e){
+  if(phase!=='waiting-tap')return;
+
+  var t=performance.now?performance.now():Date.now();
+  var point=getInputPoint(e||{});
+  var idx=cellIndexFromNode(e.target||e.srcElement);
+
+  if(idx<0&&typeof point.x==='number'&&typeof point.y==='number'&&document.elementFromPoint){
+    idx=cellIndexFromNode(document.elementFromPoint(point.x,point.y));
+  }
+
+  var confirmed=
+    idx===currentTarget||
+    hoveredCell===currentTarget||
+    pointInsideExpandedTarget(point.x,point.y);
+
+  /*
+    Important PICO fix:
+    Do not lock out later click/up events unless a hit was actually confirmed.
+    Some headset browsers first send an incomplete pointer event and then send
+    the usable click event immediately afterward.
+  */
+  if(!confirmed)return;
+  if(t-lastConfirmedHitAt<160)return;
+
+  lastConfirmedHitAt=t;
+  if(e&&e.preventDefault)e.preventDefault();
+  handleTap(currentTarget);
+}
+
+function processTriggerKey(e){
+  if(phase!=='waiting-tap')return;
+  var code=e.keyCode||e.which||0;
+  var key=e.key||'';
+  var activation=
+    code===13||code===32||code===23||code===66||
+    key==='Enter'||key===' '||key==='Spacebar';
+
+  if(!activation)return;
+  if(hoveredCell!==currentTarget)return;
+
+  if(e&&e.preventDefault)e.preventDefault();
+  processCourtInput({
+    target:cells[currentTarget],
+    clientX:undefined,
+    clientY:undefined,
+    preventDefault:function(){}
+  });
+}
+
+function attachInputListeners(){
+  if(inputListenersAttached)return;
+  inputListenersAttached=true;
+  var court=$('court');
+
+  court.addEventListener('mousemove',updateHoveredCell,false);
+  court.addEventListener('mouseover',updateHoveredCell,false);
+  court.addEventListener('pointermove',updateHoveredCell,false);
+  court.addEventListener('touchmove',updateHoveredCell,{passive:true});
+
+  court.addEventListener('touchstart',processCourtInput,{passive:false});
+  court.addEventListener('touchend',processCourtInput,{passive:false});
+  court.addEventListener('pointerdown',processCourtInput,false);
+  court.addEventListener('pointerup',processCourtInput,false);
+  court.addEventListener('mousedown',processCourtInput,false);
+  court.addEventListener('mouseup',processCourtInput,false);
+  court.addEventListener('click',processCourtInput,false);
+
+  document.addEventListener('keydown',processTriggerKey,true);
+}
+
 function buildCourt(){
   var court=$('court');court.innerHTML='';cells=[];
   for(var i=0;i<50;i++){
     var c=document.createElement('div');c.className='cell';c.dataset.i=i;
+    c.setAttribute('tabindex','-1');
+    c.addEventListener('mouseenter',(function(idx){return function(){hoveredCell=idx}})(i),false);
+    c.addEventListener('pointerenter',(function(idx){return function(){hoveredCell=idx}})(i),false);
     court.appendChild(c);cells.push(c);
   }
-  court.addEventListener('touchstart',processCourtInput,{passive:false});
-  court.addEventListener('pointerdown',processCourtInput,false);
-  court.addEventListener('mousedown',processCourtInput,false);
-  court.addEventListener('click',processCourtInput,false);
+  attachInputListeners();
 }
 function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
-function resetCells(){cells.forEach((_,i)=>cellSt(i))}
+function resetCells(){cells.forEach(function(_,i){cellSt(i);cells[i].removeAttribute('aria-label')})}
 
 var COURT_SIZE=50;
 var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
@@ -222,6 +299,8 @@ function hideClock(){if(clockRAF)cancelAnimationFrame(clockRAF);clockRAF=null;$(
 
 function startRun(){
   if(phase!=='idle')return;
+  lastConfirmedHitAt=0;
+  hoveredCell=-1;
   clrT();g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
   order=shuffle(Array.from({length:COURT_SIZE},(_,i)=>i));
   $('actBtn').disabled=true;resetCells();updateHUD();
@@ -234,6 +313,7 @@ function nextBeat(){
   resetCells();
   currentTarget=order[g.idx];
   cellSt(currentTarget,'target');
+  cells[currentTarget].setAttribute('aria-label','Active target');
   phase='waiting-tap';
   msg('⚡ TAP!','go');
   var interval=getInterval();
