@@ -64,7 +64,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
 .court{display:grid;touch-action:none;-webkit-tap-highlight-color:transparent;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,30,60,.25);border-radius:14px;padding:6px;background:rgba(15,0,0,.85);box-shadow:0 0 60px rgba(255,30,60,.3),inset 0 0 40px rgba(255,30,60,.04),0 20px 60px rgba(0,0,0,.8)}
 .cell{border-radius:8px;touch-action:none;-webkit-tap-highlight-color:transparent;background:rgba(255,30,60,.08);border:2px solid rgba(255,30,60,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
-.cell:hover{background:rgba(255,30,60,.2);border-color:#ff1e3c;transform:scale(1.05)}
+.cell:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.75);transform:scale(1.03)}
 .cell.target{background:#ff1e3c!important;border-color:#fff!important;box-shadow:0 0 38px rgba(255,30,60,1)!important;transform:scale(1.10);outline:3px solid rgba(255,255,255,.35);outline-offset:1px}
 .cell.hit{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
 .cell.missed{background:rgba(255,20,147,.3)!important;border-color:#FF1493!important;animation:shake .3s}
@@ -137,12 +137,11 @@ document.querySelectorAll('[data-bpm]').forEach(btn=>{
 });
 
 $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
-$('menuBtn').onclick=function(){$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('menuBtn').onclick=function(){targetOpen=false;targetToken++;phase='idle';clrT();hideClock();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 $('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 var cells=[];
-var lastConfirmedHitAt=0;
 var hoveredCell=-1;
 var inputListenersAttached=false;
 
@@ -170,8 +169,18 @@ function pointInsideExpandedTarget(x,y){
   if(currentTarget<0||!cells[currentTarget])return false;
   if(typeof x!=='number'||typeof y!=='number'||!isFinite(x)||!isFinite(y))return false;
   var r=cells[currentTarget].getBoundingClientRect();
-  var pad=Math.max(14,Math.min(28,Math.min(r.width,r.height)*.34));
+  var pad=Math.max(16,Math.min(32,Math.min(r.width,r.height)*.38));
   return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;
+}
+
+function targetIsVisiblyActive(){
+  return !!(
+    targetOpen&&
+    phase==='waiting-tap'&&
+    currentTarget>=0&&
+    cells[currentTarget]&&
+    cells[currentTarget].classList.contains('target')
+  );
 }
 
 function updateHoveredCell(e){
@@ -185,10 +194,17 @@ function updateHoveredCell(e){
   }
 }
 
-function processCourtInput(e){
-  if(phase!=='waiting-tap')return;
+function activateCell(idx,e){
+  if(!targetIsVisiblyActive())return false;
+  if(idx!==currentTarget)return false;
 
-  var t=performance.now?performance.now():Date.now();
+  if(e&&e.preventDefault)e.preventDefault();
+  return registerLitTargetHit(currentTarget);
+}
+
+function processCourtInput(e){
+  if(!targetIsVisiblyActive())return;
+
   var point=getInputPoint(e||{});
   var idx=cellIndexFromNode(e.target||e.srcElement);
 
@@ -196,60 +212,46 @@ function processCourtInput(e){
     idx=cellIndexFromNode(document.elementFromPoint(point.x,point.y));
   }
 
-  var confirmed=
-    idx===currentTarget||
-    hoveredCell===currentTarget||
-    pointInsideExpandedTarget(point.x,point.y);
+  if(idx===currentTarget){
+    activateCell(currentTarget,e);
+    return;
+  }
 
-  /*
-    Important PICO fix:
-    Do not lock out later click/up events unless a hit was actually confirmed.
-    Some headset browsers first send an incomplete pointer event and then send
-    the usable click event immediately afterward.
-  */
-  if(!confirmed)return;
-  if(t-lastConfirmedHitAt<160)return;
-
-  lastConfirmedHitAt=t;
-  if(e&&e.preventDefault)e.preventDefault();
-  handleTap(currentTarget);
+  if(hoveredCell===currentTarget||pointInsideExpandedTarget(point.x,point.y)){
+    if(e&&e.preventDefault)e.preventDefault();
+    registerLitTargetHit(currentTarget);
+  }
 }
 
 function processTriggerKey(e){
-  if(phase!=='waiting-tap')return;
+  if(!targetIsVisiblyActive())return;
+
   var code=e.keyCode||e.which||0;
   var key=e.key||'';
   var activation=
     code===13||code===32||code===23||code===66||
     key==='Enter'||key===' '||key==='Spacebar';
 
-  if(!activation)return;
-  if(hoveredCell!==currentTarget)return;
-
-  if(e&&e.preventDefault)e.preventDefault();
-  processCourtInput({
-    target:cells[currentTarget],
-    clientX:undefined,
-    clientY:undefined,
-    preventDefault:function(){}
-  });
+  if(!activation||hoveredCell!==currentTarget)return;
+  activateCell(currentTarget,e);
 }
 
 function attachInputListeners(){
   if(inputListenersAttached)return;
   inputListenersAttached=true;
-  var court=$('court');
 
+  var court=$('court');
   court.addEventListener('mousemove',updateHoveredCell,false);
   court.addEventListener('mouseover',updateHoveredCell,false);
   court.addEventListener('pointermove',updateHoveredCell,false);
   court.addEventListener('touchmove',updateHoveredCell,{passive:true});
 
-  court.addEventListener('touchstart',processCourtInput,{passive:false});
+  /*
+    Release/click fallbacks are kept on the court. Direct press listeners are
+    attached to every cell below, so PICO does not depend on event bubbling.
+  */
   court.addEventListener('touchend',processCourtInput,{passive:false});
-  court.addEventListener('pointerdown',processCourtInput,false);
   court.addEventListener('pointerup',processCourtInput,false);
-  court.addEventListener('mousedown',processCourtInput,false);
   court.addEventListener('mouseup',processCourtInput,false);
   court.addEventListener('click',processCourtInput,false);
 
@@ -258,13 +260,33 @@ function attachInputListeners(){
 
 function buildCourt(){
   var court=$('court');court.innerHTML='';cells=[];
+
   for(var i=0;i<50;i++){
-    var c=document.createElement('div');c.className='cell';c.dataset.i=i;
+    var c=document.createElement('div');
+    c.className='cell';
+    c.dataset.i=i;
     c.setAttribute('tabindex','-1');
-    c.addEventListener('mouseenter',(function(idx){return function(){hoveredCell=idx}})(i),false);
-    c.addEventListener('pointerenter',(function(idx){return function(){hoveredCell=idx}})(i),false);
-    court.appendChild(c);cells.push(c);
+
+    (function(idx,cell){
+      function directActivate(e){
+        hoveredCell=idx;
+        activateCell(idx,e);
+      }
+
+      cell.addEventListener('mouseenter',function(){hoveredCell=idx},false);
+      cell.addEventListener('pointerenter',function(){hoveredCell=idx},false);
+
+      /* Earliest possible events: the hit is locked on press, not release. */
+      cell.addEventListener('touchstart',directActivate,{passive:false});
+      cell.addEventListener('pointerdown',directActivate,false);
+      cell.addEventListener('mousedown',directActivate,false);
+      cell.addEventListener('click',directActivate,false);
+    })(i,c);
+
+    court.appendChild(c);
+    cells.push(c);
   }
+
   attachInputListeners();
 }
 function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
@@ -274,13 +296,14 @@ var COURT_SIZE=50;
 var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
 var order=[];
 function getInterval(){return 60000/BPM}
-var PACE_MS=600; // fixed 100 BPM breathing room between targets, regardless of speed selected
+var PACE_MS=600; // fixed breathing room between targets
+var LIT_RESPONSE_BUFFER_MS=260; // target remains visibly valid during this entire buffer
 function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.idx+'/'+COURT_SIZE;$('hHits').textContent=g.hits;$('hSt').textContent=g.st;$('hMiss').textContent=g.misses;$('hBpm').textContent=BPM}
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 function initGame(){g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRun;hideClock()}
 
-var phase='idle',currentTarget=-1,timers=[],clockRAF=null,clockStart=0,clockDur=0;
+var phase='idle',currentTarget=-1,timers=[],clockRAF=null,clockStart=0,clockDur=0,targetOpen=false,targetToken=0;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
 
 function showClock(dur){
@@ -299,8 +322,9 @@ function hideClock(){if(clockRAF)cancelAnimationFrame(clockRAF);clockRAF=null;$(
 
 function startRun(){
   if(phase!=='idle')return;
-  lastConfirmedHitAt=0;
   hoveredCell=-1;
+  targetOpen=false;
+  targetToken++;
   clrT();g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
   order=shuffle(Array.from({length:COURT_SIZE},(_,i)=>i));
   $('actBtn').disabled=true;resetCells();updateHUD();
@@ -308,41 +332,81 @@ function startRun(){
   timers.push(setTimeout(nextBeat,600));
 }
 
-function nextBeat(){
-  if(g.idx>=COURT_SIZE){finishRun();return;}
-  resetCells();
-  currentTarget=order[g.idx];
-  cellSt(currentTarget,'target');
-  cells[currentTarget].setAttribute('aria-label','Active target');
-  phase='waiting-tap';
-  msg('⚡ TAP!','go');
-  var interval=getInterval();
-  showClock(interval);
-  timers.push(setTimeout(function(){
-    if(phase!=='waiting-tap')return;
-    timers.push(setTimeout(function(){
-      if(phase!=='waiting-tap')return;
-      phase='idle';hideClock();
-      cellSt(currentTarget,'missed');
-      g.misses++;g.st=0;g.idx++;updateHUD();
-      timers.push(setTimeout(nextBeat,PACE_MS));
-    },120));
-  },interval));
-}
+function expireLitTarget(token){
+  if(!targetOpen||token!==targetToken||phase!=='waiting-tap')return;
 
-function handleTap(idx){
-  if(phase!=='waiting-tap')return;
-  if(idx!==currentTarget)return;
-  phase='idle';hideClock();clrT();
-  cellSt(idx,'hit');
-  g.hits++;g.st++;if(g.st>g.bestSt)g.bestSt=g.st;g.sc+=10+g.st*2;g.idx++;
+  /*
+    The target stops being valid only at the exact moment it stops being lit.
+    There is no separate hidden timing window.
+  */
+  targetOpen=false;
+  phase='idle';
+  hideClock();
+  cellSt(currentTarget,'missed');
+  g.misses++;
+  g.st=0;
+  g.idx++;
   updateHUD();
-  msg('✓ HIT!','perfect');
+  msg('MISS — NEXT TARGET','miss');
   timers.push(setTimeout(nextBeat,PACE_MS));
 }
 
+function nextBeat(){
+  if(g.idx>=COURT_SIZE){finishRun();return;}
+
+  resetCells();
+  currentTarget=order[g.idx];
+  targetToken++;
+  var token=targetToken;
+
+  targetOpen=true;
+  phase='waiting-tap';
+  cellSt(currentTarget,'target');
+  cells[currentTarget].setAttribute('aria-label','Active target');
+  msg('⚡ TAP!','go');
+
+  /*
+    The visible flash and the valid scoring window are the SAME duration.
+    If the player can still see the red target, it is still scoreable.
+  */
+  var visibleDuration=getInterval()+LIT_RESPONSE_BUFFER_MS;
+  showClock(visibleDuration);
+  timers.push(setTimeout(function(){expireLitTarget(token)},visibleDuration));
+}
+
+function registerLitTargetHit(idx){
+  if(!targetIsVisiblyActive())return false;
+  if(idx!==currentTarget)return false;
+
+  /*
+    Atomic resolution: close the target before clearing timers or changing UI.
+    Duplicate pointer/click/up events therefore cannot score twice.
+  */
+  targetOpen=false;
+  phase='idle';
+  targetToken++;
+  hideClock();
+  clrT();
+
+  cellSt(idx,'hit');
+  g.hits++;
+  g.st++;
+  if(g.st>g.bestSt)g.bestSt=g.st;
+  g.sc+=10+g.st*2;
+  g.idx++;
+
+  updateHUD();
+  msg('✓ HIT LOCKED!','perfect');
+  timers.push(setTimeout(nextBeat,PACE_MS));
+  return true;
+}
+
+function handleTap(idx){
+  return registerLitTargetHit(idx);
+}
+
 function finishRun(){
-  phase='idle';hideClock();clrT();resetCells();
+  targetOpen=false;targetToken++;phase='idle';hideClock();clrT();resetCells();
   var pct=Math.round((g.hits/COURT_SIZE)*100);
   msg('✅ COURT COMPLETE — '+g.hits+'/'+COURT_SIZE+' ('+pct+'%)','perfect');
   $('actBtn').disabled=false;$('actBtn').textContent='RUN IT AGAIN';$('actBtn').onclick=startRun;
