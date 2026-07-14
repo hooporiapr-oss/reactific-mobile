@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-if (sessionStorage.getItem('rct-gate-pass') !== '1') {
-  window.location.replace('index.html');
-}
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>REACTION | Ritnome</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
 
 #screen-intro{
   position:fixed;inset:0;display:flex;flex-direction:column;
@@ -68,10 +62,10 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .star{font-size:1rem;opacity:.2;transition:all .3s}
 .star.earned{opacity:1;filter:drop-shadow(0 0 6px #ff1e3c);transform:scale(1.2)}
 .court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
-.court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,30,60,.25);border-radius:14px;padding:6px;background:rgba(15,0,0,.85);box-shadow:0 0 60px rgba(255,30,60,.3),inset 0 0 40px rgba(255,30,60,.04),0 20px 60px rgba(0,0,0,.8)}
-.cell{border-radius:8px;background:rgba(255,30,60,.08);border:2px solid rgba(255,30,60,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.court{display:grid;touch-action:none;-webkit-tap-highlight-color:transparent;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,30,60,.25);border-radius:14px;padding:6px;background:rgba(15,0,0,.85);box-shadow:0 0 60px rgba(255,30,60,.3),inset 0 0 40px rgba(255,30,60,.04),0 20px 60px rgba(0,0,0,.8)}
+.cell{border-radius:8px;touch-action:none;-webkit-tap-highlight-color:transparent;background:rgba(255,30,60,.08);border:2px solid rgba(255,30,60,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
 .cell:hover{background:rgba(255,30,60,.2);border-color:#ff1e3c;transform:scale(1.05)}
-.cell.target{background:#ff1e3c!important;border-color:#ff6b7f!important;box-shadow:0 0 30px rgba(255,30,60,1)!important;transform:scale(1.08)}
+.cell.target{background:#ff1e3c!important;border-color:#fff!important;box-shadow:0 0 38px rgba(255,30,60,1)!important;transform:scale(1.10);outline:3px solid rgba(255,255,255,.35);outline-offset:1px}
 .cell.hit{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
 .cell.missed{background:rgba(255,20,147,.3)!important;border-color:#FF1493!important;animation:shake .3s}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
@@ -91,7 +85,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <body>
 
 <div id="screen-intro">
-  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
+  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="index.html">← Games</a>
   <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
   <div class="vrr-logo">RE<span>ACTION</span></div>
   <div class="vrr-sub">5×10 VR Court · Reactific™</div>
@@ -148,13 +142,53 @@ $('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await 
 $('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 var cells=[];
+var lastInputAt=0;
+function getInputPoint(e){
+  var x=e.clientX,y=e.clientY;
+  if(e.touches&&e.touches.length){
+    x=e.touches[0].clientX;y=e.touches[0].clientY;
+  }else if(e.changedTouches&&e.changedTouches.length){
+    x=e.changedTouches[0].clientX;y=e.changedTouches[0].clientY;
+  }
+  return{x:x,y:y};
+}
+function pointInsideExpandedTarget(x,y){
+  if(currentTarget<0||!cells[currentTarget])return false;
+  if(typeof x!=='number'||typeof y!=='number')return false;
+  var r=cells[currentTarget].getBoundingClientRect();
+  var pad=Math.max(10,Math.min(22,Math.min(r.width,r.height)*.28));
+  return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;
+}
+function processCourtInput(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  var t=performance.now?performance.now():Date.now();
+  if(t-lastInputAt<85)return;
+  lastInputAt=t;
+  if(phase!=='waiting-tap')return;
+
+  var point=getInputPoint(e||{});
+  var node=e.target||e.srcElement;
+  var idx=-1;
+  while(node&&node!==$('court')){
+    if(node.dataset&&typeof node.dataset.i!=='undefined'){
+      idx=Number(node.dataset.i);break;
+    }
+    node=node.parentNode;
+  }
+  if(idx===currentTarget||pointInsideExpandedTarget(point.x,point.y)){
+    handleTap(currentTarget);
+  }
+}
 function buildCourt(){
   var court=$('court');court.innerHTML='';cells=[];
   for(var i=0;i<50;i++){
     var c=document.createElement('div');c.className='cell';c.dataset.i=i;
-    c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));
     court.appendChild(c);cells.push(c);
   }
+  court.addEventListener('touchstart',processCourtInput,{passive:false});
+  court.addEventListener('pointerdown',processCourtInput,false);
+  court.addEventListener('mousedown',processCourtInput,false);
+  court.addEventListener('click',processCourtInput,false);
 }
 function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
@@ -206,10 +240,13 @@ function nextBeat(){
   showClock(interval);
   timers.push(setTimeout(function(){
     if(phase!=='waiting-tap')return;
-    phase='idle';hideClock();
-    cellSt(currentTarget,'missed');
-    g.misses++;g.st=0;g.idx++;updateHUD();
-    timers.push(setTimeout(nextBeat,PACE_MS));
+    timers.push(setTimeout(function(){
+      if(phase!=='waiting-tap')return;
+      phase='idle';hideClock();
+      cellSt(currentTarget,'missed');
+      g.misses++;g.st=0;g.idx++;updateHUD();
+      timers.push(setTimeout(nextBeat,PACE_MS));
+    },120));
   },interval));
 }
 
@@ -220,6 +257,7 @@ function handleTap(idx){
   cellSt(idx,'hit');
   g.hits++;g.st++;if(g.st>g.bestSt)g.bestSt=g.st;g.sc+=10+g.st*2;g.idx++;
   updateHUD();
+  msg('✓ HIT!','perfect');
   timers.push(setTimeout(nextBeat,PACE_MS));
 }
 
