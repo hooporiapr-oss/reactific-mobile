@@ -258,7 +258,7 @@ function startRound(){
   var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,g.cellCount);
   targets=indices;
   msg('WATCH!','watch');
-  var showMs=getBeatMs();
+  var showMs=Math.round(60000/bpm)+((g.cellCount-1)*120);
   timers.push(setTimeout(function(){
     targets.forEach(function(idx){cellSt(idx,'lit')});
     timers.push(setTimeout(function(){
@@ -273,6 +273,7 @@ function startRound(){
 
 var tapLocked=false;
 function handleTap(idx){
+  if(phase==='showing'){msg('⏳ WAIT FOR IT...','watch');return;}
   if(phase!=='tapping')return;
   if(tapLocked)return;
   tapLocked=true;
@@ -293,7 +294,7 @@ function handleTap(idx){
       g.cellCount++;
       updateHUD();
       msg('✅ PERFECT! MORE CELLS...','perfect');
-      timers.push(setTimeout(function(){resetCells();autoNextRound()},1200));
+      timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
     }
   }else if(targets.indexOf(idx)===-1){
     endGame(idx);
@@ -323,8 +324,8 @@ function endGame(wrongIdx){
   }else{
     timers.push(setTimeout(function(){
       targets.forEach(function(pi){if(found.indexOf(pi)===-1)cellSt(pi,'missed')});
-      timers.push(setTimeout(showFinalScore,1800));
-    },500));
+      timers.push(setTimeout(showFinalScore,900));
+    },400));
   }
 }
 
