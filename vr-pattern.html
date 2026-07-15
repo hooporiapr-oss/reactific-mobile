@@ -268,7 +268,7 @@ function startRound(){
   var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,g.cellCount);
   pattern=indices;
   msg('MEMORIZE!','watch');
-  var showMs=getBeatMs();
+  var showMs=Math.round(60000/bpm)+((g.cellCount-1)*120);
   timers.push(setTimeout(function(){
     pattern.forEach(function(idx,n){cellSt(idx,'lit',n+1)});
     timers.push(setTimeout(function(){
@@ -283,6 +283,7 @@ function startRound(){
 
 var tapLocked=false;
 function handleTap(idx){
+  if(phase==='showing'){msg('⏳ WAIT FOR IT...','watch');return;}
   if(phase!=='tapping')return;
   if(tapLocked)return;
   tapLocked=true;
@@ -303,7 +304,7 @@ function handleTap(idx){
       g.cellCount++;
       updateHUD();
       msg('✅ PERFECT! SEQUENCE GROWS...','perfect');
-      timers.push(setTimeout(function(){resetCells();autoNextRound()},1200));
+      timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
     }
   }else{
     endGame(idx);
@@ -332,8 +333,8 @@ function endGame(wrongIdx){
   }else{
     timers.push(setTimeout(function(){
       pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});
-      timers.push(setTimeout(showFinalScore,1800));
-    },500));
+      timers.push(setTimeout(showFinalScore,900));
+    },400));
   }
 }
 
