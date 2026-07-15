@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (sessionStorage.getItem('rct-gate-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>REACTION | Ritnome</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 
 #screen-intro{
   position:fixed;inset:0;display:flex;flex-direction:column;
@@ -62,10 +68,10 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .star{font-size:1rem;opacity:.2;transition:all .3s}
 .star.earned{opacity:1;filter:drop-shadow(0 0 6px #ff1e3c);transform:scale(1.2)}
 .court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
-.court{display:grid;touch-action:none;-webkit-tap-highlight-color:transparent;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,30,60,.25);border-radius:14px;padding:6px;background:rgba(15,0,0,.85);box-shadow:0 0 60px rgba(255,30,60,.3),inset 0 0 40px rgba(255,30,60,.04),0 20px 60px rgba(0,0,0,.8)}
-.cell{border-radius:8px;touch-action:none;-webkit-tap-highlight-color:transparent;background:rgba(255,30,60,.08);border:2px solid rgba(255,30,60,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
-.cell:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.75);transform:scale(1.03)}
-.cell.target{background:#ff1e3c!important;border-color:#fff!important;box-shadow:0 0 38px rgba(255,30,60,1)!important;transform:scale(1.10);outline:3px solid rgba(255,255,255,.35);outline-offset:1px}
+.court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(255,30,60,.25);border-radius:14px;padding:6px;background:rgba(15,0,0,.85);box-shadow:0 0 60px rgba(255,30,60,.3),inset 0 0 40px rgba(255,30,60,.04),0 20px 60px rgba(0,0,0,.8)}
+.cell{border-radius:8px;background:rgba(255,30,60,.08);border:2px solid rgba(255,30,60,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.cell:hover{background:rgba(255,30,60,.2);border-color:#ff1e3c;transform:scale(1.05)}
+.cell.target{background:#ff1e3c!important;border-color:#ff6b7f!important;box-shadow:0 0 30px rgba(255,30,60,1)!important;transform:scale(1.08)}
 .cell.hit{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
 .cell.missed{background:rgba(255,20,147,.3)!important;border-color:#FF1493!important;animation:shake .3s}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
@@ -85,35 +91,33 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <body>
 
 <div id="screen-intro">
-  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="index.html">← Games</a>
+  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
   <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
   <div class="vrr-logo">RE<span>ACTION</span></div>
-  <div class="vrr-sub">5×10 Continuous Reaction Court · Reactific™</div>
-  <div class="vrr-rule">⚡ TAP THE LIT CELL — AS FAST AS POSSIBLE</div>
-  <div class="speed-row" style="display:none">
-    <button class="speed-btn" data-bpm="80">80<small>TRAINING</small></button>
-    <button class="speed-btn active" data-bpm="100">100<small>TEMPO</small></button>
-    <button class="speed-btn" data-bpm="120">120<small>ELITE</small></button>
+  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-rule">⚡ TAP THE LIT CELL — AS FAST AS YOU CAN</div>
+  <div class="speed-row" style="grid-template-columns:repeat(2,1fr)">
+    <button class="speed-btn active" data-total="25">25<small>SHORT RUN</small></button>
+    <button class="speed-btn" data-total="50">50<small>FULL COURT</small></button>
   </div>
   <button class="big-btn" id="startBtn">⚡ ENTER THE COURT</button>
   <div class="intro-info">
-    <strong>WATCH</strong> — one cell flashes red<br>
-    <strong>REACT</strong> — tap it as fast as possible<br>
-    <strong>CONTINUE</strong> — the next target flashes immediately<br>
-    <strong>RESULT</strong> — average, median and fastest reaction time
+    <strong>WATCH</strong> — a random cell lights up red<br>
+    <strong>TAP</strong> — hit it as fast as you can, no deadline<br>
+    <strong>REACT</strong> — we measure your exact reaction time<br>
+    <strong>SCORE</strong> — hits, misses, and your average speed
   </div>
 </div>
 
 <div id="screen-game">
   <div class="topbar">
-    <div class="top-box"><div class="top-label">Average</div><div class="top-val" id="hSc">—</div></div>
-    <div class="top-box info-box"><div class="top-label">Last</div><div class="top-val" id="hBpm">—</div></div>
-    <div class="top-box"><div class="top-label">Court</div><div class="top-val" id="hRd">0/50</div></div>
-    <div class="top-box"><div class="top-label">Fastest</div><div class="top-val" id="hHits">—</div></div>
-    <div class="top-box"><div class="top-label">Hits</div><div class="top-val" id="hSt">0</div></div>
-    <div class="top-box"><div class="top-label">Wrong</div><div class="top-val" id="hMiss">0</div></div>
+    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
+    <div class="top-box info-box"><div class="top-label">Avg RT</div><div class="top-val" id="hAvgRT">--</div></div>
+    <div class="top-box"><div class="top-label">Court</div><div class="top-val" id="hRd">0/25</div></div>
+    <div class="top-box"><div class="top-label">Hits</div><div class="top-val" id="hHits">0</div></div>
+    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Misses</div><div class="top-val" id="hMiss">0</div></div>
   </div>
-  <div class="clockbar" style="display:none"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
   <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
   <div class="court-area"><div class="court" id="court"></div></div>
   <div class="bottombar">
@@ -127,329 +131,105 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 (function(){
 var $=id=>document.getElementById(id);
 
-var BPM=100;
-document.querySelectorAll('[data-bpm]').forEach(btn=>{
+var TOTAL=25;
+document.querySelectorAll('[data-total]').forEach(btn=>{
   btn.onclick=function(){
-    BPM=Number(btn.dataset.bpm);
-    document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));
+    TOTAL=Number(btn.dataset.total);
+    document.querySelectorAll('[data-total]').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
   };
 });
 
 $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
-$('menuBtn').onclick=function(){targetOpen=false;targetToken++;phase='idle';clrT();hideClock();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('menuBtn').onclick=function(){$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 $('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 var cells=[];
-var hoveredCell=-1;
-var inputListenersAttached=false;
-
-function getInputPoint(e){
-  var x=e.clientX,y=e.clientY;
-  if(e.touches&&e.touches.length){
-    x=e.touches[0].clientX;y=e.touches[0].clientY;
-  }else if(e.changedTouches&&e.changedTouches.length){
-    x=e.changedTouches[0].clientX;y=e.changedTouches[0].clientY;
-  }
-  return{x:x,y:y};
-}
-
-function cellIndexFromNode(node){
-  while(node&&node!==$('court')&&node!==document.body){
-    if(node.dataset&&typeof node.dataset.i!=='undefined'){
-      return Number(node.dataset.i);
-    }
-    node=node.parentNode;
-  }
-  return-1;
-}
-
-function pointInsideExpandedTarget(x,y){
-  if(currentTarget<0||!cells[currentTarget])return false;
-  if(typeof x!=='number'||typeof y!=='number'||!isFinite(x)||!isFinite(y))return false;
-  var r=cells[currentTarget].getBoundingClientRect();
-  var pad=Math.max(16,Math.min(32,Math.min(r.width,r.height)*.38));
-  return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;
-}
-
-function targetIsVisiblyActive(){
-  return !!(
-    targetOpen&&
-    phase==='waiting-tap'&&
-    currentTarget>=0&&
-    cells[currentTarget]&&
-    cells[currentTarget].classList.contains('target')
-  );
-}
-
-function updateHoveredCell(e){
-  var idx=cellIndexFromNode(e.target||e.srcElement);
-  if(idx>=0){hoveredCell=idx;return;}
-
-  var point=getInputPoint(e||{});
-  if(typeof point.x==='number'&&typeof point.y==='number'&&document.elementFromPoint){
-    idx=cellIndexFromNode(document.elementFromPoint(point.x,point.y));
-    if(idx>=0){hoveredCell=idx;}
-  }
-}
-
-function activateCell(idx,e){
-  if(!targetIsVisiblyActive())return false;
-  if(idx!==currentTarget)return false;
-
-  if(e&&e.preventDefault)e.preventDefault();
-  return registerLitTargetHit(currentTarget);
-}
-
-function processCourtInput(e){
-  if(!targetIsVisiblyActive())return;
-
-  var point=getInputPoint(e||{});
-  var idx=cellIndexFromNode(e.target||e.srcElement);
-
-  if(idx<0&&typeof point.x==='number'&&typeof point.y==='number'&&document.elementFromPoint){
-    idx=cellIndexFromNode(document.elementFromPoint(point.x,point.y));
-  }
-
-  if(idx===currentTarget||hoveredCell===currentTarget||pointInsideExpandedTarget(point.x,point.y)){
-    if(e&&e.preventDefault)e.preventDefault();
-    registerLitTargetHit(currentTarget);
-    return;
-  }
-
-  if(idx>=0){
-    var t=nowMs();
-    if(t>=inputBlockUntil){
-      inputBlockUntil=t+120;
-      g.wrong++;
-      updateHUD();
-      cellSt(idx,'missed');
-      msg('WRONG CELL — TARGET STILL ACTIVE','miss');
-      timers.push(setTimeout(function(){
-        if(cells[idx]&&idx!==currentTarget)cellSt(idx);
-      },140));
-    }
-  }
-}
-
-function processTriggerKey(e){
-  if(!targetIsVisiblyActive())return;
-
-  var code=e.keyCode||e.which||0;
-  var key=e.key||'';
-  var activation=
-    code===13||code===32||code===23||code===66||
-    key==='Enter'||key===' '||key==='Spacebar';
-
-  if(!activation||hoveredCell!==currentTarget)return;
-  activateCell(currentTarget,e);
-}
-
-function attachInputListeners(){
-  if(inputListenersAttached)return;
-  inputListenersAttached=true;
-
-  var court=$('court');
-  court.addEventListener('mousemove',updateHoveredCell,false);
-  court.addEventListener('mouseover',updateHoveredCell,false);
-  court.addEventListener('pointermove',updateHoveredCell,false);
-  court.addEventListener('touchmove',updateHoveredCell,{passive:true});
-
-  /*
-    Release/click fallbacks are kept on the court. Direct press listeners are
-    attached to every cell below, so PICO does not depend on event bubbling.
-  */
-  court.addEventListener('touchend',processCourtInput,{passive:false});
-  court.addEventListener('pointerup',processCourtInput,false);
-  court.addEventListener('mouseup',processCourtInput,false);
-  court.addEventListener('click',processCourtInput,false);
-
-  document.addEventListener('keydown',processTriggerKey,true);
-}
-
 function buildCourt(){
   var court=$('court');court.innerHTML='';cells=[];
-
   for(var i=0;i<50;i++){
-    var c=document.createElement('div');
-    c.className='cell';
-    c.dataset.i=i;
-    c.setAttribute('tabindex','-1');
-
-    (function(idx,cell){
-      function directActivate(e){
-        hoveredCell=idx;
-        if(idx===currentTarget)activateCell(idx,e);
-        else processCourtInput(e);
-      }
-
-      cell.addEventListener('mouseenter',function(){hoveredCell=idx},false);
-      cell.addEventListener('pointerenter',function(){hoveredCell=idx},false);
-
-      /* Earliest possible events: the hit is locked on press, not release. */
-      cell.addEventListener('touchstart',directActivate,{passive:false});
-      cell.addEventListener('pointerdown',directActivate,false);
-      cell.addEventListener('mousedown',directActivate,false);
-      cell.addEventListener('click',directActivate,false);
-    })(i,c);
-
-    court.appendChild(c);
-    cells.push(c);
+    var c=document.createElement('div');c.className='cell';c.dataset.i=i;
+    c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));
+    court.appendChild(c);cells.push(c);
   }
-
-  attachInputListeners();
 }
 function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)}
-function resetCells(){cells.forEach(function(_,i){cellSt(i);cells[i].removeAttribute('aria-label')})}
+function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var COURT_SIZE=50;
-var g={idx:0,hits:0,wrong:0,lastRT:0,fastest:0,slowest:0,totalRT:0};
-var order=[];
-var reactionTimes=[];
-var targetShownAt=0;
-var inputBlockUntil=0;
-
-function nowMs(){return performance&&performance.now?performance.now():Date.now()}
-function averageRT(){return reactionTimes.length?Math.round(g.totalRT/reactionTimes.length):0}
-function medianRT(){
-  if(!reactionTimes.length)return 0;
-  var a=reactionTimes.slice().sort(function(x,y){return x-y});
-  var m=Math.floor(a.length/2);
-  return a.length%2?Math.round(a[m]):Math.round((a[m-1]+a[m])/2);
-}
+var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0,totalRT:0,rtCount:0,bestRT:0};
+var PACE_MS=550; // brief breathing room between one trial resolving and the next flash appearing
+function formatMs(v){return v?Math.round(v)+' ms':'--'}
 function updateHUD(){
-  $('hSc').textContent=reactionTimes.length?averageRT()+'ms':'—';
-  $('hBpm').textContent=g.lastRT?g.lastRT+'ms':'—';
-  $('hRd').textContent=g.idx+'/'+COURT_SIZE;
-  $('hHits').textContent=g.fastest?g.fastest+'ms':'—';
-  $('hSt').textContent=g.hits;
-  $('hMiss').textContent=g.wrong;
+  $('hSc').textContent=g.sc;
+  $('hRd').textContent=g.idx+'/'+TOTAL;
+  $('hHits').textContent=g.hits;
+  $('hSt').textContent=g.st;
+  $('hMiss').textContent=g.misses;
+  $('hAvgRT').textContent=g.rtCount?formatMs(g.totalRT/g.rtCount):'--';
 }
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
-function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 function initGame(){
-  g={idx:0,hits:0,wrong:0,lastRT:0,fastest:0,slowest:0,totalRT:0};
-  reactionTimes=[];
+  g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0,totalRT:0,rtCount:0,bestRT:0};
   updateHUD();
   msg("TAP LET'S GO!",'watch');
-  $('actBtn').textContent="LET'S GO";
-  $('actBtn').disabled=false;
-  $('actBtn').onclick=startRun;
-  hideClock();
+  $('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRun;
 }
 
-var phase='idle',currentTarget=-1,timers=[],clockRAF=null,clockStart=0,clockDur=0,targetOpen=false,targetToken=0;
+var phase='idle',currentTarget=-1,timers=[],flashStart=0;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
-
-function showClock(dur){
-  clockDur=dur;clockStart=performance.now();
-  $('clockFill').style.width='100%';$('clockFill').className='clockbar-fill';
-  function tick(){
-    var pct=Math.max(0,1-(performance.now()-clockStart)/clockDur);
-    $('clockFill').style.width=(pct*100)+'%';
-    if(pct<0.3)$('clockFill').className='clockbar-fill danger';
-    else if(pct<0.5)$('clockFill').className='clockbar-fill warning';
-    if(pct>0&&phase==='waiting-tap')clockRAF=requestAnimationFrame(tick);
-  }
-  clockRAF=requestAnimationFrame(tick);
-}
-function hideClock(){if(clockRAF)cancelAnimationFrame(clockRAF);clockRAF=null;$('clockFill').style.width='0%';$('clockFill').className='clockbar-fill'}
 
 function startRun(){
   if(phase!=='idle')return;
-  hoveredCell=-1;
-  targetOpen=false;
-  targetToken++;
-  clrT();
-
-  g={idx:0,hits:0,wrong:0,lastRT:0,fastest:0,slowest:0,totalRT:0};
-  reactionTimes=[];
-  order=shuffle(Array.from({length:COURT_SIZE},function(_,i){return i}));
-
-  $('actBtn').disabled=true;
-  resetCells();
-  updateHUD();
+  clrT();g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0,totalRT:0,rtCount:0,bestRT:0};
+  $('actBtn').disabled=true;resetCells();updateHUD();
   msg('GET READY...','watch');
-
-  timers.push(setTimeout(function(){showNextTarget(-1)},600));
+  timers.push(setTimeout(nextBeat,600));
 }
 
-function chooseNextTarget(previous){
-  if(g.idx>=COURT_SIZE)return-1;
-  var idx=order[g.idx];
-  if(idx===previous&&g.idx+1<COURT_SIZE){
-    var swap=order[g.idx+1];
-    order[g.idx+1]=idx;
-    order[g.idx]=swap;
-    idx=swap;
-  }
-  return idx;
-}
-
-function showNextTarget(previous){
-  if(g.idx>=COURT_SIZE){finishRun();return}
+function nextBeat(){
+  if(g.idx>=TOTAL){finishRun();return;}
   resetCells();
-  currentTarget=chooseNextTarget(previous);
-  targetToken++;
-  targetOpen=true;
-  phase='waiting-tap';
+  currentTarget=Math.floor(Math.random()*50);
   cellSt(currentTarget,'target');
-  cells[currentTarget].setAttribute('aria-label','Active target');
-  msg('⚡ REACT!','go');
-  targetShownAt=nowMs();
+  flashStart=performance.now();
+  phase='waiting-tap';
+  msg('⚡ TAP!','go');
 }
 
-function registerLitTargetHit(idx){
-  if(!targetIsVisiblyActive()||idx!==currentTarget)return false;
-  var hitAt=nowMs();
-  if(hitAt<inputBlockUntil)return false;
+function handleTap(idx){
+  if(phase!=='waiting-tap')return;
 
-  var reaction=Math.max(1,Math.round(hitAt-targetShownAt));
-  var previous=currentTarget;
-
-  targetOpen=false;
-  phase='idle';
-  targetToken++;
-  cellSt(idx,'hit');
-
-  g.lastRT=reaction;
-  g.hits++;
-  g.idx++;
-  g.totalRT+=reaction;
-  if(!g.fastest||reaction<g.fastest)g.fastest=reaction;
-  if(reaction>g.slowest)g.slowest=reaction;
-  reactionTimes.push(reaction);
-
-  inputBlockUntil=hitAt+120;
-  updateHUD();
-  msg('✓ '+reaction+' ms','perfect');
-
-  showNextTarget(previous);
-  return true;
+  if(idx===currentTarget){
+    var rt=performance.now()-flashStart;
+    phase='idle';
+    cellSt(idx,'hit');
+    g.hits++;g.st++;if(g.st>g.bestSt)g.bestSt=g.st;
+    g.totalRT+=rt;g.rtCount++;
+    if(!g.bestRT||rt<g.bestRT)g.bestRT=rt;
+    g.sc+=Math.max(1,Math.round(300-rt/4));
+    g.idx++;
+    updateHUD();
+    msg(Math.round(rt)+' MS','perfect');
+    timers.push(setTimeout(nextBeat,PACE_MS));
+  }else{
+    /* Wrong cell — mark what was tapped, keep the real target lit a moment
+       longer so the player clearly sees which one they should have hit. */
+    phase='idle';
+    cellSt(idx,'missed');
+    g.misses++;g.st=0;g.idx++;
+    updateHUD();
+    msg('MISS — WRONG CELL','miss');
+    timers.push(setTimeout(nextBeat,PACE_MS+250));
+  }
 }
-
-function handleTap(idx){return registerLitTargetHit(idx)}
 
 function finishRun(){
-  targetOpen=false;
-  targetToken++;
-  phase='idle';
-  hideClock();
-  clrT();
-  resetCells();
-
-  var avg=averageRT();
-  var med=medianRT();
-  var fastest=g.fastest||0;
-  var slowest=g.slowest||0;
-
-  msg('✅ COMPLETE — AVG '+avg+' ms · MEDIAN '+med+' ms · FASTEST '+fastest+' ms · SLOWEST '+slowest+' ms','perfect');
-  $('actBtn').disabled=false;
-  $('actBtn').textContent='RUN IT AGAIN';
-  $('actBtn').onclick=startRun;
+  phase='idle';clrT();resetCells();
+  var avgRT=g.rtCount?Math.round(g.totalRT/g.rtCount):0;
+  msg('✅ COURT COMPLETE — '+g.hits+'/'+TOTAL+' · AVG '+avgRT+'MS','perfect');
+  $('actBtn').disabled=false;$('actBtn').textContent='RUN IT AGAIN';$('actBtn').onclick=startRun;
 }
-
 
 $('actBtn').onclick=startRun;
 buildCourt();
