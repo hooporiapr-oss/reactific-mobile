@@ -88,32 +88,32 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="index.html">← Games</a>
   <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
   <div class="vrr-logo">RE<span>ACTION</span></div>
-  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
-  <div class="vrr-rule">⚡ TAP THE LIT CELL — ON THE BEAT</div>
-  <div class="speed-row">
+  <div class="vrr-sub">5×10 Continuous Reaction Court · Reactific™</div>
+  <div class="vrr-rule">⚡ TAP THE LIT CELL — AS FAST AS POSSIBLE</div>
+  <div class="speed-row" style="display:none">
     <button class="speed-btn" data-bpm="80">80<small>TRAINING</small></button>
     <button class="speed-btn active" data-bpm="100">100<small>TEMPO</small></button>
     <button class="speed-btn" data-bpm="120">120<small>ELITE</small></button>
   </div>
   <button class="big-btn" id="startBtn">⚡ ENTER THE COURT</button>
   <div class="intro-info">
-    <strong>WATCH</strong> — a cell lights up red<br>
-    <strong>TAP</strong> — hit it before the beat passes<br>
-    <strong>RUN THE COURT</strong> — all 50 cells, one by one<br>
-    <strong>SCORE</strong> — see how many you hit out of 50
+    <strong>WATCH</strong> — one cell flashes red<br>
+    <strong>REACT</strong> — tap it as fast as possible<br>
+    <strong>CONTINUE</strong> — the next target flashes immediately<br>
+    <strong>RESULT</strong> — average, median and fastest reaction time
   </div>
 </div>
 
 <div id="screen-game">
   <div class="topbar">
-    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
-    <div class="top-box info-box"><div class="top-label">BPM</div><div class="top-val" id="hBpm">100</div></div>
+    <div class="top-box"><div class="top-label">Average</div><div class="top-val" id="hSc">—</div></div>
+    <div class="top-box info-box"><div class="top-label">Last</div><div class="top-val" id="hBpm">—</div></div>
     <div class="top-box"><div class="top-label">Court</div><div class="top-val" id="hRd">0/50</div></div>
-    <div class="top-box"><div class="top-label">Hits</div><div class="top-val" id="hHits">0</div></div>
-    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
-    <div class="top-box"><div class="top-label">Misses</div><div class="top-val" id="hMiss">0</div></div>
+    <div class="top-box"><div class="top-label">Fastest</div><div class="top-val" id="hHits">—</div></div>
+    <div class="top-box"><div class="top-label">Hits</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Wrong</div><div class="top-val" id="hMiss">0</div></div>
   </div>
-  <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
+  <div class="clockbar" style="display:none"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
   <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
   <div class="court-area"><div class="court" id="court"></div></div>
   <div class="bottombar">
@@ -212,14 +212,24 @@ function processCourtInput(e){
     idx=cellIndexFromNode(document.elementFromPoint(point.x,point.y));
   }
 
-  if(idx===currentTarget){
-    activateCell(currentTarget,e);
+  if(idx===currentTarget||hoveredCell===currentTarget||pointInsideExpandedTarget(point.x,point.y)){
+    if(e&&e.preventDefault)e.preventDefault();
+    registerLitTargetHit(currentTarget);
     return;
   }
 
-  if(hoveredCell===currentTarget||pointInsideExpandedTarget(point.x,point.y)){
-    if(e&&e.preventDefault)e.preventDefault();
-    registerLitTargetHit(currentTarget);
+  if(idx>=0){
+    var t=nowMs();
+    if(t>=inputBlockUntil){
+      inputBlockUntil=t+120;
+      g.wrong++;
+      updateHUD();
+      cellSt(idx,'missed');
+      msg('WRONG CELL — TARGET STILL ACTIVE','miss');
+      timers.push(setTimeout(function(){
+        if(cells[idx]&&idx!==currentTarget)cellSt(idx);
+      },140));
+    }
   }
 }
 
@@ -270,7 +280,8 @@ function buildCourt(){
     (function(idx,cell){
       function directActivate(e){
         hoveredCell=idx;
-        activateCell(idx,e);
+        if(idx===currentTarget)activateCell(idx,e);
+        else processCourtInput(e);
       }
 
       cell.addEventListener('mouseenter',function(){hoveredCell=idx},false);
@@ -293,15 +304,40 @@ function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)
 function resetCells(){cells.forEach(function(_,i){cellSt(i);cells[i].removeAttribute('aria-label')})}
 
 var COURT_SIZE=50;
-var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
+var g={idx:0,hits:0,wrong:0,lastRT:0,fastest:0,slowest:0,totalRT:0};
 var order=[];
-function getInterval(){return 60000/BPM}
-var PACE_MS=600; // fixed breathing room between targets
-var LIT_RESPONSE_BUFFER_MS=260; // target remains visibly valid during this entire buffer
-function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.idx+'/'+COURT_SIZE;$('hHits').textContent=g.hits;$('hSt').textContent=g.st;$('hMiss').textContent=g.misses;$('hBpm').textContent=BPM}
+var reactionTimes=[];
+var targetShownAt=0;
+var inputBlockUntil=0;
+
+function nowMs(){return performance&&performance.now?performance.now():Date.now()}
+function averageRT(){return reactionTimes.length?Math.round(g.totalRT/reactionTimes.length):0}
+function medianRT(){
+  if(!reactionTimes.length)return 0;
+  var a=reactionTimes.slice().sort(function(x,y){return x-y});
+  var m=Math.floor(a.length/2);
+  return a.length%2?Math.round(a[m]):Math.round((a[m-1]+a[m])/2);
+}
+function updateHUD(){
+  $('hSc').textContent=reactionTimes.length?averageRT()+'ms':'—';
+  $('hBpm').textContent=g.lastRT?g.lastRT+'ms':'—';
+  $('hRd').textContent=g.idx+'/'+COURT_SIZE;
+  $('hHits').textContent=g.fastest?g.fastest+'ms':'—';
+  $('hSt').textContent=g.hits;
+  $('hMiss').textContent=g.wrong;
+}
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
-function initGame(){g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};updateHUD();msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').disabled=false;$('actBtn').onclick=startRun;hideClock()}
+function initGame(){
+  g={idx:0,hits:0,wrong:0,lastRT:0,fastest:0,slowest:0,totalRT:0};
+  reactionTimes=[];
+  updateHUD();
+  msg("TAP LET'S GO!",'watch');
+  $('actBtn').textContent="LET'S GO";
+  $('actBtn').disabled=false;
+  $('actBtn').onclick=startRun;
+  hideClock();
+}
 
 var phase='idle',currentTarget=-1,timers=[],clockRAF=null,clockStart=0,clockDur=0,targetOpen=false,targetToken=0;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
@@ -325,92 +361,95 @@ function startRun(){
   hoveredCell=-1;
   targetOpen=false;
   targetToken++;
-  clrT();g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0};
-  order=shuffle(Array.from({length:COURT_SIZE},(_,i)=>i));
-  $('actBtn').disabled=true;resetCells();updateHUD();
-  msg('GET READY...','watch');
-  timers.push(setTimeout(nextBeat,600));
-}
+  clrT();
 
-function expireLitTarget(token){
-  if(!targetOpen||token!==targetToken||phase!=='waiting-tap')return;
+  g={idx:0,hits:0,wrong:0,lastRT:0,fastest:0,slowest:0,totalRT:0};
+  reactionTimes=[];
+  order=shuffle(Array.from({length:COURT_SIZE},function(_,i){return i}));
 
-  /*
-    The target stops being valid only at the exact moment it stops being lit.
-    There is no separate hidden timing window.
-  */
-  targetOpen=false;
-  phase='idle';
-  hideClock();
-  cellSt(currentTarget,'missed');
-  g.misses++;
-  g.st=0;
-  g.idx++;
-  updateHUD();
-  msg('MISS — NEXT TARGET','miss');
-  timers.push(setTimeout(nextBeat,PACE_MS));
-}
-
-function nextBeat(){
-  if(g.idx>=COURT_SIZE){finishRun();return;}
-
+  $('actBtn').disabled=true;
   resetCells();
-  currentTarget=order[g.idx];
-  targetToken++;
-  var token=targetToken;
+  updateHUD();
+  msg('GET READY...','watch');
 
+  timers.push(setTimeout(function(){showNextTarget(-1)},600));
+}
+
+function chooseNextTarget(previous){
+  if(g.idx>=COURT_SIZE)return-1;
+  var idx=order[g.idx];
+  if(idx===previous&&g.idx+1<COURT_SIZE){
+    var swap=order[g.idx+1];
+    order[g.idx+1]=idx;
+    order[g.idx]=swap;
+    idx=swap;
+  }
+  return idx;
+}
+
+function showNextTarget(previous){
+  if(g.idx>=COURT_SIZE){finishRun();return}
+  resetCells();
+  currentTarget=chooseNextTarget(previous);
+  targetToken++;
   targetOpen=true;
   phase='waiting-tap';
   cellSt(currentTarget,'target');
   cells[currentTarget].setAttribute('aria-label','Active target');
-  msg('⚡ TAP!','go');
-
-  /*
-    The visible flash and the valid scoring window are the SAME duration.
-    If the player can still see the red target, it is still scoreable.
-  */
-  var visibleDuration=getInterval()+LIT_RESPONSE_BUFFER_MS;
-  showClock(visibleDuration);
-  timers.push(setTimeout(function(){expireLitTarget(token)},visibleDuration));
+  msg('⚡ REACT!','go');
+  targetShownAt=nowMs();
 }
 
 function registerLitTargetHit(idx){
-  if(!targetIsVisiblyActive())return false;
-  if(idx!==currentTarget)return false;
+  if(!targetIsVisiblyActive()||idx!==currentTarget)return false;
+  var hitAt=nowMs();
+  if(hitAt<inputBlockUntil)return false;
 
-  /*
-    Atomic resolution: close the target before clearing timers or changing UI.
-    Duplicate pointer/click/up events therefore cannot score twice.
-  */
+  var reaction=Math.max(1,Math.round(hitAt-targetShownAt));
+  var previous=currentTarget;
+
   targetOpen=false;
   phase='idle';
   targetToken++;
-  hideClock();
-  clrT();
-
   cellSt(idx,'hit');
-  g.hits++;
-  g.st++;
-  if(g.st>g.bestSt)g.bestSt=g.st;
-  g.sc+=10+g.st*2;
-  g.idx++;
 
+  g.lastRT=reaction;
+  g.hits++;
+  g.idx++;
+  g.totalRT+=reaction;
+  if(!g.fastest||reaction<g.fastest)g.fastest=reaction;
+  if(reaction>g.slowest)g.slowest=reaction;
+  reactionTimes.push(reaction);
+
+  inputBlockUntil=hitAt+120;
   updateHUD();
-  msg('✓ HIT LOCKED!','perfect');
-  timers.push(setTimeout(nextBeat,PACE_MS));
+  msg('✓ '+reaction+' ms','perfect');
+
+  showNextTarget(previous);
   return true;
 }
 
-function handleTap(idx){
-  return registerLitTargetHit(idx);
-}
+function handleTap(idx){return registerLitTargetHit(idx)}
 
 function finishRun(){
-  targetOpen=false;targetToken++;phase='idle';hideClock();clrT();resetCells();
-  var pct=Math.round((g.hits/COURT_SIZE)*100);
-  msg('✅ COURT COMPLETE — '+g.hits+'/'+COURT_SIZE+' ('+pct+'%)','perfect');
-  $('actBtn').disabled=false;$('actBtn').textContent='RUN IT AGAIN';$('actBtn').onclick=startRun;
+  targetOpen=false;
+  targetToken++;
+  phase='idle';
+  hideClock();
+  clrT();
+  resetCells();
+
+  var avg=averageRT();
+  var med=medianRT();
+  var fastest=g.fastest||0;
+  var slowest=g.slowest||0;
+
+  msg('✅ COMPLETE — AVG '+avg+' ms · MEDIAN '+med+' ms · FASTEST '+fastest+' ms · SLOWEST '+slowest+' ms','perfect');
+  $('actBtn').disabled=false;
+  $('actBtn').textContent='RUN IT AGAIN';
+  $('actBtn').onclick=startRun;
 }
+
 
 $('actBtn').onclick=startRun;
 buildCourt();
