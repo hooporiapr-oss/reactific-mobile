@@ -104,11 +104,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="vrr-logo">RIT<span>MO</span></div>
   <div class="vrr-sub">5×10 VR Court · Ritnome Memory eSports</div>
   <div class="vrr-rule">👁️ WATCH · ECHO · SPOT THE CHANGE</div>
-  <div class="speed-row">
-    <button class="speed-btn active" data-bpm="80">RITNOME 80<small>80 BPM</small></button>
-    <button class="speed-btn" data-bpm="100">RITNOME 100<small>100 BPM</small></button>
-    <button class="speed-btn" data-bpm="120">RITNOME 120<small>120 BPM</small></button>
-  </div>
+  <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#9ACD32;margin-bottom:14px;text-align:center">⚡ RITNOME 100 · 100 BPM</div>
   <button class="big-btn" id="startBtn">👁️ ENTER THE COURT</button>
   <div class="intro-info">
     <strong>WATCH</strong> — original pattern flashes gold<br>
@@ -122,7 +118,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div id="fsStrobe"></div>
   <div class="topbar">
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
-    <div class="top-box phase-box"><div class="top-label">Tempo</div><div class="top-val" id="hPhase">80 BPM</div></div>
+    <div class="top-box phase-box"><div class="top-label">Tempo</div><div class="top-val" id="hPhase">100 BPM</div></div>
     <div class="top-box"><div class="top-label">Pattern</div><div class="top-val" id="hRd">3</div></div>
     <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
@@ -149,16 +145,8 @@ var $=id=>document.getElementById(id);
 var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
 var NEXT_GAME='/vr-pattern.html?cycle=true';
 
-var bpm=80;
+var bpm=100;
 var STARTING_CELLS=3;
-
-document.querySelectorAll('[data-bpm]').forEach(btn=>{
-  btn.onclick=function(){
-    bpm=Number(btn.dataset.bpm);
-    document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  };
-});
 
 function getBeatIv(){return 60000/bpm}
 function getFindMs(){return Math.round((60000/bpm)*10)}
@@ -238,7 +226,6 @@ function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cell
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
 var g={sc:0,cellCount:STARTING_CELLS,best:0,streak:0};
-function tempoMult(){return bpm===120?1.5:bpm===100?1.25:1.0}
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hPhase').textContent=bpm+' BPM';
@@ -339,7 +326,7 @@ function roundSuccess(){
   phase='idle';
   g.streak++;
   if(g.cellCount>g.best)g.best=g.cellCount;
-  g.sc+=Math.round(g.cellCount*tempoMult()*10);
+  g.sc+=g.cellCount*10;
   g.cellCount++;
   updateHUD();
   msg('✅ CORRECT! PATTERN GROWS...','perfect');
