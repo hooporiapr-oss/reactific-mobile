@@ -237,7 +237,7 @@ function updateHUD(){
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 
-function getBeatMs(){return Math.round((60000/bpm)*g.cellCount)}
+function getBeatMs(){return Math.round((60000/bpm)*10)}
 
 /* Recall timer — one beat per cell in the current sequence, ticking down live. */
 var recallDeadline=0,recallRAF=null;
