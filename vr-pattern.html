@@ -96,6 +96,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 }
 .top-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(0,206,209,.4);background:rgba(0,0,0,.5);color:#00CED1;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120}
 @media(max-width:768px){.top-fs{display:none}}
+
+#fsStrobe{position:fixed;inset:0;z-index:110;pointer-events:none;background:#FF6B35;opacity:0}
 </style>
 </head>
 <body>
@@ -106,34 +108,35 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
   <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
   <div class="vrr-logo">RE<span>CALL</span></div>
-  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-sub">5×10 VR Court · Ritnome Memory eSports</div>
   <div class="vrr-rule">🧩 MEMORIZE THE PATTERN — TAP IT BACK</div>
   <div class="speed-row">
-    <button class="speed-btn" data-mult="1.4">EASY<small>MORE TIME</small></button>
-    <button class="speed-btn active" data-mult="1.0">TEMPO<small>BALANCED</small></button>
-    <button class="speed-btn" data-mult="0.65">ELITE<small>LESS TIME</small></button>
+    <button class="speed-btn active" data-bpm="80">RITNOME 80<small>80 BPM</small></button>
+    <button class="speed-btn" data-bpm="100">RITNOME 100<small>100 BPM</small></button>
+    <button class="speed-btn" data-bpm="120">RITNOME 120<small>120 BPM</small></button>
   </div>
   <button class="big-btn" id="startBtn">▶ ENTER THE COURT</button>
   <div class="intro-info">
     <strong>WATCH</strong> — numbered cells light up<br>
-    <strong>REMEMBER</strong> — positions go dark<br>
-    <strong>TAP</strong> — recall them in order: 1, 2, 3...<br>
-    <strong>3 PERFECT</strong> — level up
+    <strong>BLANK</strong> — screen goes dark, beat starts<br>
+    <strong>RECALL</strong> — tap them back in order before the beat runs out<br>
+    <strong>ONE MISS ENDS IT</strong> — the sequence grows by one cell every round
   </div>
 </div>
 
 <div id="screen-game">
+  <div id="fsStrobe"></div>
   <div class="topbar">
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
-    <div class="top-box info-box"><div class="top-label">Memorize</div><div class="top-val" id="hFind">5 cells</div></div>
-    <div class="top-box"><div class="top-label">Round</div><div class="top-val" id="hRd">0</div></div>
-    <div class="top-box"><div class="top-label">Level</div><div class="top-val" id="hLv">1</div></div>
+    <div class="top-box info-box"><div class="top-label">Tempo</div><div class="top-val" id="hFind">80 BPM</div></div>
+    <div class="top-box"><div class="top-label">Sequence</div><div class="top-val" id="hRd">3</div></div>
+    <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
-    <div class="top-box"><div class="top-label">Level Up</div><div class="top-val" id="hPf">0/1</div></div>
+    <div class="top-box"><div class="top-label">Timer</div><div class="top-val" id="hPf">--</div></div>
   </div>
   <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
   <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
-  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Level</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#FF6B35"></span></div>
+  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Sequence Length</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#FF6B35"></span></div>
   <div class="court-area"><div class="court" id="court"></div></div>
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
@@ -152,17 +155,54 @@ var $=id=>document.getElementById(id);
 var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
 var NEXT_GAME='/vr-numhunt.html?cycle=true';
 
-var speedMult=1.0,bpm=90,strobe='soft',strobeTimer=null;
-var BASE_MS_PER_CELL=400;
+var bpm=80;
+var STARTING_CELLS=3;
 
-function getDisplayTime(){return Math.round(BASE_MS_PER_CELL*gcc()*speedMult)}
+document.querySelectorAll('[data-bpm]').forEach(btn=>{
+  btn.onclick=function(){
+    bpm=Number(btn.dataset.bpm);
+    document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+});
 
-document.querySelectorAll('[data-mult]').forEach(btn=>{btn.onclick=function(){speedMult=Number(btn.dataset.mult);document.querySelectorAll('[data-mult]').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}});
-document.querySelectorAll('[data-bpm]').forEach(btn=>{btn.onclick=function(){bpm=Number(btn.dataset.bpm);document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}});
-document.querySelectorAll('[data-strobe]').forEach(btn=>{btn.onclick=function(){strobe=btn.dataset.strobe;document.querySelectorAll('[data-strobe]').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}});
+/* Audio beat — the Ritnome click, synced to the full-screen strobe */
+var aCtx=null;
+function gAC(){if(!aCtx){try{aCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return aCtx}
+function beatBeep(){
+  var c=gAC();if(!c)return;
+  try{
+    if(c.state==='suspended')c.resume();
+    var o=c.createOscillator(),g2=c.createGain();
+    o.type='sine';o.frequency.value=440;
+    o.connect(g2);g2.connect(c.destination);
+    g2.gain.setValueAtTime(.18,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(.01,c.currentTime+.12);
+    o.start();o.stop(c.currentTime+.13);
+  }catch(e){}
+}
 
-function stopStrobe(){if(strobeTimer){clearInterval(strobeTimer);strobeTimer=null}var c=$('court');if(c)c.classList.remove('strobe-soft','strobe-medium','strobe-hard')}
-function startStrobe(){stopStrobe();if(strobe==='off')return;var c=$('court');var cls=strobe==='soft'?'strobe-soft':strobe==='medium'?'strobe-medium':'strobe-hard';var beat=60000/bpm;var flash=Math.max(80,Math.min(170,beat*.25));strobeTimer=setInterval(function(){c.classList.add(cls);setTimeout(function(){c.classList.remove(cls)},flash)},beat)}
+/* Full-screen strobe — runs only while waiting for the player to react,
+   stops the instant they make their first tap. */
+var strobeInterval=null;
+function startFullStrobe(){
+  stopFullStrobe();
+  var beatMs=60000/bpm;
+  var el=$('fsStrobe');
+  strobeInterval=setInterval(function(){
+    el.style.transition='none';
+    el.style.opacity='.35';
+    beatBeep();
+    setTimeout(function(){
+      el.style.transition='opacity .15s';
+      el.style.opacity='0';
+    },Math.min(120,beatMs*.3));
+  },beatMs);
+}
+function stopFullStrobe(){
+  if(strobeInterval){clearInterval(strobeInterval);strobeInterval=null}
+  var el=$('fsStrobe');el.style.transition='none';el.style.opacity='0';
+}
 
 // If cycle mode, skip intro and go straight to game
 if(cycleMode){
@@ -175,7 +215,7 @@ if(cycleMode){
   $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();updateHUD()};
 }
 
-$('menuBtn').onclick=function(){stopStrobe();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('menuBtn').onclick=function(){stopFullStrobe();stopRecallTimer();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 $('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
@@ -184,42 +224,60 @@ function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i
 function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color='#fff'}}}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var LEVEL_CELLS={1:5,2:6,3:7,4:8,5:10,6:12,7:14,8:16,9:18,10:20};
-var g={lv:1,sc:0,rd:0,st:0,pf:0};
-function gcc(){return LEVEL_CELLS[g.lv]||5}
-function updateHUD(){$('hSc').textContent=g.sc;$('hRd').textContent=g.rd;$('hLv').textContent=g.lv;$('hSt').textContent=g.st;$('hPf').textContent=g.pf+'/1';$('hFind').textContent=gcc()+' cells';$('ps1').textContent=g.lv}
+var g={sc:0,cellCount:STARTING_CELLS,best:0,streak:0};
+function tempoMult(){return bpm===120?1.5:bpm===100?1.25:1.0}
+function updateHUD(){
+  $('hSc').textContent=g.sc;
+  $('hFind').textContent=bpm+' BPM';
+  $('hRd').textContent=g.cellCount;
+  $('hLv').textContent=g.best;
+  $('hSt').textContent=g.streak;
+  $('ps1').textContent=g.cellCount;
+}
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 
-var API='https://api.reactificgaming.com';
+function getBeatMs(){return Math.round((60000/bpm)*g.cellCount)}
 
-
-function submitScore(score,level,mode){
-  /* on-screen scoring only — no backend */
+/* Recall timer — one beat per cell in the current sequence, ticking down live. */
+var recallDeadline=0,recallRAF=null;
+function startRecallTimer(){
+  var dur=getBeatMs();
+  recallDeadline=performance.now()+dur;
+  function tick(){
+    var remain=recallDeadline-performance.now();
+    var pct=Math.max(0,remain/dur);
+    $('clockFill').style.width=(pct*100)+'%';
+    $('hPf').textContent=Math.max(0,remain/1000).toFixed(1)+'s';
+    if(remain<=0){recallRAF=null;handleTimeout();return}
+    if(phase==='tapping')recallRAF=requestAnimationFrame(tick);
+  }
+  recallRAF=requestAnimationFrame(tick);
 }
+function stopRecallTimer(){if(recallRAF){cancelAnimationFrame(recallRAF);recallRAF=null}}
 
-
-
-var phase='idle',pattern=[],playerIdx=0,timers=[];
+var phase='idle',pattern=[],playerIdx=0,timers=[],firstTapDone=false;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
 
 function startRound(){
   if(phase!=='idle')return;
-  clrT();phase='showing';g.rd++;playerIdx=0;
-  resetCells();stopStrobe();$('actBtn').disabled=true;$('restartBtn').style.display='none';updateHUD();
-  $('clockFill').style.width='100%';
-  var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,gcc());
+  clrT();phase='showing';playerIdx=0;firstTapDone=false;
+  resetCells();stopFullStrobe();stopRecallTimer();
+  $('actBtn').disabled=true;$('restartBtn').style.display='none';updateHUD();
+  $('clockFill').style.width='100%';$('hPf').textContent='--';
+  var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,g.cellCount);
   pattern=indices;
-  $('hFind').textContent=gcc()+' cells';
-  msg('MEMORIZE! ('+((getDisplayTime()/1000).toFixed(1))+'s)','watch');
+  msg('MEMORIZE!','watch');
+  var showMs=getBeatMs();
   timers.push(setTimeout(function(){
     pattern.forEach(function(idx,n){cellSt(idx,'lit',n+1)});
     timers.push(setTimeout(function(){
       pattern.forEach(function(idx){cellSt(idx)});
-      msg('TAP IN ORDER!','go');
+      msg('⚡ RECALL NOW!','go');
       phase='tapping';
-      startStrobe();
-    },getDisplayTime()));
+      startFullStrobe();
+      startRecallTimer();
+    },showMs));
   },600));
 }
 
@@ -229,51 +287,71 @@ function handleTap(idx){
   if(tapLocked)return;
   tapLocked=true;
   setTimeout(function(){tapLocked=false},80);
+
+  if(!firstTapDone){
+    firstTapDone=true;
+    stopFullStrobe(); // the beat stops the instant a reaction begins
+  }
+
   if(idx===pattern[playerIdx]){
     cellSt(idx,'correct',playerIdx+1);playerIdx++;
     if(playerIdx>=pattern.length){
-      phase='idle';clrT();stopStrobe();
-      g.sc+=g.lv*10;g.st++;g.pf++;updateHUD();
-      msg('✅ PERFECT!','perfect');
-      if(g.pf>=1){
-        timers.push(setTimeout(function(){
-          if(g.lv<10){g.lv++;g.pf=0;submitScore(g.sc,g.lv,'progression');}
-          updateHUD();resetCells();msg('🔥 LEVEL UP!','perfect');
-          timers.push(setTimeout(autoNextRound,900))
-        },1200))
-      }else{
-        submitScore(g.sc,g.lv,'progression');
-        timers.push(setTimeout(autoNextRound,1000))
-      }
+      phase='idle';clrT();stopFullStrobe();stopRecallTimer();
+      g.streak++;
+      if(g.cellCount>g.best)g.best=g.cellCount;
+      g.sc+=Math.round(g.cellCount*tempoMult()*10);
+      g.cellCount++;
+      updateHUD();
+      msg('✅ PERFECT! SEQUENCE GROWS...','perfect');
+      timers.push(setTimeout(function(){resetCells();autoNextRound()},1200));
     }
   }else{
-    phase='idle';clrT();stopStrobe();
-    cellSt(idx,'wrong');g.st=0;g.pf=0;updateHUD();
-    msg('WRONG ORDER!','miss');
-    submitScore(g.sc,g.lv,'progression');
-    // WRONG TAP = miss in cycle mode
-    if(cycleMode){
-      timers.push(setTimeout(function(){
-        pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});
-        timers.push(setTimeout(function(){
-          msg('NEXT GAME...','watch');
-          timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
-        },1800));
-      },500));
-    }else{
-      timers.push(setTimeout(function(){pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});timers.push(setTimeout(showMissOptions,1800))},500));
-    }
+    endGame(idx);
   }
 }
 
-function autoNextRound(){if(phase!=='idle')return;resetCells();$('clockFill').style.width='0%';$('actBtn').disabled=true;$('restartBtn').style.display='none';startRound()}
-
-function showMissOptions(){phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';
-  msg("TRY AGAIN",'miss');
-  $('actBtn').textContent="TRY AGAIN";$('actBtn').onclick=function(){$('restartBtn').style.display='none';startRound()};$('actBtn').disabled=false;
-  $('restartBtn').style.display='';
+function handleTimeout(){
+  if(phase!=='tapping')return;
+  endGame(null);
 }
-function restartGame(){clrT();phase='idle';stopStrobe();g={lv:1,sc:0,rd:0,st:0,pf:0};resetCells();updateHUD();$('clockFill').style.width='0%';msg("TAP LET'S GO!",'watch');$('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none'}
+
+function endGame(wrongIdx){
+  phase='idle';clrT();stopFullStrobe();stopRecallTimer();
+  if(wrongIdx!==null)cellSt(wrongIdx,'wrong');
+  g.streak=0;updateHUD();
+  msg(wrongIdx!==null?'WRONG ORDER!':'⏱ TIME UP!','miss');
+
+  if(cycleMode){
+    timers.push(setTimeout(function(){
+      pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});
+      timers.push(setTimeout(function(){
+        msg('NEXT GAME...','watch');
+        timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
+      },1800));
+    },500));
+  }else{
+    timers.push(setTimeout(function(){
+      pattern.forEach(function(pi,n){cellSt(pi,'reveal',n+1)});
+      timers.push(setTimeout(showFinalScore,1800));
+    },500));
+  }
+}
+
+function autoNextRound(){if(phase!=='idle')return;resetCells();$('clockFill').style.width='0%';$('hPf').textContent='--';$('actBtn').disabled=true;$('restartBtn').style.display='none';startRound()}
+
+function showFinalScore(){
+  phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';$('hPf').textContent='--';
+  msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS)','miss');
+  $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
+  $('restartBtn').style.display='none';
+}
+function restartGame(){
+  clrT();phase='idle';stopFullStrobe();stopRecallTimer();
+  g={sc:0,cellCount:STARTING_CELLS,best:0,streak:0};
+  resetCells();updateHUD();$('clockFill').style.width='0%';$('hPf').textContent='--';
+  msg("TAP LET'S GO!",'watch');
+  $('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none';
+}
 $('actBtn').onclick=startRound;
 buildCourt();
 })();
