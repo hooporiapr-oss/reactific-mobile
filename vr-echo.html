@@ -161,7 +161,7 @@ document.querySelectorAll('[data-bpm]').forEach(btn=>{
 });
 
 function getBeatIv(){return 60000/bpm}
-function getFindMs(){return Math.round((60000/bpm)*g.cellCount)}
+function getFindMs(){return Math.round((60000/bpm)*10)}
 
 /* Audio beat — the Ritnome click, synced to the full-screen strobe */
 var aCtx=null;
