@@ -100,11 +100,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="vrr-logo">RE<span>FLEX</span></div>
   <div class="vrr-sub">5×10 VR Court · Ritnome Memory eSports</div>
   <div class="vrr-rule">👀 WATCH THE FLASH — FIND THEM ALL</div>
-  <div class="speed-row">
-    <button class="speed-btn active" data-bpm="80">RITNOME 80<small>80 BPM</small></button>
-    <button class="speed-btn" data-bpm="100">RITNOME 100<small>100 BPM</small></button>
-    <button class="speed-btn" data-bpm="120">RITNOME 120<small>120 BPM</small></button>
-  </div>
+  <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#00CED1;margin-bottom:14px;text-align:center">⚡ RITNOME 100 · 100 BPM</div>
   <button class="big-btn" id="startBtn">👀 ENTER THE COURT</button>
   <div class="intro-info">
     <strong>WATCH</strong> — multiple cells flash cyan<br>
@@ -118,7 +114,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div id="fsStrobe"></div>
   <div class="topbar">
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
-    <div class="top-box info-box"><div class="top-label">Tempo</div><div class="top-val" id="hFind">80 BPM</div></div>
+    <div class="top-box info-box"><div class="top-label">Tempo</div><div class="top-val" id="hFind">100 BPM</div></div>
     <div class="top-box"><div class="top-label">Targets</div><div class="top-val" id="hRd">3</div></div>
     <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
@@ -145,16 +141,8 @@ var $=id=>document.getElementById(id);
 var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
 var NEXT_GAME='/vr-reactific.html?cycle=true';
 
-var bpm=80;
+var bpm=100;
 var STARTING_CELLS=3;
-
-document.querySelectorAll('[data-bpm]').forEach(btn=>{
-  btn.onclick=function(){
-    bpm=Number(btn.dataset.bpm);
-    document.querySelectorAll('[data-bpm]').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  };
-});
 
 /* Audio beat — the Ritnome click, synced to the full-screen strobe */
 var aCtx=null;
@@ -215,7 +203,6 @@ function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
 var g={sc:0,cellCount:STARTING_CELLS,best:0,streak:0};
-function tempoMult(){return bpm===120?1.5:bpm===100?1.25:1.0}
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hFind').textContent=bpm+' BPM';
@@ -290,7 +277,7 @@ function handleTap(idx){
       phase='idle';clrT();stopFullStrobe();stopRecallTimer();
       g.streak++;
       if(g.cellCount>g.best)g.best=g.cellCount;
-      g.sc+=Math.round(g.cellCount*tempoMult()*10);
+      g.sc+=g.cellCount*10;
       g.cellCount++;
       updateHUD();
       msg('✅ PERFECT! MORE CELLS...','perfect');
