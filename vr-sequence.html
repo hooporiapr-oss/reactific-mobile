@@ -193,7 +193,7 @@ document.querySelectorAll('[data-bpm]').forEach(btn=>{
   };
 });
 
-function getBeatMs(){return Math.round((60000/bpm)*g.cellCount)}
+function getBeatMs(){return Math.round((60000/bpm)*10)}
 function getShowMs(){return Math.round((60000/bpm)*0.65)}
 function getGapMs(){return Math.round((60000/bpm)*0.35)}
 
