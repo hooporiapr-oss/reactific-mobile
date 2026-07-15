@@ -306,6 +306,7 @@ function startFind(){
 }
 
 function handleTap(idx){
+  if(phase==='watching'||phase==='echoing'){msg('⏳ WAIT FOR IT...','watch');return;}
   if(phase!=='finding'||!canTap)return;
 
   if(!firstTapDone){
@@ -342,7 +343,7 @@ function roundSuccess(){
   g.cellCount++;
   updateHUD();
   msg('✅ CORRECT! PATTERN GROWS...','perfect');
-  timers.push(setTimeout(function(){resetCells();autoNextRound()},1200));
+  timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
 }
 
 function autoNextRound(){if(phase!=='idle')return;resetCells();stopTimer();$('hPf').textContent='--';$('restartBtn').style.display='none';$('actBtn').disabled=true;startRound()}
@@ -359,7 +360,7 @@ function endGame(wrongIdx,alreadyRevealed){
       timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
     },1800));
   }else{
-    timers.push(setTimeout(showFinalScore,1800));
+    timers.push(setTimeout(showFinalScore,1000));
   }
 }
 
