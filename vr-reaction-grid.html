@@ -9,7 +9,7 @@ if (sessionStorage.getItem('rct-gate-pass') !== '1') {
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>REACTION | Ritnome</title>
+<title>REACTION WARMUP | Ritnome</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -94,18 +94,15 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
   <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
   <div class="vrr-logo">RE<span>ACTION</span></div>
-  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-sub">The Warmup · Ritnome Memory eSports</div>
   <div class="vrr-rule">⚡ TAP THE LIT CELL — AS FAST AS YOU CAN</div>
-  <div class="speed-row" style="grid-template-columns:repeat(2,1fr)">
-    <button class="speed-btn active" data-total="25">25<small>SHORT RUN</small></button>
-    <button class="speed-btn" data-total="50">50<small>FULL COURT</small></button>
-  </div>
+  <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#ff1e3c;margin-bottom:14px;text-align:center">⚡ 50 CELLS · 100 BPM PACE</div>
   <button class="big-btn" id="startBtn">⚡ ENTER THE COURT</button>
   <div class="intro-info">
     <strong>WATCH</strong> — a random cell lights up red<br>
     <strong>TAP</strong> — hit it as fast as you can, no deadline<br>
     <strong>REACT</strong> — we measure your exact reaction time<br>
-    <strong>SCORE</strong> — hits, misses, and your average speed
+    <strong>SCORE</strong> — your hits out of 50, every time
   </div>
 </div>
 
@@ -131,14 +128,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 (function(){
 var $=id=>document.getElementById(id);
 
-var TOTAL=25;
-document.querySelectorAll('[data-total]').forEach(btn=>{
-  btn.onclick=function(){
-    TOTAL=Number(btn.dataset.total);
-    document.querySelectorAll('[data-total]').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  };
-});
+var TOTAL=50;
+var BPM=100;
 
 $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();initGame()};
 $('menuBtn').onclick=function(){$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
@@ -158,10 +149,10 @@ function cellSt(i,st){cells[i].className='cell';if(st)cells[i].classList.add(st)
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
 var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0,totalRT:0,rtCount:0,bestRT:0};
-var PACE_MS=550; // brief breathing room between one trial resolving and the next flash appearing
+var PACE_MS=Math.round(60000/BPM); // one full beat at 100 BPM (600ms) between one trial resolving and the next flash appearing
 function formatMs(v){return v?Math.round(v)+' ms':'--'}
 function updateHUD(){
-  $('hSc').textContent=g.sc;
+  $('hSc').textContent=g.sc+'/'+TOTAL;
   $('hRd').textContent=g.idx+'/'+TOTAL;
   $('hHits').textContent=g.hits;
   $('hSt').textContent=g.st;
@@ -207,7 +198,7 @@ function handleTap(idx){
     g.hits++;g.st++;if(g.st>g.bestSt)g.bestSt=g.st;
     g.totalRT+=rt;g.rtCount++;
     if(!g.bestRT||rt<g.bestRT)g.bestRT=rt;
-    g.sc+=Math.max(1,Math.round(300-rt/4));
+    g.sc=g.hits;
     g.idx++;
     updateHUD();
     msg(Math.round(rt)+' MS','perfect');
