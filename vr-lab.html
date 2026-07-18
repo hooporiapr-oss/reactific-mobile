@@ -42,6 +42,7 @@ body{
 .cat-tag{font-size:.65rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8892a0;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
 
 .games-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex:1;min-height:0}
+.warmup-grid{display:grid;grid-template-columns:1fr;gap:14px;flex-shrink:0;margin-bottom:4px}
 
 .game-card{
   background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25);
@@ -52,6 +53,13 @@ body{
 .grid-card{background:rgba(0,168,255,.08);border-color:rgba(0,168,255,.28)}
 .grid-card:hover{background:rgba(0,168,255,.16);border-color:#00a8ff}
 .game-card:hover{background:rgba(155,89,182,.18);border-color:#9B59B6;transform:translateY(-3px)}
+.warmup-card{background:rgba(255,30,60,.1);border:2px solid rgba(255,30,60,.35);flex-direction:row;justify-content:flex-start;text-align:left;gap:16px;padding:16px 20px}
+.warmup-card:hover{background:rgba(255,30,60,.18);border-color:#ff1e3c;transform:translateY(-3px)}
+.warmup-card .game-icon{font-size:2.2rem}
+.warmup-card .game-text{display:flex;flex-direction:column;gap:2px}
+.warmup-card .game-name{font-size:1.15rem}
+.warmup-card .game-skill{font-size:.7rem}
+.step-tag{font-size:.6rem;font-weight:900;letter-spacing:.1em;color:#ff6b7f;text-transform:uppercase;margin-left:auto;padding:4px 10px;border-radius:999px;background:rgba(255,30,60,.15);border:1px solid rgba(255,30,60,.3);white-space:nowrap}
 .fusion-card{background:linear-gradient(135deg,rgba(0,206,209,.14),rgba(154,205,50,.14));border:2px solid rgba(0,206,209,.5);box-shadow:0 0 24px rgba(0,206,209,.25)}
 .fusion-card:hover{background:linear-gradient(135deg,rgba(0,206,209,.24),rgba(154,205,50,.24));border-color:#00CED1;box-shadow:0 0 34px rgba(0,206,209,.45);transform:translateY(-3px)}
 .fusion-card .game-name{background:linear-gradient(120deg,#00CED1,#9ACD32);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -103,7 +111,19 @@ body{
 
 <div class="main">
 
-  <div class="cat-header"><span class="cat-name">The Grid</span><span class="cat-tag">5×10 Court</span></div>
+  <div class="cat-header"><span class="cat-name">Step 1 · Start Here</span><span class="cat-tag">Pure Reaction</span></div>
+  <div class="warmup-grid">
+    <a class="game-card warmup-card" href="/vr-reaction-grid.html">
+      <div class="game-icon">⚡</div>
+      <div class="game-text">
+        <div class="game-name">THE WARMUP</div>
+        <div class="game-skill">50 Cells · 100 BPM · Pure Reaction Time</div>
+      </div>
+      <span class="step-tag">Start Every Session Here</span>
+    </a>
+  </div>
+
+  <div class="cat-header"><span class="cat-name">Step 2 · Training Drills</span><span class="cat-tag">5×10 Court</span></div>
   <div class="games-grid">
     <a class="game-card grid-card" href="/vr-pattern.html">
       <div class="game-icon">🎯</div>
