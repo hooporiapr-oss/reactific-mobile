@@ -151,6 +151,7 @@ function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 var g={sc:0,idx:0,hits:0,misses:0,st:0,bestSt:0,totalRT:0,rtCount:0,bestRT:0};
 var PACE_MS=Math.round(60000/BPM); // one full beat at 100 BPM (600ms) between one trial resolving and the next flash appearing
 function formatMs(v){return v?Math.round(v)+' ms':'--'}
+function bpmFromMs(v){return v?Math.round(60000/v):0}
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hRd').textContent=g.idx+'/'+TOTAL;
@@ -201,7 +202,7 @@ function handleTap(idx){
     g.sc+=Math.max(1,Math.round(300-rt/4));
     g.idx++;
     updateHUD();
-    msg(Math.round(rt)+' MS','perfect');
+    msg(Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM','perfect');
     timers.push(setTimeout(nextBeat,PACE_MS));
   }else{
     /* Wrong cell — mark what was tapped, keep the real target lit a moment
@@ -218,7 +219,7 @@ function handleTap(idx){
 function finishRun(){
   phase='idle';clrT();resetCells();
   var avgRT=g.rtCount?Math.round(g.totalRT/g.rtCount):0;
-  msg('✅ COURT COMPLETE — '+g.hits+'/'+TOTAL+' · AVG '+avgRT+'MS','perfect');
+  msg('✅ COURT COMPLETE — '+g.hits+'/'+TOTAL+' · AVG '+avgRT+'MS · '+bpmFromMs(avgRT)+' BPM','perfect');
   $('actBtn').disabled=false;$('actBtn').textContent='RUN IT AGAIN';$('actBtn').onclick=startRun;
 }
 
