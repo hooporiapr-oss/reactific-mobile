@@ -32,6 +32,12 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(255,107,53,.4);background:rgba(255,107,53,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
 .speed-btn.active{border-color:#FF6B35;background:rgba(255,107,53,.22);box-shadow:0 0 30px rgba(255,107,53,.6);color:#FF6B35}
 .speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.mode-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;width:100%;max-width:420px}
+.level-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;width:100%;max-width:420px}
+.level-row.hidden{display:none}
+.level-btn{width:100%;min-width:0;height:50px;border:3px solid rgba(255,107,53,.4);background:rgba(255,107,53,.08);border-radius:12px;color:#fff;font-size:.8rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.02em;padding:2px}
+.level-btn.active{border-color:#FF6B35;background:rgba(255,107,53,.22);box-shadow:0 0 24px rgba(255,107,53,.6);color:#FF6B35}
+.level-btn small{display:block;font-size:.55rem;color:#a7adba;line-height:1.2}
 .sel-row{display:flex;gap:20px;margin-bottom:14px;align-items:flex-start;justify-content:center}
 .sel-group{display:flex;flex-direction:column;align-items:center;gap:6px}
 .sel-label{color:#ffd35a;font-size:.65rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
@@ -111,6 +117,17 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="vrr-sub">5×10 VR Court · Ritnome Memory eSports</div>
   <div class="vrr-rule">🧩 MEMORIZE THE PATTERN — TAP IT BACK</div>
   <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#FF6B35;margin-bottom:14px;text-align:center">⚡ RITNOME 100 · 100 BPM</div>
+  <div class="mode-row">
+    <button class="speed-btn active" data-mode="game">GAME<small>Escalating, no limit</small></button>
+    <button class="speed-btn" data-mode="training">TRAINING<small>Fixed level, 10 rounds</small></button>
+  </div>
+  <div class="level-row hidden" id="levelRow">
+    <button class="level-btn active" data-level="1">L1<small>3 cells</small></button>
+    <button class="level-btn" data-level="2">L2<small>4 cells</small></button>
+    <button class="level-btn" data-level="3">L3<small>5 cells</small></button>
+    <button class="level-btn" data-level="4">L4<small>6 cells</small></button>
+    <button class="level-btn" data-level="5">L5<small>7 cells</small></button>
+  </div>
   <button class="big-btn" id="startBtn">▶ ENTER THE COURT</button>
   <div class="intro-info">
     <strong>WATCH</strong> — numbered cells light up<br>
@@ -125,8 +142,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="topbar">
     <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
     <div class="top-box info-box"><div class="top-label">Tempo</div><div class="top-val" id="hFind">100 BPM</div></div>
-    <div class="top-box"><div class="top-label">Sequence</div><div class="top-val" id="hRd">3</div></div>
-    <div class="top-box"><div class="top-label">Best</div><div class="top-val" id="hLv">0</div></div>
+    <div class="top-box"><div class="top-label" id="hRdLbl">Sequence</div><div class="top-val" id="hRd">3</div></div>
+    <div class="top-box"><div class="top-label" id="hLvLbl">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
     <div class="top-box"><div class="top-label">Timer</div><div class="top-val" id="hPf">--</div></div>
   </div>
@@ -153,6 +170,28 @@ var NEXT_GAME='/vr-numhunt.html?cycle=true';
 
 var bpm=100;
 var STARTING_CELLS=3;
+
+var gameMode='game'; // 'game' | 'training'
+var trainingLevel=1; // 1-5
+var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
+var TRAINING_ROUNDS=10;
+function getInitialCellCount(){return gameMode==='training'?LEVEL_CELLS[trainingLevel]:STARTING_CELLS}
+
+document.querySelectorAll('[data-mode]').forEach(btn=>{
+  btn.onclick=function(){
+    gameMode=btn.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    $('levelRow').classList.toggle('hidden',gameMode!=='training');
+  };
+});
+document.querySelectorAll('[data-level]').forEach(btn=>{
+  btn.onclick=function(){
+    trainingLevel=Number(btn.dataset.level);
+    document.querySelectorAll('[data-level]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+});
 
 /* Audio beat — the Ritnome click, synced to the full-screen strobe */
 var aCtx=null;
@@ -200,7 +239,11 @@ if(cycleMode){
   updateHUD();
   setTimeout(startRound,1000);
 }else{
-  $('startBtn').onclick=function(){$('screen-intro').style.display='none';$('screen-game').style.display='flex';buildCourt();updateHUD()};
+  $('startBtn').onclick=function(){
+    $('screen-intro').style.display='none';$('screen-game').style.display='flex';
+    g.cellCount=getInitialCellCount();g.roundsDone=0;
+    buildCourt();updateHUD();
+  };
 }
 
 $('menuBtn').onclick=function(){stopFullStrobe();stopRecallTimer();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
@@ -212,12 +255,21 @@ function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i
 function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color='#fff'}}}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var g={sc:0,cellCount:STARTING_CELLS,best:0,streak:0};
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hFind').textContent=bpm+' BPM';
-  $('hRd').textContent=g.cellCount;
-  $('hLv').textContent=g.best;
+  if(gameMode==='training'){
+    $('hRdLbl').textContent='Level';
+    $('hRd').textContent=g.cellCount+' (L'+trainingLevel+')';
+    $('hLvLbl').textContent='Progress';
+    $('hLv').textContent=g.roundsDone+'/'+TRAINING_ROUNDS;
+  }else{
+    $('hRdLbl').textContent='Sequence';
+    $('hRd').textContent=g.cellCount;
+    $('hLvLbl').textContent='Best';
+    $('hLv').textContent=g.best;
+  }
   $('hSt').textContent=g.streak;
   $('ps1').textContent=g.cellCount;
 }
@@ -286,12 +338,25 @@ function handleTap(idx){
     if(playerIdx>=pattern.length){
       phase='idle';clrT();stopFullStrobe();stopRecallTimer();
       g.streak++;
-      if(g.cellCount>g.best)g.best=g.cellCount;
       g.sc+=g.cellCount*10;
-      g.cellCount++;
-      updateHUD();
-      msg('✅ PERFECT! SEQUENCE GROWS...','perfect');
-      timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+
+      if(gameMode==='training'){
+        g.roundsDone++;
+        updateHUD();
+        if(g.roundsDone>=TRAINING_ROUNDS){
+          msg('🏆 LEVEL COMPLETE!','perfect');
+          timers.push(setTimeout(showTrainingComplete,900));
+        }else{
+          msg('✅ CORRECT! ('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
+          timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+        }
+      }else{
+        if(g.cellCount>g.best)g.best=g.cellCount;
+        g.cellCount++;
+        updateHUD();
+        msg('✅ PERFECT! SEQUENCE GROWS...','perfect');
+        timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+      }
     }
   }else{
     endGame(idx);
@@ -329,13 +394,25 @@ function autoNextRound(){if(phase!=='idle')return;resetCells();$('clockFill').st
 
 function showFinalScore(){
   phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';$('hPf').textContent='--';
-  msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS)','miss');
+  if(gameMode==='training'){
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc,'miss');
+  }else{
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS)','miss');
+  }
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
 }
+
+function showTrainingComplete(){
+  phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';$('hPf').textContent='--';
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc,'perfect');
+  $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
+  $('restartBtn').style.display='none';
+}
+
 function restartGame(){
   clrT();phase='idle';stopFullStrobe();stopRecallTimer();
-  g={sc:0,cellCount:STARTING_CELLS,best:0,streak:0};
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
   resetCells();updateHUD();$('clockFill').style.width='0%';$('hPf').textContent='--';
   msg("TAP LET'S GO!",'watch');
   $('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none';
