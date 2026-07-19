@@ -2,307 +2,718 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>The Reactific Curriculum — Five Chapters of Sharper Thinking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory eSports Curriculum | Ritnome</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --ink:#f4f4f8;--dim:#8b91a3;--faint:#5a6070;
-  --void:#040208;--panel:#0a0712;--line:rgba(255,255,255,.08);
-  --c1:#9ACD32;--c2:#FF6B35;--c3:#00CED1;--c4:#00D9A5;--c5:#9B59B6;
-}
 html{scroll-behavior:smooth}
-body{background:var(--void);color:var(--ink);font-family:'Helvetica Neue',Arial,sans-serif;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
-#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
-
-nav{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:24px 28px;max-width:1080px;margin:0 auto}
-.brand{font-size:1.25rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase}
-.brand span{color:var(--c5)}
-.nav-right{display:flex;align-items:center;gap:18px}
-.nav-tag{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim)}
-
-/* language toggle */
-.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
-.lang button{
-  background:none;border:none;cursor:pointer;
-  font-family:inherit;font-size:.66rem;font-weight:800;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--dim);padding:7px 13px;transition:all .2s;
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#0a0a0f;
+  background-image:radial-gradient(ellipse at top,#170810 0%,#0a0a0f 55%);
+  color:#f2f2f5;
+  line-height:1.65;
 }
-.lang button.on{background:var(--c5);color:#fff}
-.lang button:focus-visible{outline:2px solid var(--c3);outline-offset:2px}
+.display{font-family:'Bebas Neue',Arial,sans-serif;letter-spacing:.03em}
 
-.hero{position:relative;z-index:1;text-align:center;padding:70px 0 40px}
-.eyebrow{font-size:.7rem;letter-spacing:.38em;text-transform:uppercase;color:var(--c5);margin-bottom:26px;font-weight:700}
-.hero h1{font-size:clamp(2.6rem,7vw,5.2rem);font-weight:900;line-height:.98;letter-spacing:-.02em;margin-bottom:24px}
-.hero h1 em{font-style:italic;font-weight:900;background:linear-gradient(100deg,var(--c1),var(--c3),var(--c5));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{font-size:clamp(1rem,2.2vw,1.3rem);color:var(--dim);max-width:660px;margin:0 auto 14px;line-height:1.55}
-.hero .sub{font-size:.85rem;color:var(--faint);letter-spacing:.04em}
-
-.thesis{position:relative;z-index:1;text-align:center;padding:30px 0 64px}
-.thesis-line{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-.thesis-line b{color:var(--ink);font-weight:800}
-.dot{width:4px;height:4px;border-radius:50%;background:var(--faint)}
-
-.spine-intro{position:relative;z-index:1;text-align:center;padding:36px 0 10px}
-.spine-intro .k{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--c5);font-weight:700;margin-bottom:18px}
-.spine-intro h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-.01em;line-height:1.05;margin-bottom:18px}
-.spine-intro p{color:var(--dim);max-width:600px;margin:0 auto;font-size:1rem}
-
-.spine{position:relative;z-index:1;padding:54px 0 30px}
-.chapter{position:relative;display:grid;grid-template-columns:92px 1fr;gap:28px;padding:34px 0;border-top:1px solid var(--line)}
-.chapter:last-child{border-bottom:1px solid var(--line)}
-.ch-num{font-size:3.2rem;font-weight:900;line-height:1;font-style:italic;color:var(--cc);opacity:.92;text-align:right;text-shadow:0 0 40px var(--ccglow)}
-.ch-body{padding-top:4px}
-.ch-kicker{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-.ch-chip{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--cc);border:1px solid var(--cc);padding:3px 9px;border-radius:999px}
-.ch-skill{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
-.ch-title{font-size:1.7rem;font-weight:900;letter-spacing:-.01em;margin-bottom:8px}
-.ch-title b{color:var(--cc)}
-.ch-desc{color:var(--dim);font-size:1rem;max-width:580px}
-.ch-icon{font-size:1.5rem;margin-right:2px;filter:saturate(1.2)}
-.chapter.finale .ch-turn{display:block;margin-top:12px;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--c5);font-weight:700}
-
-.band{position:relative;z-index:1;margin:64px 0;padding:48px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(155,89,182,.05),transparent)}
-.band-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
-.band h3{font-size:clamp(1.6rem,3.4vw,2.3rem);font-weight:900;letter-spacing:-.01em;line-height:1.08;margin-bottom:16px}
-.band h3 em{font-style:italic;color:var(--c4)}
-.band p{color:var(--dim);font-size:1rem;margin-bottom:14px}
-.score-demo{border:1px solid var(--line);border-radius:16px;padding:30px;background:var(--panel);text-align:center}
-.score-demo .big{font-size:4.4rem;font-weight:900;line-height:1;background:linear-gradient(120deg,var(--c4),var(--c3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.score-demo .cap{font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-top:8px}
-.score-demo .rule{font-size:.92rem;color:var(--faint);margin-top:18px;line-height:1.5}
-.score-demo .rule b{color:var(--ink)}
-
-.access{position:relative;z-index:1;padding:20px 0 70px}
-.access h2{text-align:center;font-size:clamp(1.6rem,3.6vw,2.4rem);font-weight:900;letter-spacing:-.01em;margin-bottom:14px}
-.access .lead{text-align:center;color:var(--dim);max-width:620px;margin:0 auto 40px}
-.access-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.a-card{border:1px solid var(--line);border-radius:14px;padding:24px;background:var(--panel)}
-.a-card .ai{font-size:1.5rem;margin-bottom:12px}
-.a-card h4{font-size:1rem;font-weight:800;margin-bottom:6px}
-.a-card p{font-size:.86rem;color:var(--dim);line-height:1.5}
-
-.close{position:relative;z-index:1;text-align:center;padding:60px 0 90px}
-.close h2{font-size:clamp(2rem,5vw,3.4rem);font-weight:900;letter-spacing:-.02em;line-height:1.04;margin-bottom:20px}
-.close h2 em{font-style:italic;background:linear-gradient(100deg,var(--c1),var(--c5));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.close p{color:var(--dim);max-width:580px;margin:0 auto 32px;font-size:1.05rem}
-.cta{display:inline-block;padding:16px 38px;border-radius:999px;background:linear-gradient(120deg,var(--c5),var(--c3));color:#04060a;font-size:.95rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 0 40px rgba(155,89,182,.4)}
-.cta:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(155,89,182,.7)}
-.foot{position:relative;z-index:1;text-align:center;padding:30px 0 50px;color:var(--faint);font-size:.72rem;letter-spacing:.08em;border-top:1px solid var(--line)}
-.foot span{color:var(--c5);font-weight:800}
-
-@media (max-width:760px){
-  nav{flex-wrap:wrap;gap:14px}
-  .band-grid{grid-template-columns:1fr;gap:28px}
-  .access-grid{grid-template-columns:1fr}
-  .chapter{grid-template-columns:60px 1fr;gap:18px}
-  .ch-num{font-size:2.3rem}
-  .ch-title{font-size:1.4rem}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;background:rgba(10,10,15,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,30,60,.25);
 }
-@media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  #stars{display:none}
-  *{animation:none!important;transition:none!important}
-}
+.logo{font-size:1.2rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff}
+.logo span{color:#ff1e3c}
+.lang-toggle{display:flex;border:1px solid rgba(255,30,60,.4);border-radius:999px;overflow:hidden}
+.lang-btn{padding:7px 16px;font-size:.72rem;font-weight:900;letter-spacing:.08em;background:transparent;color:#8892a0;border:none;cursor:pointer}
+.lang-btn.active{background:#ff1e3c;color:#fff}
+
+.hero{max-width:1100px;margin:0 auto;padding:48px 24px 20px;text-align:center}
+.beat-pulse{width:9px;height:9px;border-radius:50%;background:#ff1e3c;animation:beatPulse .6s infinite ease-in-out;box-shadow:0 0 10px rgba(255,30,60,.8);display:inline-block}
+@keyframes beatPulse{0%,100%{transform:scale(1);opacity:1}40%{transform:scale(1.6);opacity:.5}}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:.68rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#ff8a9a;background:rgba(255,30,60,.1);border:1px solid rgba(255,30,60,.3);padding:6px 14px;border-radius:999px;margin-bottom:22px}
+.hero-title{font-size:clamp(1.8rem,5vw,2.8rem);color:#fff;line-height:1.05;margin-bottom:14px}
+.hero-sub{font-size:1rem;color:#c9ccd4;max-width:640px;margin:0 auto}
+
+.layout{max-width:1200px;margin:0 auto;padding:20px 24px 100px;display:grid;grid-template-columns:270px 1fr;gap:40px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+.toc-wrap{position:sticky;top:76px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:20px;max-height:calc(100vh - 100px);overflow-y:auto}
+@media(max-width:900px){.toc-wrap{position:static;max-height:none}}
+.toc-title{font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#ff8a9a;margin-bottom:14px}
+.toc-list{list-style:none}
+.toc-list li{margin-bottom:2px}
+.toc-link{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:#c9ccd4;text-decoration:none;font-size:.82rem;transition:all .15s}
+.toc-link:hover{background:rgba(255,30,60,.1);color:#fff}
+.toc-num{font-family:'Bebas Neue',Arial;font-size:1rem;color:#ff1e3c;width:20px;flex-shrink:0}
+
+.doc-section{margin-bottom:52px;scroll-margin-top:76px}
+.section-h1{font-size:1.5rem;color:#fff;margin-bottom:16px;display:flex;align-items:baseline;gap:12px;border-bottom:2px solid rgba(255,30,60,.25);padding-bottom:12px}
+.sec-num{font-family:'Bebas Neue',Arial;font-size:1.9rem;color:#ff1e3c}
+.section-h2{font-size:1.05rem;color:#fff;margin:22px 0 8px;font-weight:700}
+.doc-p{color:#c9ccd4;font-size:.92rem;margin-bottom:12px}
+.doc-list,.doc-list-num{margin:8px 0 16px 22px;color:#c9ccd4;font-size:.9rem}
+.doc-list li,.doc-list-num li{margin-bottom:6px}
+table.doc-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.88rem}
+table.doc-table th{text-align:left;color:#ff8a9a;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;padding:9px 12px;border-bottom:2px solid rgba(255,30,60,.3)}
+table.doc-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);color:#c9ccd4}
+
+.footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255,.08)}
+.footer-signoff{font-size:1.05rem;color:#ff1e3c;font-weight:700;margin-bottom:10px}
+.footer-logo{font-size:.95rem;font-weight:900;font-style:italic;letter-spacing:.08em;text-transform:uppercase;color:#fff}
+.footer-logo span{color:#ff1e3c}
+
+.lang-block{display:none}
+.lang-block.active{display:block}
 </style>
 </head>
 <body>
 
-<canvas id="stars"></canvas>
-
-<nav>
-  <div class="brand">REACTIFIC<span>™</span></div>
-  <div class="nav-right">
-    <span class="nav-tag" data-en="Drills & Challenges" data-es="Ejercicios y Desafíos">Drills & Challenges</span>
-    <div class="lang" role="group" aria-label="Language / Idioma">
-      <button id="btn-en" class="on" onclick="setLang('en')">EN</button>
-      <button id="btn-es" onclick="setLang('es')">ES</button>
-    </div>
+<div class="topbar">
+  <div class="logo">RITNOME<span>.</span></div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btnEN">ENGLISH</button>
+    <button class="lang-btn" id="btnES">ESPA&Ntilde;OL</button>
   </div>
-</nav>
+</div>
 
-<header class="hero wrap">
-  <div class="eyebrow" data-en="Five Chapters · One Course" data-es="Cinco Capítulos · Un Curso">Five Chapters · One Course</div>
-  <h1 data-en="Five ways to train<br>a <em>sharper mind</em>." data-es="Cinco formas de entrenar<br>una <em>mente más aguda</em>.">Five ways to train<br>a <em>sharper mind</em>.</h1>
-  <p data-en="Reactific is a set of daily drills and challenges disguised as a game students ask to play. Five chapters, five distinct skills, one score that shows them growing." data-es="Reactific es un conjunto de ejercicios y desafíos diarios disfrazado de juego que los estudiantes piden jugar. Cinco capítulos, cinco habilidades distintas, una sola puntuación que muestra su progreso.">Reactific is a set of daily drills and challenges disguised as a game students ask to play. Five chapters, five distinct skills, one score that shows them growing.</p>
-  <div class="sub" data-en="Runs on the Chromebooks a school already has. No headset. No install. Just a class code." data-es="Funciona en las Chromebooks que la escuela ya tiene. Sin gafas. Sin instalación. Solo un código de clase.">Runs on the Chromebooks a school already has. No headset. No install. Just a class code.</div>
-</header>
-
-<section class="thesis wrap">
-  <div class="thesis-line">
-    <span data-en="Memory" data-es="Memoria">Memory</span><span class="dot"></span>
-    <span data-en="Attention" data-es="Atención">Attention</span><span class="dot"></span>
-    <span data-en="Pattern" data-es="Patrón">Pattern</span><span class="dot"></span>
-    <span data-en="Sequence" data-es="Secuencia">Sequence</span><span class="dot"></span>
-    <b data-en="Reflex" data-es="Reflejo">Reflex</b>
+<div class="lang-block active" id="content-en">
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="beat-pulse"></span> 100 BPM &middot; EVERY DRILL, EVERY LEVEL</div>
+    <h1 class="hero-title display">RITNOME MEMORY ESPORTS CURRICULUM</h1>
+    <p class="hero-sub">Developing Automatic Recall Through Structured Competitive Training</p>
   </div>
+  <div class="layout">
+    <nav class="toc-wrap"><div class="toc-title">Table of Contents</div><ol class="toc-list"><li><a href="#en-1-curriculum-overview" class="toc-link"><span class="toc-num">1</span>Curriculum Overview</a></li><li><a href="#en-2-curriculum-purpose" class="toc-link"><span class="toc-num">2</span>Curriculum Purpose</a></li><li><a href="#en-3-curriculum-philosophy" class="toc-link"><span class="toc-num">3</span>Curriculum Philosophy</a></li><li><a href="#en-4-the-four-curriculum-strands" class="toc-link"><span class="toc-num">4</span>The Four Curriculum Strands</a></li><li><a href="#en-5-curriculum-learning-outcomes" class="toc-link"><span class="toc-num">5</span>Curriculum Learning Outcomes</a></li><li><a href="#en-6-instructional-structure" class="toc-link"><span class="toc-num">6</span>Instructional Structure</a></li><li><a href="#en-7-tempo-standard" class="toc-link"><span class="toc-num">7</span>Tempo Standard</a></li><li><a href="#en-8-automatic-challenge-progression" class="toc-link"><span class="toc-num">8</span>Automatic Challenge Progression</a></li><li><a href="#en-9-engagement-system" class="toc-link"><span class="toc-num">9</span>Engagement System</a></li><li><a href="#en-10-assessment-framework" class="toc-link"><span class="toc-num">10</span>Assessment Framework</a></li><li><a href="#en-11-suggested-curriculum-sequence" class="toc-link"><span class="toc-num">11</span>Suggested Curriculum Sequence</a></li><li><a href="#en-12-implementation-options" class="toc-link"><span class="toc-num">12</span>Implementation Options</a></li><li><a href="#en-13-role-of-the-educator" class="toc-link"><span class="toc-num">13</span>Role of the Educator</a></li><li><a href="#en-14-curriculum-identity" class="toc-link"><span class="toc-num">14</span>Curriculum Identity</a></li><li><a href="#en-15-the-ritnome-curriculum-vision" class="toc-link"><span class="toc-num">15</span>The Ritnome Curriculum Vision</a></li></ol></nav>
+    <main><section class="doc-section" id="en-1-curriculum-overview">
+<h2 class="section-h1"><span class="sec-num">1</span>Curriculum Overview</h2>
+<p class="doc-p">The Ritnome Memory eSports Curriculum is a structured training program designed to develop automatic recall, memory control, quick decision-making, accurate execution, and sustained engagement.</p>
+<p class="doc-p">The curriculum is built around four core drills:</p>
+<ul class="doc-list"><li>RECALL</li><li>REFLEX</li><li>REPLAY</li><li>RITMO</li></ul>
+<p class="doc-p">Each drill develops a different part of memory performance. Together, they create a complete training system that challenges players to observe information, retain it, retrieve it, compare it, make decisions, and execute a correct response.</p>
+<p class="doc-p">All four drills use the same Ritnome grid, the same interaction system, and one consistent tempo of 100 beats per minute.</p>
+<p class="doc-p">This shared structure allows students to focus on the training itself instead of learning new controls or rules for every activity.</p>
+<p class="doc-p">Four drills. One grid. One tempo. Continuous development.</p>
 </section>
-
-<section class="spine-intro wrap">
-  <div class="k" data-en="The Curriculum" data-es="El Currículo">The Curriculum</div>
-  <h2 data-en="It reads like one game.<br>It teaches like five chapters." data-es="Se siente como un solo juego.<br>Enseña como cinco capítulos.">It reads like one game.<br>It teaches like five chapters.</h2>
-  <p data-en="Each chapter challenges a different way of thinking. Played in order, they build on one another — from holding a memory, to reading a pattern, to reacting in open space." data-es="Cada capítulo desafía una forma distinta de pensar. Jugados en orden, se construyen uno sobre otro: desde retener un recuerdo, hasta leer un patrón, hasta reaccionar en el espacio abierto.">Each chapter challenges a different way of thinking. Played in order, they build on one another — from holding a memory, to reading a pattern, to reacting in open space.</p>
+<section class="doc-section" id="en-2-curriculum-purpose">
+<h2 class="section-h1"><span class="sec-num">2</span>Curriculum Purpose</h2>
+<p class="doc-p">The purpose of the Ritnome curriculum is to help students strengthen their ability to:</p>
+<ul class="doc-list"><li>Pay attention to visual information</li><li>Hold information in memory</li><li>Recall information in the correct order</li><li>Recognize multiple pieces of information quickly</li><li>Compare what they saw before with what they see now</li><li>Transfer remembered information into accurate action</li><li>Maintain performance under controlled time demands</li><li>Improve through repeated, measurable practice</li></ul>
+<p class="doc-p">Ritnome applies a principle commonly seen in sports training.</p>
+<p class="doc-p">Athletes repeat movements until those movements can be performed automatically. Ritnome uses structured repetition to help students develop more automatic and dependable recall.</p>
+<p class="doc-p">Muscle memory makes movement automatic. Ritnome makes recall automatic.</p>
 </section>
-
-<section class="spine wrap">
-
-  <article class="chapter" style="--cc:var(--c1);--ccglow:rgba(154,205,50,.5)">
-    <div class="ch-num">1</div>
-    <div class="ch-body">
-      <div class="ch-kicker">
-        <span class="ch-chip" data-en="Chapter One" data-es="Capítulo Uno">Chapter One</span>
-        <span class="ch-skill" data-en="Change Detection" data-es="Detección de Cambios">Change Detection</span>
-      </div>
-      <div class="ch-title"><span class="ch-icon">👁️</span> Echo <b>Recall</b></div>
-      <p class="ch-desc" data-en="A pattern flashes, then echoes back with one cell changed. The student holds the original in mind and spots the single difference — training the working memory that underlies nearly all learning." data-es="Un patrón destella y luego se repite con una celda cambiada. El estudiante mantiene el original en mente y detecta la única diferencia, entrenando la memoria de trabajo que sostiene casi todo aprendizaje.">A pattern flashes, then echoes back with one cell changed. The student holds the original in mind and spots the single difference — training the working memory that underlies nearly all learning.</p>
-    </div>
-  </article>
-
-  <article class="chapter" style="--cc:var(--c2);--ccglow:rgba(255,107,53,.5)">
-    <div class="ch-num">2</div>
-    <div class="ch-body">
-      <div class="ch-kicker">
-        <span class="ch-chip" data-en="Chapter Two" data-es="Capítulo Dos">Chapter Two</span>
-        <span class="ch-skill" data-en="Sequential Memory" data-es="Memoria Secuencial">Sequential Memory</span>
-      </div>
-      <div class="ch-title"><span class="ch-icon">🧩</span> Pattern <b>Recognition</b></div>
-      <p class="ch-desc" data-en="Numbered cells light in order, then vanish. The student replays the sequence from memory — building the ordered recall that reading, math, and following instructions all depend on." data-es="Celdas numeradas se iluminan en orden y luego desaparecen. El estudiante repite la secuencia de memoria, desarrollando el recuerdo ordenado del que dependen la lectura, las matemáticas y seguir instrucciones.">Numbered cells light in order, then vanish. The student replays the sequence from memory — building the ordered recall that reading, math, and following instructions all depend on.</p>
-    </div>
-  </article>
-
-  <article class="chapter" style="--cc:var(--c3);--ccglow:rgba(0,206,209,.5)">
-    <div class="ch-num">3</div>
-    <div class="ch-body">
-      <div class="ch-kicker">
-        <span class="ch-chip" data-en="Chapter Three" data-es="Capítulo Tres">Chapter Three</span>
-        <span class="ch-skill" data-en="Spatial Memory" data-es="Memoria Espacial">Spatial Memory</span>
-      </div>
-      <div class="ch-title"><span class="ch-icon">⚡</span> Flash <b>Recall</b></div>
-      <p class="ch-desc" data-en="Several cells flash at once, then disappear. The student finds them all — strengthening the spatial memory used to navigate, organize, and picture things in the mind's eye." data-es="Varias celdas destellan a la vez y luego desaparecen. El estudiante las encuentra todas, fortaleciendo la memoria espacial que se usa para orientarse, organizar e imaginar cosas en la mente.">Several cells flash at once, then disappear. The student finds them all — strengthening the spatial memory used to navigate, organize, and picture things in the mind's eye.</p>
-    </div>
-  </article>
-
-  <article class="chapter" style="--cc:var(--c4);--ccglow:rgba(0,217,165,.5)">
-    <div class="ch-num">4</div>
-    <div class="ch-body">
-      <div class="ch-kicker">
-        <span class="ch-chip" data-en="Chapter Four" data-es="Capítulo Cuatro">Chapter Four</span>
-        <span class="ch-skill" data-en="Audio &amp; Order Memory" data-es="Memoria de Audio y Orden">Audio &amp; Order Memory</span>
-      </div>
-      <div class="ch-title"><span class="ch-icon">🎵</span> Sequence <b>Control</b></div>
-      <p class="ch-desc" data-en="Cells light one by one, each with its own tone. The student replays the exact order — linking sound to sequence, the same pairing that underpins music, language, and rhythm." data-es="Las celdas se iluminan una a una, cada una con su propio tono. El estudiante repite el orden exacto, uniendo sonido y secuencia, la misma combinación que sostiene la música, el lenguaje y el ritmo.">Cells light one by one, each with its own tone. The student replays the exact order — linking sound to sequence, the same pairing that underpins music, language, and rhythm.</p>
-    </div>
-  </article>
-
-  <article class="chapter finale" style="--cc:var(--c5);--ccglow:rgba(155,89,182,.5)">
-    <div class="ch-num">5</div>
-    <div class="ch-body">
-      <div class="ch-kicker">
-        <span class="ch-chip" data-en="Chapter Five" data-es="Capítulo Cinco">Chapter Five</span>
-        <span class="ch-skill" data-en="Spatial Reflex" data-es="Reflejo Espacial">Spatial Reflex</span>
-      </div>
-      <div class="ch-title"><span class="ch-icon">🎯</span> Reaction <b>Control</b></div>
-      <p class="ch-desc" data-en="The final chapter leaves the grid behind. Targets appear anywhere in open space and the student reacts on instinct — pure speed and spatial reflex, the course's fast-paced finale." data-es="El capítulo final deja atrás la cuadrícula. Los objetivos aparecen en cualquier punto del espacio abierto y el estudiante reacciona por instinto: pura velocidad y reflejo espacial, el final acelerado del curso.">The final chapter leaves the grid behind. Targets appear anywhere in open space and the student reacts on instinct — pure speed and spatial reflex, the course's fast-paced finale.</p>
-      <span class="ch-turn" data-en="The curriculum leaves the court." data-es="El currículo sale de la cancha.">The curriculum leaves the court.</span>
-    </div>
-  </article>
-
+<section class="doc-section" id="en-3-curriculum-philosophy">
+<h2 class="section-h1"><span class="sec-num">3</span>Curriculum Philosophy</h2>
+<p class="doc-p">Ritnome is based on five instructional principles.</p>
+<h3 class="section-h2">Active Participation</h3>
+<p class="doc-p">Students cannot progress by watching passively. Every round requires observation, memory, decision-making, and response.</p>
+<h3 class="section-h2">Purposeful Repetition</h3>
+<p class="doc-p">Students repeat core memory processes, but the patterns and challenges change. This provides repetition without requiring students to perform the exact same task every time.</p>
+<h3 class="section-h2">Consistent Structure</h3>
+<p class="doc-p">Every drill uses the same grid and 100 BPM tempo system. Students can move from one drill to another without spending valuable training time learning a new interface.</p>
+<h3 class="section-h2">Measurable Progress</h3>
+<p class="doc-p">Performance is recorded through accuracy, successful rounds, levels, and scores. Students and educators can see improvement over time.</p>
+<h3 class="section-h2">Progressive Challenge</h3>
+<p class="doc-p">The rhythm remains constant, but the memory demand increases. Ritnome automatically introduces more information, longer sequences, more complex patterns, and higher mastery expectations as the student improves.</p>
 </section>
-
-<section class="band">
-  <div class="wrap band-grid">
-    <div>
-      <h3 data-en="One number. <em>Simple as basketball.</em>" data-es="Un solo número. <em>Simple como el baloncesto.</em>">One number. <em>Simple as basketball.</em></h3>
-      <p data-en="Every chapter scores the same clean way, so a student always knows exactly where they stand — and a teacher can see growth at a glance." data-es="Cada capítulo se puntúa de la misma forma clara, así el estudiante siempre sabe exactamente dónde está, y el maestro ve el progreso de un vistazo.">Every chapter scores the same clean way, so a student always knows exactly where they stand — and a teacher can see growth at a glance.</p>
-      <p data-en="No confusing point systems. No decoding. Just a score that climbs as the mind sharpens." data-es="Sin sistemas de puntos confusos. Sin descifrar nada. Solo una puntuación que sube a medida que la mente se agudiza.">No confusing point systems. No decoding. Just a score that climbs as the mind sharpens.</p>
-    </div>
-    <div class="score-demo">
-      <div class="big">100</div>
-      <div class="cap" data-en="Perfect Chapter" data-es="Capítulo Perfecto">Perfect Chapter</div>
-      <div class="rule" data-en="Each correct round earns <b>Level × 10</b>.<br>Every chapter tops out at <b>100</b>.<br>The same goal in all five." data-es="Cada ronda correcta gana <b>Nivel × 10</b>.<br>Cada capítulo llega como máximo a <b>100</b>.<br>La misma meta en los cinco.">Each correct round earns <b>Level × 10</b>.<br>Every chapter tops out at <b>100</b>.<br>The same goal in all five.</div>
-    </div>
+<section class="doc-section" id="en-4-the-four-curriculum-strands">
+<h2 class="section-h1"><span class="sec-num">4</span>The Four Curriculum Strands</h2>
+<h3 class="section-h2" style="color:#ff1e3c">THE WARMUP: FOUNDATIONAL DRILL</h3>
+<h3 class="section-h2">Pure Reaction and Baseline Speed</h3>
+<h3 class="section-h2">Drill Description</h3>
+<p class="doc-p">Before any of the four curriculum strands, every Ritnome session opens with the Warmup. A single cell lights up at a time across the full grid, and the student taps it as quickly as possible. There is no sequence to hold, no pattern to compare, and no memory requirement of any kind &amp;#8212; the Warmup measures reaction speed alone.</p>
+<h3 class="section-h2">Primary Skill</h3>
+<p class="doc-p">Reaction speed and session readiness</p>
+<h3 class="section-h2">Supporting Skills</h3>
+<ul class="doc-list"><li>Visual attention</li><li>Immediate response</li><li>Hand-eye coordination</li><li>Comfort with the 100 BPM tempo</li><li>Confidence before cognitive demand increases</li></ul>
+<h3 class="section-h2">Learning Objectives</h3>
+<ol class="doc-list-num"><li>Respond to a visual target as quickly as possible.</li><li>Sustain attention across a full round of the grid.</li><li>Build comfort with the grid, the response method, and the 100 BPM tempo before a memory task is introduced.</li><li>Establish a personal reaction-speed baseline at the start of every session.</li></ol>
+<h3 class="section-h2">A Confidence Builder and a Diagnostic Tool</h3>
+<p class="doc-p">The Warmup serves two purposes at once. First, because it requires no memory and cannot produce a discouraging result, it gives every student an early, achievable success before the more demanding memory strands begin. Second, because the Warmup measures raw response time and converts it into a beats-per-minute (BPM) reaction level, it gives the educator an immediate, individual reaction-speed indicator for each student, recorded at the start of every session.</p>
+<p class="doc-p">Because the Warmup's reaction level is expressed in the same BPM unit as the training tempo itself, a student's personal reaction speed can be read and compared directly alongside the fixed 100 BPM standard used across all four strands, without requiring a separate testing instrument.</p>
+<h3 class="section-h2">Evidence of Readiness</h3>
+<p class="doc-p">A student demonstrates readiness when the Warmup is completed for all fifty targets, with an individual reaction-speed level, expressed in BPM, recorded for that session.</p>
+<h3 class="section-h2">Educational Connection</h3>
+<ul class="doc-list"><li>Identify a student&amp;#8217;s current response speed before a task requiring memory</li><li>Build a personal reaction-speed profile over time</li><li>Compare reaction speed across sessions</li><li>Enter the memory strands already comfortable with the grid and the tempo</li></ul>
+<h3 class="section-h2" style="color:#FF6B35">STRAND 1: RECALL</h3>
+<h3 class="section-h2">Memory and Sequential Retrieval</h3>
+<h3 class="section-h2">Drill Description</h3>
+<p class="doc-p">In RECALL, a sequence of cells lights up on the Ritnome grid. The student watches the sequence, holds the locations and order in memory, and then taps the cells back in the exact order presented.</p>
+<p class="doc-p">The student must remember both:</p>
+<ul class="doc-list"><li>Which cells appeared</li><li>The order in which they appeared</li></ul>
+<p class="doc-p">RECALL develops the ability to retrieve visual information in an organized sequence.</p>
+<h3 class="section-h2">Primary Skill</h3>
+<p class="doc-p">Sequential memory</p>
+<h3 class="section-h2">Supporting Skills</h3>
+<ul class="doc-list"><li>Visual location memory</li><li>Ordered retrieval</li><li>Concentration</li><li>Attention to sequence</li><li>Response accuracy</li><li>Automatic recall</li></ul>
+<h3 class="section-h2">Learning Objectives</h3>
+<p class="doc-p">By participating in RECALL, students will learn to:</p>
+<ol class="doc-list-num"><li>Observe a visual sequence from beginning to end.</li><li>Retain the location of each presented cell.</li><li>Remember the correct order of the sequence.</li><li>Reproduce the sequence accurately.</li><li>Maintain focus as sequences become longer.</li><li>Recover from mistakes and improve during later attempts.</li><li>Demonstrate increasingly consistent recall.</li></ol>
+<h3 class="section-h2">Progression</h3>
+<p class="doc-p">The level of challenge may increase through:</p>
+<ul class="doc-list"><li>Longer sequences</li><li>More possible grid locations</li><li>Greater similarity between sequence patterns</li><li>Increased accuracy requirements</li><li>Multiple successful rounds required for mastery</li><li>Reduced dependence on repeated demonstrations</li></ul>
+<h3 class="section-h2">Evidence of Mastery</h3>
+<p class="doc-p">A student demonstrates mastery when the student can repeatedly reproduce sequences at the required level with accurate order and consistent performance.</p>
+<h3 class="section-h2">Educational Connection</h3>
+<p class="doc-p">The abilities trained in RECALL may be applied when students must:</p>
+<ul class="doc-list"><li>Remember steps in a process</li><li>Follow directions in order</li><li>Recall number or letter sequences</li><li>Retain the order of events</li><li>Complete multistep academic tasks</li><li>Remember procedures without repeated prompting</li></ul>
+<h3 class="section-h2" style="color:#00CED1">STRAND 2: REFLEX</h3>
+<h3 class="section-h2">Quick Decisions and Full-Grid Awareness</h3>
+<h3 class="section-h2">Drill Description</h3>
+<p class="doc-p">In REFLEX, several cells flash at the same time. The student must identify every active cell and tap all of them before the opportunity ends.</p>
+<p class="doc-p">Unlike a simple one-target activity, REFLEX requires the student to observe a wider area, recognize several targets, make a quick decision, and respond without overlooking any part of the grid.</p>
+<h3 class="section-h2">Primary Skill</h3>
+<p class="doc-p">Quick and accurate decision-making</p>
+<h3 class="section-h2">Supporting Skills</h3>
+<ul class="doc-list"><li>Immediate visual recognition</li><li>Multiple-target awareness</li><li>Full-grid attention</li><li>Visual scanning</li><li>Response control</li><li>Accuracy under time demands</li></ul>
+<h3 class="section-h2">Learning Objectives</h3>
+<p class="doc-p">By participating in REFLEX, students will learn to:</p>
+<ol class="doc-list-num"><li>Observe information across the full Ritnome grid.</li><li>Identify several active cells during one presentation.</li><li>Distinguish active cells from inactive cells.</li><li>Make quick decisions without random tapping.</li><li>Respond to every required target.</li><li>Balance speed with accuracy.</li><li>Maintain awareness as the number of targets increases.</li></ol>
+<h3 class="section-h2">Progression</h3>
+<p class="doc-p">The level of challenge may increase through:</p>
+<ul class="doc-list"><li>More cells flashing at once</li><li>Wider spacing between active cells</li><li>More complex visual arrangements</li><li>Greater demands on full-grid scanning</li><li>Higher accuracy requirements</li><li>More consistent performance required before advancement</li></ul>
+<p class="doc-p">The 100 BPM tempo remains unchanged. The difficulty increases because the student must recognize and process more information.</p>
+<h3 class="section-h2">Evidence of Mastery</h3>
+<p class="doc-p">A student demonstrates mastery when the student can consistently identify and select all required cells without unnecessary selections or missed targets.</p>
+<h3 class="section-h2">Educational Connection</h3>
+<p class="doc-p">The abilities trained in REFLEX may be applied when students must:</p>
+<ul class="doc-list"><li>Locate important details quickly</li><li>Scan a page, chart, diagram, or problem</li><li>Identify several correct elements</li><li>Make decisions from visual information</li><li>Work accurately within a limited period</li><li>Remain attentive across a larger visual area</li></ul>
+<h3 class="section-h2" style="color:#00D9A5">STRAND 3: REPLAY</h3>
+<h3 class="section-h2">Memory-to-Execution Transfer</h3>
+<h3 class="section-h2">Drill Description</h3>
+<p class="doc-p">In REPLAY, the student watches a complete sequence and then physically runs it back from memory.</p>
+<p class="doc-p">After the sequence has ended, the student must execute the entire sequence correctly. The drill emphasizes not only remembering the information but also converting that remembered information into organized action.</p>
+<p class="doc-p">REPLAY challenges the student to hold a complete sequence internally and then perform it with control.</p>
+<h3 class="section-h2">Primary Skill</h3>
+<p class="doc-p">Memory plus execution</p>
+<h3 class="section-h2">Supporting Skills</h3>
+<ul class="doc-list"><li>Whole-sequence retention</li><li>Memory-to-action transfer</li><li>Ordered execution</li><li>Pattern reproduction</li><li>Response consistency</li><li>Performance control</li></ul>
+<h3 class="section-h2">Learning Objectives</h3>
+<p class="doc-p">By participating in REPLAY, students will learn to:</p>
+<ol class="doc-list-num"><li>Watch a complete sequence without responding too early.</li><li>Hold the full sequence in memory.</li><li>Organize the remembered information before acting.</li><li>Execute the sequence in the correct order.</li><li>Complete the sequence without losing focus midway.</li><li>Connect visual memory with physical response.</li><li>Improve consistency across repeated attempts.</li></ol>
+<h3 class="section-h2">Progression</h3>
+<p class="doc-p">The level of challenge may increase through:</p>
+<ul class="doc-list"><li>Longer complete sequences</li><li>More changes in direction across the grid</li><li>Greater distance between sequence locations</li><li>More complex movement patterns</li><li>Higher accuracy requirements</li><li>More uninterrupted execution required for mastery</li></ul>
+<h3 class="section-h2">Evidence of Mastery</h3>
+<p class="doc-p">A student demonstrates mastery when the student can retain and reproduce a complete sequence accurately, in order, and with controlled execution.</p>
+<h3 class="section-h2">Educational Connection</h3>
+<p class="doc-p">The abilities trained in REPLAY may be applied when students must:</p>
+<ul class="doc-list"><li>Remember and carry out a full set of instructions</li><li>Transfer learned information into action</li><li>Complete multistep procedures</li><li>Reproduce demonstrated processes</li><li>Organize actions before beginning a task</li><li>Perform a learned sequence independently</li></ul>
+<h3 class="section-h2" style="color:#9ACD32">STRAND 4: RITMO</h3>
+<h3 class="section-h2">Memory, Comparison, and Change Detection</h3>
+<h3 class="section-h2">Drill Description</h3>
+<p class="doc-p">In RITMO, the student watches an original pattern and holds it in memory. The pattern is then presented again with a change.</p>
+<p class="doc-p">The student must compare the second presentation with the remembered first presentation and identify exactly what changed.</p>
+<p class="doc-p">RITMO requires the student to create a mental representation of the original pattern, maintain that information, compare two presentations, and make an accurate decision.</p>
+<h3 class="section-h2">Primary Skill</h3>
+<p class="doc-p">Memory plus quick decisions</p>
+<h3 class="section-h2">Supporting Skills</h3>
+<ul class="doc-list"><li>Pattern memory</li><li>Visual comparison</li><li>Change detection</li><li>Attention to detail</li><li>Mental holding</li><li>Accurate decision-making</li></ul>
+<h3 class="section-h2">Learning Objectives</h3>
+<p class="doc-p">By participating in RITMO, students will learn to:</p>
+<ol class="doc-list-num"><li>Observe and retain an original visual pattern.</li><li>Hold that pattern in memory during a second presentation.</li><li>Compare remembered and current information.</li><li>Detect the specific change between two patterns.</li><li>Avoid responding to information that remained the same.</li><li>Make a quick and accurate comparison decision.</li><li>Recognize increasingly subtle changes.</li></ol>
+<h3 class="section-h2">Progression</h3>
+<p class="doc-p">The level of challenge may increase through:</p>
+<ul class="doc-list"><li>More cells included in the original pattern</li><li>More complex pattern arrangements</li><li>Smaller or less obvious changes</li><li>Changes appearing in different grid locations</li><li>Greater similarity between the first and second patterns</li><li>Higher accuracy requirements before advancement</li></ul>
+<h3 class="section-h2">Evidence of Mastery</h3>
+<p class="doc-p">A student demonstrates mastery when the student can consistently identify the exact change between the original and second presentation.</p>
+<h3 class="section-h2">Educational Connection</h3>
+<p class="doc-p">The abilities trained in RITMO may be applied when students must:</p>
+<ul class="doc-list"><li>Compare two pieces of information</li><li>Detect errors or differences</li><li>Review written work</li><li>Notice changes in numbers, symbols, diagrams, or text</li><li>Distinguish correct information from altered information</li><li>Pay close attention to important details</li></ul>
+</section>
+<section class="doc-section" id="en-5-curriculum-learning-outcomes">
+<h2 class="section-h1"><span class="sec-num">5</span>Curriculum Learning Outcomes</h2>
+<p class="doc-p">After consistent participation in the Ritnome curriculum, students should demonstrate growth in the following areas:</p>
+<h3 class="section-h2">Memory Performance</h3>
+<p class="doc-p">Students will improve their ability to hold, retrieve, and reproduce visual information.</p>
+<h3 class="section-h2" style="color:#FF6B35">Automatic Recall</h3>
+<p class="doc-p">Students will become more efficient at retrieving practiced information without unnecessary hesitation.</p>
+<h3 class="section-h2">Sequential Control</h3>
+<p class="doc-p">Students will improve their ability to remember and execute information in the correct order.</p>
+<h3 class="section-h2">Quick Decision-Making</h3>
+<p class="doc-p">Students will make faster decisions while maintaining accuracy.</p>
+<h3 class="section-h2">Visual Attention</h3>
+<p class="doc-p">Students will improve their ability to observe individual targets, multiple targets, full patterns, and changes across the grid.</p>
+<h3 class="section-h2">Memory-to-Action Transfer</h3>
+<p class="doc-p">Students will strengthen the connection between remembering information and performing a correct response.</p>
+<h3 class="section-h2">Performance Consistency</h3>
+<p class="doc-p">Students will work toward repeating successful performance across several rounds rather than succeeding only once.</p>
+<h3 class="section-h2">Self-Monitoring</h3>
+<p class="doc-p">Students will become more aware of their own accuracy, progress, strengths, and areas that require additional practice.</p>
+</section>
+<section class="doc-section" id="en-6-instructional-structure">
+<h2 class="section-h1"><span class="sec-num">6</span>Instructional Structure</h2>
+<p class="doc-p">A Ritnome session may include all four drills or focus on one specific curriculum strand.</p>
+<p class="doc-p">A recommended session structure is:</p>
+<h3 class="section-h2">A. Preparation</h3>
+<p class="doc-p">The educator introduces the purpose of the session and identifies the skill being trained.</p>
+<p class="doc-p">Examples:</p>
+<ul class="doc-list"><li>“Today we are training sequence memory.”</li><li>“Today we are working on detecting changes.”</li><li>“Today we are practicing quick decisions without losing accuracy.”</li></ul>
+<h3 class="section-h2">B. Familiarization</h3>
+<p class="doc-p">Students complete introductory rounds to become comfortable with the drill and grid.</p>
+<h3 class="section-h2">C. Focused Training</h3>
+<p class="doc-p">Students complete structured rounds within the selected drill.</p>
+<h3 class="section-h2">D. Progressive Challenge</h3>
+<p class="doc-p">The system increases the difficulty when the student demonstrates the required level of mastery.</p>
+<h3 class="section-h2">E. Performance Review</h3>
+<p class="doc-p">Students review scores, accuracy, and completed levels.</p>
+<h3 class="section-h2">F. Reflection</h3>
+<p class="doc-p">Students briefly identify what helped or interfered with their performance.</p>
+<p class="doc-p">Possible reflection prompts include:</p>
+<ul class="doc-list"><li>What helped you remember the sequence?</li><li>Did you respond too quickly or too slowly?</li><li>Which part of the grid did you overlook?</li><li>What will you do differently in the next round?</li></ul>
+</section>
+<section class="doc-section" id="en-7-tempo-standard">
+<h2 class="section-h1"><span class="sec-num">7</span>Tempo Standard</h2>
+<p class="doc-p">All four drills operate at one standard tempo:</p>
+<h3 class="section-h2">100 BPM</h3>
+<p class="doc-p">Students do not select beginner, intermediate, or advanced speed tiers.</p>
+<p class="doc-p">The consistent tempo creates a standardized training environment across:</p>
+<ul class="doc-list"><li>Drills</li><li>Students</li><li>Classrooms</li><li>Teams</li><li>Devices</li><li>School competitions</li></ul>
+<p class="doc-p">The tempo does not become faster as students advance.</p>
+<p class="doc-p">Instead, Ritnome increases the cognitive and performance demand through:</p>
+<ul class="doc-list"><li>More information</li><li>Longer sequences</li><li>More active cells</li><li>More complex patterns</li><li>More difficult comparisons</li><li>Higher accuracy expectations</li><li>Greater consistency requirements</li></ul>
+<p class="doc-p">The tempo remains constant. The challenge grows.</p>
+</section>
+<section class="doc-section" id="en-8-automatic-challenge-progression">
+<h2 class="section-h1"><span class="sec-num">8</span>Automatic Challenge Progression</h2>
+<p class="doc-p">Ritnome automatically increases the level of challenge as students demonstrate mastery.</p>
+<p class="doc-p">Students are not required to choose their own difficulty. The system uses successful performance to determine when the student is ready for a more demanding level.</p>
+<p class="doc-p">Depending on the drill, automatic progression may introduce:</p>
+<table class="doc-table"><tr><th>Drill</th><th>How the Challenge Increases</th></tr><tr><td style="color:#FF6B35;font-weight:900">RECALL</td><td>Longer and more complex sequences</td></tr><tr><td style="color:#00CED1;font-weight:900">REFLEX</td><td>More simultaneous targets and wider grid coverage</td></tr><tr><td style="color:#00D9A5;font-weight:900">REPLAY</td><td>Longer full sequences and more demanding execution patterns</td></tr><tr><td style="color:#9ACD32;font-weight:900">RITMO</td><td>More complex patterns and less obvious changes</td></tr></table>
+<p class="doc-p">This model helps prevent two common problems:</p>
+<ul class="doc-list"><li>A task that remains too easy and becomes repetitive.</li><li>A task that becomes too difficult before the student is prepared.</li></ul>
+<p class="doc-p">Students progress by demonstrating performance, not simply by spending time in the program.</p>
+</section>
+<section class="doc-section" id="en-9-engagement-system">
+<h2 class="section-h1"><span class="sec-num">9</span>Engagement System</h2>
+<p class="doc-p">Ritnome is designed to enforce active engagement.</p>
+<p class="doc-p">Every round requires the student to perform one or more of the following actions:</p>
+<ul class="doc-list"><li>Watch</li><li>Hold</li><li>Remember</li><li>Compare</li><li>Decide</li><li>Tap</li><li>Execute</li><li>Correct</li><li>Improve</li></ul>
+<p class="doc-p">The program supports continued participation through:</p>
+<h3 class="section-h2">Short Training Rounds</h3>
+<p class="doc-p">Students receive frequent opportunities to begin again, improve, and experience progress.</p>
+<h3 class="section-h2">Immediate Feedback</h3>
+<p class="doc-p">Students can see the result of their response without waiting for delayed grading.</p>
+<h3 class="section-h2">Visible Progress</h3>
+<p class="doc-p">Levels, scores, and successful rounds make improvement easier to recognize.</p>
+<h3 class="section-h2">Earned Advancement</h3>
+<p class="doc-p">Students must demonstrate successful performance to advance.</p>
+<h3 class="section-h2">Personal Competition</h3>
+<p class="doc-p">Students can attempt to improve their own previous results.</p>
+<h3 class="section-h2">Group Competition</h3>
+<p class="doc-p">Schools may organize classroom, team, grade-level, or schoolwide challenges.</p>
+<h3 class="section-h2">Common Playing System</h3>
+<p class="doc-p">Because every drill uses the same grid and tempo, students spend their effort on the training instead of learning different controls.</p>
+<p class="doc-p">Ritnome does not reward passive screen time. Progress must be earned through participation and performance.</p>
+</section>
+<section class="doc-section" id="en-10-assessment-framework">
+<h2 class="section-h1"><span class="sec-num">10</span>Assessment Framework</h2>
+<p class="doc-p">Ritnome assessment is performance-based.</p>
+<p class="doc-p">Students are evaluated through what they can successfully observe, retain, recall, compare, and execute.</p>
+<h3 class="section-h2">Primary Performance Measures</h3>
+<ul class="doc-list"><li>Accuracy</li><li>Correct sequence order</li><li>Correct target identification</li><li>Successful change detection</li><li>Completed rounds</li><li>Level advancement</li><li>Warmup reaction speed (BPM equivalent)</li><li>Consistency across attempts</li></ul>
+<h3 class="section-h2">Formative Assessment</h3>
+<p class="doc-p">Educators may use session results to identify:</p>
+<ul class="doc-list"><li>Which drill is currently strongest</li><li>Which drill requires additional practice</li><li>Whether errors are caused by memory, attention, decision-making, or execution</li><li>Whether the student is improving over time</li><li>Whether the current challenge level is appropriate</li></ul>
+<h3 class="section-h2">Student Self-Assessment</h3>
+<p class="doc-p">Students may be encouraged to review:</p>
+<ul class="doc-list"><li>Their most accurate drill</li><li>Their most difficult drill</li><li>Their personal best score</li><li>A mistake they corrected</li><li>A strategy that improved performance</li><li>A goal for the next session</li></ul>
+<h3 class="section-h2">Mastery</h3>
+<p class="doc-p">Mastery is demonstrated through repeated successful performance at the required level.</p>
+<p class="doc-p">One correct round alone does not establish mastery. The student must show that the skill can be performed consistently.</p>
+</section>
+<section class="doc-section" id="en-11-suggested-curriculum-sequence">
+<h2 class="section-h1"><span class="sec-num">11</span>Suggested Curriculum Sequence</h2>
+<p class="doc-p">Schools may introduce the curriculum in the following order:</p>
+<h3 class="section-h2">Phase 1: Grid Orientation</h3>
+<p class="doc-p">Students learn the Ritnome grid, response method, 100 BPM tempo, scoring system, and expectations for accurate play.</p>
+<h3 class="section-h2" style="color:#FF6B35">Phase 2: RECALL</h3>
+<p class="doc-p">Students begin with direct sequence memory and ordered retrieval.</p>
+<h3 class="section-h2" style="color:#00CED1">Phase 3: REFLEX</h3>
+<p class="doc-p">Students expand their attention across the grid and practice quick, accurate decisions.</p>
+<h3 class="section-h2" style="color:#00D9A5">Phase 4: REPLAY</h3>
+<p class="doc-p">Students connect complete memory retention with organized physical execution.</p>
+<h3 class="section-h2" style="color:#9ACD32">Phase 5: RITMO</h3>
+<p class="doc-p">Students use memory, comparison, and change detection together.</p>
+<h3 class="section-h2">Phase 6: Integrated Training</h3>
+<p class="doc-p">Students rotate through all four drills during the same training cycle.</p>
+<h3 class="section-h2">Phase 7: Performance and Competition</h3>
+<p class="doc-p">Students apply their skills in personal challenges, classroom events, team competitions, or schoolwide Memory eSports events.</p>
+</section>
+<section class="doc-section" id="en-12-implementation-options">
+<h2 class="section-h1"><span class="sec-num">12</span>Implementation Options</h2>
+<p class="doc-p">The Ritnome curriculum may be implemented through:</p>
+<ul class="doc-list"><li>Physical education</li><li>Classroom enrichment</li><li>Academic support periods</li><li>Technology programs</li><li>Educational esports</li><li>After-school programs</li><li>Student clubs</li><li>Intervention periods</li><li>Schoolwide competitions</li><li>Individual training</li><li>Team development</li></ul>
+<p class="doc-p">The curriculum may be delivered using compatible:</p>
+<ul class="doc-list"><li>PICO headsets</li><li>Desktop computers</li><li>Chromebooks</li><li>Interactive displays (Promethean or similar)</li><li>Touchscreen devices</li><li>Mouse controls</li><li>Trackpad controls</li></ul>
+<p class="doc-p">The training objective remains consistent across devices.</p>
+<p class="doc-p">Interactive displays and Chromebooks serve distinct instructional roles. The educator uses the interactive display to introduce a drill, demonstrate the grid and response method, and model correct performance for the whole class. Students then complete their individual training rounds on their own Chromebooks, where each student’s responses, accuracy, and progression are recorded individually.</p>
+</section>
+<section class="doc-section" id="en-13-role-of-the-educator">
+<h2 class="section-h1"><span class="sec-num">13</span>Role of the Educator</h2>
+<p class="doc-p">The educator does not need to direct every individual response. The system presents the drills, records performance, and manages progression.</p>
+<p class="doc-p">The educator’s role is to:</p>
+<ul class="doc-list"><li>Explain the training purpose</li><li>Establish participation expectations</li><li>Encourage accuracy before random speed</li><li>Review student progress</li><li>Help students identify useful strategies</li><li>Organize individual or group training</li><li>Recognize improvement and mastery</li><li>Connect the trained abilities to classroom and school activities</li></ul>
+</section>
+<section class="doc-section" id="en-14-curriculum-identity">
+<h2 class="section-h1"><span class="sec-num">14</span>Curriculum Identity</h2>
+<p class="doc-p">Ritnome is not a collection of unrelated games.</p>
+<p class="doc-p">The four drills form one connected curriculum:</p>
+<h3 class="section-h2" style="color:#FF6B35">RECALL</h3>
+<p class="doc-p">Remember the order.</p>
+<h3 class="section-h2" style="color:#00CED1">REFLEX</h3>
+<p class="doc-p">Find every target and decide quickly.</p>
+<h3 class="section-h2" style="color:#00D9A5">REPLAY</h3>
+<p class="doc-p">Hold the full sequence and execute it.</p>
+<h3 class="section-h2" style="color:#9ACD32">RITMO</h3>
+<p class="doc-p">Remember the pattern and detect the change.</p>
+<p class="doc-p">Together, the drills guide the student through a complete performance cycle:</p>
+<p class="doc-p">Observe. Hold. Recall. Compare. Decide. Execute.</p>
+</section>
+<section class="doc-section" id="en-15-the-ritnome-curriculum-vision">
+<h2 class="section-h1"><span class="sec-num">15</span>The Ritnome Curriculum Vision</h2>
+<p class="doc-p">The Ritnome Memory eSports Curriculum transforms memory training into an experience that is structured, active, measurable, progressive, and competitive.</p>
+<p class="doc-p">Students use one familiar grid and one consistent tempo while developing four distinct areas of performance.</p>
+<p class="doc-p">The result is a curriculum that can grow with the student without requiring the student to relearn how to participate.</p>
+<p class="doc-p">Same grid. Same tempo. New challenge every level.</p>
+<h3 class="section-h2">RITNOME</h3>
+</section></main>
   </div>
-</section>
-
-<section class="access wrap">
-  <h2 data-en="Built for the schools that need it most." data-es="Hecho para las escuelas que más lo necesitan.">Built for the schools that need it most.</h2>
-  <p class="lead" data-en="Reactific was designed to run on what classrooms already have — not on equipment they'd have to buy." data-es="Reactific fue diseñado para funcionar con lo que las aulas ya tienen, no con equipo que tendrían que comprar.">Reactific was designed to run on what classrooms already have — not on equipment they'd have to buy.</p>
-  <div class="access-grid">
-    <div class="a-card">
-      <div class="ai">💻</div>
-      <h4 data-en="Runs on Chromebooks" data-es="Funciona en Chromebooks">Runs on Chromebooks</h4>
-      <p data-en="Every chapter plays in the browser on the devices students already use. Nothing to install, nothing to deploy." data-es="Cada capítulo se juega en el navegador, en los dispositivos que los estudiantes ya usan. Nada que instalar, nada que configurar.">Every chapter plays in the browser on the devices students already use. Nothing to install, nothing to deploy.</p>
-    </div>
-    <div class="a-card">
-      <div class="ai">🔑</div>
-      <h4 data-en="A class code is all it takes" data-es="Solo hace falta un código de clase">A class code is all it takes</h4>
-      <p data-en="Students join with their email and a six-letter code. No accounts to create, no setup for teachers to manage." data-es="Los estudiantes entran con su correo y un código de seis letras. Sin cuentas que crear, sin configuración para los maestros.">Students join with their email and a six-letter code. No accounts to create, no setup for teachers to manage.</p>
-    </div>
-    <div class="a-card">
-      <div class="ai">🏆</div>
-      <h4 data-en="A live classroom arena" data-es="Una arena de clase en vivo">A live classroom arena</h4>
-      <p data-en="Scores feed a real-time board for the room's front screen — turning quiet practice into shared competition." data-es="Las puntuaciones alimentan un tablero en tiempo real para la pantalla del salón, convirtiendo la práctica callada en competencia compartida.">Scores feed a real-time board for the room's front screen — turning quiet practice into shared competition.</p>
-    </div>
+  <div class="footer">
+    <div class="footer-signoff">Train the memory. Strengthen performance. Make recall automatic.</div>
+    <div class="footer-logo">RITNOME<span>.</span></div>
   </div>
-</section>
+</div>
 
-<section class="close wrap">
-  <h2 data-en="Five chapters.<br>One <em>sharper mind</em>." data-es="Cinco capítulos.<br>Una <em>mente más aguda</em>.">Five chapters.<br>One <em>sharper mind</em>.</h2>
-  <p data-en="A complete set of drills and challenges students experience as a single game they come back to — chapter after chapter, day after day." data-es="Un conjunto completo de ejercicios y desafíos que los estudiantes viven como un solo juego al que regresan: capítulo tras capítulo, día tras día.">A complete set of drills and challenges students experience as a single game they come back to — chapter after chapter, day after day.</p>
-  <a class="cta" href="/index.html" data-en="Bring Reactific to your school" data-es="Lleva Reactific a tu escuela">Bring Reactific to your school</a>
+<div class="lang-block" id="content-es">
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="beat-pulse"></span> 100 BPM &middot; CADA EJERCICIO, CADA NIVEL</div>
+    <h1 class="hero-title display">CURR&Iacute;CULO RITNOME MEMORY ESPORTS</h1>
+    <p class="hero-sub">Desarrollo del recuerdo autom&aacute;tico mediante entrenamiento competitivo estructurado</p>
+  </div>
+  <div class="layout">
+    <nav class="toc-wrap"><div class="toc-title">&Iacute;ndice</div><ol class="toc-list"><li><a href="#es-1-descripci-n-general-del-curr-culo" class="toc-link"><span class="toc-num">1</span>Descripción general del currículo</a></li><li><a href="#es-2-prop-sito-del-curr-culo" class="toc-link"><span class="toc-num">2</span>Propósito del currículo</a></li><li><a href="#es-3-filosof-a-del-curr-culo" class="toc-link"><span class="toc-num">3</span>Filosofía del currículo</a></li><li><a href="#es-4-las-cuatro-reas-del-curr-culo" class="toc-link"><span class="toc-num">4</span>Las cuatro áreas del currículo</a></li><li><a href="#es-5-resultados-de-aprendizaje-del-curr-cul" class="toc-link"><span class="toc-num">5</span>Resultados de aprendizaje del currículo</a></li><li><a href="#es-6-estructura-de-ense-anza" class="toc-link"><span class="toc-num">6</span>Estructura de enseñanza</a></li><li><a href="#es-7-ritmo-est-ndar" class="toc-link"><span class="toc-num">7</span>Ritmo estándar</a></li><li><a href="#es-8-aumento-autom-tico-del-nivel-de-reto" class="toc-link"><span class="toc-num">8</span>Aumento automático del nivel de reto</a></li><li><a href="#es-9-sistema-de-participaci-n" class="toc-link"><span class="toc-num">9</span>Sistema de participación</a></li><li><a href="#es-10-marco-de-evaluaci-n" class="toc-link"><span class="toc-num">10</span>Marco de evaluación</a></li><li><a href="#es-11-secuencia-sugerida-del-curr-culo" class="toc-link"><span class="toc-num">11</span>Secuencia sugerida del currículo</a></li><li><a href="#es-12-opciones-de-implementaci-n" class="toc-link"><span class="toc-num">12</span>Opciones de implementación</a></li><li><a href="#es-13-funci-n-del-educador" class="toc-link"><span class="toc-num">13</span>Función del educador</a></li><li><a href="#es-14-identidad-del-curr-culo" class="toc-link"><span class="toc-num">14</span>Identidad del currículo</a></li><li><a href="#es-15-visi-n-del-curr-culo-ritnome" class="toc-link"><span class="toc-num">15</span>Visión del currículo Ritnome</a></li></ol></nav>
+    <main><section class="doc-section" id="es-1-descripci-n-general-del-curr-culo">
+<h2 class="section-h1"><span class="sec-num">1</span>Descripción general del currículo</h2>
+<p class="doc-p">El Currículo Ritnome Memory eSports es un programa de entrenamiento estructurado diseñado para desarrollar el recuerdo automático, el control de la memoria, la toma rápida de decisiones, la ejecución precisa y la participación sostenida.</p>
+<p class="doc-p">El currículo está compuesto por cuatro ejercicios principales:</p>
+<ul class="doc-list"><li>RECALL</li><li>REFLEX</li><li>REPLAY</li><li>RITMO</li></ul>
+<p class="doc-p">Cada ejercicio desarrolla un componente distinto del desempeño de la memoria. En conjunto, forman un sistema completo de entrenamiento que reta a los participantes a observar información, retenerla, recuperarla, compararla, tomar decisiones y ejecutar una respuesta correcta.</p>
+<p class="doc-p">Los cuatro ejercicios utilizan la misma cuadrícula Ritnome, el mismo sistema de interacción y un ritmo constante de 100 pulsaciones por minuto.</p>
+<p class="doc-p">Esta estructura uniforme permite que los estudiantes se concentren en el entrenamiento, en lugar de tener que aprender controles o reglas diferentes para cada actividad.</p>
+<p class="doc-p">Cuatro ejercicios. Una cuadrícula. Un ritmo. Desarrollo continuo.</p>
 </section>
-
-<div class="foot">
-  REACTIFIC<span>™</span> — <span class="foot-tag" data-en="Pure VR · Pure Spatial · Pure Memory · A five-chapter set of drills & challenges" data-es="VR Puro · Espacial Puro · Memoria Pura · Un conjunto de ejercicios y desafíos de cinco capítulos">Pure VR · Pure Spatial · Pure Memory · A five-chapter set of drills & challenges</span>
+<section class="doc-section" id="es-2-prop-sito-del-curr-culo">
+<h2 class="section-h1"><span class="sec-num">2</span>Propósito del currículo</h2>
+<p class="doc-p">El propósito del currículo Ritnome es ayudar a los estudiantes a fortalecer su capacidad para:</p>
+<ul class="doc-list"><li>Prestar atención a información visual.</li><li>Retener información en la memoria.</li><li>Recordar información en el orden correcto.</li><li>Reconocer rápidamente varios elementos de información.</li><li>Comparar lo que observaron anteriormente con lo que observan en el momento.</li><li>Convertir la información recordada en una acción precisa.</li><li>Mantener el desempeño bajo exigencias controladas de tiempo.</li><li>Mejorar mediante una práctica repetida y medible.</li></ul>
+<p class="doc-p">Ritnome aplica un principio que se utiliza comúnmente en el entrenamiento deportivo.</p>
+<p class="doc-p">Los atletas repiten movimientos hasta que pueden ejecutarlos de manera automática. Ritnome utiliza la repetición estructurada para ayudar a los estudiantes a desarrollar un recuerdo más automático, preciso y confiable.</p>
+<p class="doc-p">La memoria muscular hace que el movimiento sea automático. Ritnome hace que el recuerdo sea automático.</p>
+</section>
+<section class="doc-section" id="es-3-filosof-a-del-curr-culo">
+<h2 class="section-h1"><span class="sec-num">3</span>Filosofía del currículo</h2>
+<p class="doc-p">Ritnome se fundamenta en cinco principios educativos.</p>
+<h3 class="section-h2">Participación activa</h3>
+<p class="doc-p">Los estudiantes no pueden progresar observando de manera pasiva. Cada ronda requiere observación, memoria, toma de decisiones y respuesta.</p>
+<h3 class="section-h2">Repetición con propósito</h3>
+<p class="doc-p">Los estudiantes repiten procesos esenciales de memoria, pero los patrones y los retos cambian. Esto permite practicar repetidamente sin tener que realizar exactamente la misma tarea en cada ronda.</p>
+<h3 class="section-h2">Estructura uniforme</h3>
+<p class="doc-p">Cada ejercicio utiliza la misma cuadrícula y el mismo ritmo de 100 BPM. Los estudiantes pueden pasar de un ejercicio a otro sin perder tiempo aprendiendo una interfaz diferente.</p>
+<h3 class="section-h2">Progreso medible</h3>
+<p class="doc-p">El desempeño se registra mediante la precisión, las rondas completadas, los niveles y las puntuaciones. Los estudiantes y educadores pueden observar el progreso a través del tiempo.</p>
+<h3 class="section-h2">Reto progresivo</h3>
+<p class="doc-p">El ritmo permanece constante, pero la exigencia de memoria aumenta. Ritnome introduce automáticamente más información, secuencias más largas, patrones más complejos y mayores requisitos de dominio a medida que el estudiante mejora.</p>
+</section>
+<section class="doc-section" id="es-4-las-cuatro-reas-del-curr-culo">
+<h2 class="section-h1"><span class="sec-num">4</span>Las cuatro áreas del currículo</h2>
+<h3 class="section-h2" style="color:#ff1e3c">EL CALENTAMIENTO: EJERCICIO FUNDACIONAL</h3>
+<h3 class="section-h2">Reacción Pura y Velocidad de Referencia</h3>
+<h3 class="section-h2">Descripción del ejercicio</h3>
+<p class="doc-p">Antes de cualquiera de las cuatro áreas del currículo, cada sesión de Ritnome comienza con el Calentamiento. Una sola celda se ilumina a la vez en toda la cuadrícula, y el estudiante la toca lo más rápido posible. No hay secuencia que retener, ni patrón que comparar, ni ningún requisito de memoria — el Calentamiento mide únicamente la velocidad de reacción.</p>
+<h3 class="section-h2">Destreza principal</h3>
+<p class="doc-p">Velocidad de reacción y preparación para la sesión</p>
+<h3 class="section-h2">Destrezas complementarias</h3>
+<ul class="doc-list"><li>Atención visual</li><li>Respuesta inmediata</li><li>Coordinación visomotora</li><li>Comodidad con el ritmo de 100 BPM</li><li>Confianza antes de que aumente la exigencia cognitiva</li></ul>
+<h3 class="section-h2">Objetivos de aprendizaje</h3>
+<ol class="doc-list-num"><li>Responder a un objetivo visual lo más rápido posible.</li><li>Mantener la atención durante una ronda completa de la cuadrícula.</li><li>Familiarizarse con la cuadrícula, el método de respuesta y el ritmo de 100 BPM antes de introducir una tarea de memoria.</li><li>Establecer una velocidad de reacción personal de referencia al inicio de cada sesión.</li></ol>
+<h3 class="section-h2">Un Generador de Confianza y una Herramienta de Diagnóstico</h3>
+<p class="doc-p">El Calentamiento cumple dos propósitos a la vez. Primero, como no requiere memoria y no puede producir un resultado desalentador, brinda a cada estudiante un logro temprano y alcanzable antes de que comiencen las áreas de memoria más exigentes. Segundo, como el Calentamiento mide el tiempo de respuesta real y lo convierte en un nivel de reacción en pulsaciones por minuto (BPM), le brinda al educador un indicador inmediato e individual de la velocidad de reacción de cada estudiante, registrado al inicio de cada sesión.</p>
+<p class="doc-p">Como el nivel de reacción del Calentamiento se expresa en la misma unidad de BPM que el propio tempo de entrenamiento, la velocidad de reacción personal de un estudiante puede leerse y compararse directamente junto con el estándar fijo de 100 BPM utilizado en las cuatro áreas, sin necesidad de un instrumento de evaluación independiente.</p>
+<h3 class="section-h2">Evidencia de preparación</h3>
+<p class="doc-p">El estudiante demuestra preparación cuando completa el Calentamiento para los cincuenta objetivos, con un nivel de velocidad de reacción individual, expresado en BPM, registrado para esa sesión.</p>
+<h3 class="section-h2">Conexión educativa</h3>
+<ul class="doc-list"><li>Identificar la velocidad de respuesta actual de un estudiante antes de una tarea que requiere memoria</li><li>Construir un perfil personal de velocidad de reacción a lo largo del tiempo</li><li>Comparar la velocidad de reacción entre sesiones</li><li>Comenzar las áreas de memoria ya familiarizado con la cuadrícula y el ritmo</li></ul>
+<h3 class="section-h2" style="color:#FF6B35">ÁREA 1: RECALL</h3>
+<h3 class="section-h2">Memoria y recuperación secuencial</h3>
+<h3 class="section-h2">Descripción del ejercicio</h3>
+<p class="doc-p">En RECALL, una secuencia de celdas se ilumina en la cuadrícula Ritnome. El estudiante observa la secuencia, retiene en la memoria las posiciones y el orden, y luego toca las celdas siguiendo exactamente el orden presentado.</p>
+<p class="doc-p">El estudiante debe recordar:</p>
+<ul class="doc-list"><li>Cuáles celdas aparecieron.</li><li>El orden en que aparecieron.</li></ul>
+<p class="doc-p">RECALL desarrolla la capacidad de recuperar información visual de manera organizada y secuencial.</p>
+<h3 class="section-h2">Destreza principal</h3>
+<p class="doc-p">Memoria secuencial</p>
+<h3 class="section-h2">Destrezas complementarias</h3>
+<ul class="doc-list"><li>Memoria de ubicación visual.</li><li>Recuperación ordenada de información.</li><li>Concentración.</li><li>Atención a la secuencia.</li><li>Precisión en la respuesta.</li><li>Recuerdo automático.</li></ul>
+<h3 class="section-h2">Objetivos de aprendizaje</h3>
+<p class="doc-p">Mediante la participación en RECALL, los estudiantes aprenderán a:</p>
+<ol class="doc-list-num"><li>Observar una secuencia visual desde el principio hasta el final.</li><li>Retener la ubicación de cada celda presentada.</li><li>Recordar el orden correcto de la secuencia.</li><li>Reproducir la secuencia con precisión.</li><li>Mantener la concentración a medida que las secuencias se hacen más largas.</li><li>Recuperarse de los errores y mejorar en intentos posteriores.</li><li>Demostrar un recuerdo cada vez más consistente.</li></ol>
+<h3 class="section-h2">Progresión</h3>
+<p class="doc-p">El nivel de dificultad puede aumentar mediante:</p>
+<ul class="doc-list"><li>Secuencias más largas.</li><li>Una mayor cantidad de ubicaciones posibles en la cuadrícula.</li><li>Patrones de secuencia más parecidos entre sí.</li><li>Mayores requisitos de precisión.</li><li>Varias rondas exitosas requeridas para demostrar dominio.</li><li>Menor dependencia de demostraciones repetidas.</li></ul>
+<h3 class="section-h2">Evidencia de dominio</h3>
+<p class="doc-p">El estudiante demuestra dominio cuando puede reproducir repetidamente las secuencias del nivel requerido, manteniendo el orden correcto y un desempeño consistente.</p>
+<h3 class="section-h2">Conexión educativa</h3>
+<p class="doc-p">Las destrezas desarrolladas en RECALL pueden utilizarse cuando los estudiantes necesitan:</p>
+<ul class="doc-list"><li>Recordar los pasos de un proceso.</li><li>Seguir instrucciones en el orden correcto.</li><li>Recordar secuencias de números o letras.</li><li>Retener el orden de eventos.</li><li>Completar tareas académicas de varios pasos.</li><li>Recordar procedimientos sin necesidad de recibir instrucciones continuamente.</li></ul>
+<h3 class="section-h2" style="color:#00CED1">ÁREA 2: REFLEX</h3>
+<h3 class="section-h2">Decisiones rápidas y atención a toda la cuadrícula</h3>
+<h3 class="section-h2">Descripción del ejercicio</h3>
+<p class="doc-p">En REFLEX, varias celdas se iluminan simultáneamente. El estudiante debe identificar todas las celdas activas y tocarlas antes de que finalice la oportunidad de responder.</p>
+<p class="doc-p">A diferencia de una actividad de un solo objetivo, REFLEX requiere que el estudiante observe un área más amplia, reconozca varios objetivos, tome una decisión rápida y responda sin pasar por alto ninguna parte de la cuadrícula.</p>
+<h3 class="section-h2">Destreza principal</h3>
+<p class="doc-p">Toma rápida y precisa de decisiones</p>
+<h3 class="section-h2">Destrezas complementarias</h3>
+<ul class="doc-list"><li>Reconocimiento visual inmediato.</li><li>Atención a varios objetivos.</li><li>Atención a toda la cuadrícula.</li><li>Rastreo visual.</li><li>Control de la respuesta.</li><li>Precisión bajo exigencias de tiempo.</li></ul>
+<h3 class="section-h2">Objetivos de aprendizaje</h3>
+<p class="doc-p">Mediante la participación en REFLEX, los estudiantes aprenderán a:</p>
+<ol class="doc-list-num"><li>Observar información en toda la cuadrícula Ritnome.</li><li>Identificar varias celdas activas durante una sola presentación.</li><li>Distinguir entre celdas activas e inactivas.</li><li>Tomar decisiones rápidas sin tocar al azar.</li><li>Responder a todos los objetivos requeridos.</li><li>Mantener un balance entre rapidez y precisión.</li><li>Conservar la atención a medida que aumenta la cantidad de objetivos.</li></ol>
+<h3 class="section-h2">Progresión</h3>
+<p class="doc-p">El nivel de dificultad puede aumentar mediante:</p>
+<ul class="doc-list"><li>Una mayor cantidad de celdas iluminadas simultáneamente.</li><li>Mayor separación entre las celdas activas.</li><li>Arreglos visuales más complejos.</li><li>Mayores exigencias de rastreo de toda la cuadrícula.</li><li>Mayores requisitos de precisión.</li><li>Desempeño más consistente requerido antes de avanzar.</li></ul>
+<p class="doc-p">El ritmo de 100 BPM permanece igual. La dificultad aumenta porque el estudiante debe reconocer y procesar una mayor cantidad de información.</p>
+<h3 class="section-h2">Evidencia de dominio</h3>
+<p class="doc-p">El estudiante demuestra dominio cuando puede identificar y seleccionar consistentemente todas las celdas requeridas, sin realizar selecciones innecesarias ni omitir objetivos.</p>
+<h3 class="section-h2">Conexión educativa</h3>
+<p class="doc-p">Las destrezas desarrolladas en REFLEX pueden utilizarse cuando los estudiantes necesitan:</p>
+<ul class="doc-list"><li>Localizar rápidamente detalles importantes.</li><li>Examinar una página, gráfica, diagrama o problema.</li><li>Identificar varios elementos correctos.</li><li>Tomar decisiones a partir de información visual.</li><li>Trabajar con precisión dentro de un periodo limitado.</li><li>Mantener la atención en un área visual amplia.</li></ul>
+<h3 class="section-h2" style="color:#00D9A5">ÁREA 3: REPLAY</h3>
+<h3 class="section-h2">Transferencia de la memoria a la ejecución</h3>
+<h3 class="section-h2">Descripción del ejercicio</h3>
+<p class="doc-p">En REPLAY, el estudiante observa una secuencia completa y luego la reproduce físicamente utilizando la memoria.</p>
+<p class="doc-p">Una vez finalizada la secuencia, el estudiante debe ejecutar correctamente toda la secuencia. El ejercicio enfatiza no solamente recordar la información, sino también convertirla en una acción organizada.</p>
+<p class="doc-p">REPLAY reta al estudiante a retener internamente una secuencia completa y luego ejecutarla con control.</p>
+<h3 class="section-h2">Destreza principal</h3>
+<p class="doc-p">Memoria y ejecución</p>
+<h3 class="section-h2">Destrezas complementarias</h3>
+<ul class="doc-list"><li>Retención de una secuencia completa.</li><li>Transferencia de la memoria a la acción.</li><li>Ejecución ordenada.</li><li>Reproducción de patrones.</li><li>Consistencia en la respuesta.</li><li>Control del desempeño.</li></ul>
+<h3 class="section-h2">Objetivos de aprendizaje</h3>
+<p class="doc-p">Mediante la participación en REPLAY, los estudiantes aprenderán a:</p>
+<ol class="doc-list-num"><li>Observar una secuencia completa sin responder antes de tiempo.</li><li>Retener la secuencia completa en la memoria.</li><li>Organizar la información recordada antes de actuar.</li><li>Ejecutar la secuencia en el orden correcto.</li><li>Completar la secuencia sin perder la concentración a mitad del ejercicio.</li><li>Relacionar la memoria visual con una respuesta física.</li><li>Mejorar la consistencia mediante intentos repetidos.</li></ol>
+<h3 class="section-h2">Progresión</h3>
+<p class="doc-p">El nivel de dificultad puede aumentar mediante:</p>
+<ul class="doc-list"><li>Secuencias completas más largas.</li><li>Más cambios de dirección en la cuadrícula.</li><li>Mayor distancia entre las ubicaciones de la secuencia.</li><li>Patrones de movimiento más complejos.</li><li>Mayores requisitos de precisión.</li><li>Una ejecución más continua requerida para demostrar dominio.</li></ul>
+<h3 class="section-h2">Evidencia de dominio</h3>
+<p class="doc-p">El estudiante demuestra dominio cuando puede retener y reproducir una secuencia completa con precisión, en el orden correcto y con una ejecución controlada.</p>
+<h3 class="section-h2">Conexión educativa</h3>
+<p class="doc-p">Las destrezas desarrolladas en REPLAY pueden utilizarse cuando los estudiantes necesitan:</p>
+<ul class="doc-list"><li>Recordar y realizar un grupo completo de instrucciones.</li><li>Convertir información aprendida en una acción.</li><li>Completar procedimientos de varios pasos.</li><li>Reproducir procesos demostrados.</li><li>Organizar sus acciones antes de comenzar una tarea.</li><li>Ejecutar de manera independiente una secuencia aprendida.</li></ul>
+<h3 class="section-h2" style="color:#9ACD32">ÁREA 4: RITMO</h3>
+<h3 class="section-h2">Memoria, comparación y detección de cambios</h3>
+<h3 class="section-h2">Descripción del ejercicio</h3>
+<p class="doc-p">En RITMO, el estudiante observa un patrón original y lo retiene en la memoria. Luego, el patrón se presenta nuevamente con un cambio.</p>
+<p class="doc-p">El estudiante debe comparar la segunda presentación con la primera que mantiene en la memoria e identificar exactamente qué cambió.</p>
+<p class="doc-p">RITMO requiere que el estudiante cree una representación mental del patrón original, mantenga esa información, compare dos presentaciones y tome una decisión precisa.</p>
+<h3 class="section-h2">Destreza principal</h3>
+<p class="doc-p">Memoria y toma rápida de decisiones</p>
+<h3 class="section-h2">Destrezas complementarias</h3>
+<ul class="doc-list"><li>Memoria de patrones.</li><li>Comparación visual.</li><li>Detección de cambios.</li><li>Atención a los detalles.</li><li>Retención mental.</li><li>Toma precisa de decisiones.</li></ul>
+<h3 class="section-h2">Objetivos de aprendizaje</h3>
+<p class="doc-p">Mediante la participación en RITMO, los estudiantes aprenderán a:</p>
+<ol class="doc-list-num"><li>Observar y retener un patrón visual original.</li><li>Mantener ese patrón en la memoria durante una segunda presentación.</li><li>Comparar la información recordada con la información actual.</li><li>Detectar el cambio específico entre dos patrones.</li><li>Evitar responder a información que permaneció igual.</li><li>Tomar una decisión rápida y precisa.</li><li>Reconocer cambios cada vez más sutiles.</li></ol>
+<h3 class="section-h2">Progresión</h3>
+<p class="doc-p">El nivel de dificultad puede aumentar mediante:</p>
+<ul class="doc-list"><li>Más celdas incluidas en el patrón original.</li><li>Arreglos de patrones más complejos.</li><li>Cambios más pequeños o menos evidentes.</li><li>Cambios ubicados en diferentes partes de la cuadrícula.</li><li>Mayor similitud entre el primer y segundo patrón.</li><li>Mayores requisitos de precisión antes de avanzar.</li></ul>
+<h3 class="section-h2">Evidencia de dominio</h3>
+<p class="doc-p">El estudiante demuestra dominio cuando puede identificar consistentemente el cambio exacto entre el patrón original y la segunda presentación.</p>
+<h3 class="section-h2">Conexión educativa</h3>
+<p class="doc-p">Las destrezas desarrolladas en RITMO pueden utilizarse cuando los estudiantes necesitan:</p>
+<ul class="doc-list"><li>Comparar dos grupos de información.</li><li>Detectar errores o diferencias.</li><li>Revisar trabajos escritos.</li><li>Identificar cambios en números, símbolos, diagramas o textos.</li><li>Distinguir información correcta de información alterada.</li><li>Prestar atención a detalles importantes.</li></ul>
+</section>
+<section class="doc-section" id="es-5-resultados-de-aprendizaje-del-curr-cul">
+<h2 class="section-h1"><span class="sec-num">5</span>Resultados de aprendizaje del currículo</h2>
+<p class="doc-p">Después de participar consistentemente en el currículo Ritnome, se espera que los estudiantes demuestren progreso en las siguientes áreas:</p>
+<h3 class="section-h2">Desempeño de la memoria</h3>
+<p class="doc-p">Los estudiantes mejorarán su capacidad para retener, recuperar y reproducir información visual.</p>
+<h3 class="section-h2">Recuerdo automático</h3>
+<p class="doc-p">Los estudiantes desarrollarán mayor eficiencia al recuperar información practicada, reduciendo la duda o la demora innecesaria.</p>
+<h3 class="section-h2">Control secuencial</h3>
+<p class="doc-p">Los estudiantes mejorarán su capacidad para recordar y ejecutar información en el orden correcto.</p>
+<h3 class="section-h2">Toma rápida de decisiones</h3>
+<p class="doc-p">Los estudiantes tomarán decisiones con mayor rapidez, manteniendo la precisión.</p>
+<h3 class="section-h2">Atención visual</h3>
+<p class="doc-p">Los estudiantes mejorarán su capacidad para observar objetivos individuales, varios objetivos, patrones completos y cambios en la cuadrícula.</p>
+<h3 class="section-h2">Transferencia de la memoria a la acción</h3>
+<p class="doc-p">Los estudiantes fortalecerán la conexión entre recordar información y ejecutar una respuesta correcta.</p>
+<h3 class="section-h2">Consistencia en el desempeño</h3>
+<p class="doc-p">Los estudiantes trabajarán para repetir un desempeño exitoso a través de varias rondas, en lugar de lograrlo solamente una vez.</p>
+<h3 class="section-h2">Autoevaluación</h3>
+<p class="doc-p">Los estudiantes desarrollarán mayor conciencia de su precisión, progreso, fortalezas y áreas que requieren práctica adicional.</p>
+</section>
+<section class="doc-section" id="es-6-estructura-de-ense-anza">
+<h2 class="section-h1"><span class="sec-num">6</span>Estructura de enseñanza</h2>
+<p class="doc-p">Una sesión de Ritnome puede incluir los cuatro ejercicios o concentrarse en un área específica del currículo.</p>
+<p class="doc-p">La estructura recomendada para una sesión es la siguiente:</p>
+<h3 class="section-h2">A. Preparación</h3>
+<p class="doc-p">El educador presenta el propósito de la sesión e identifica la destreza que se trabajará.</p>
+<p class="doc-p">Ejemplos:</p>
+<ul class="doc-list"><li>“Hoy vamos a entrenar la memoria secuencial”.</li><li>“Hoy vamos a trabajar la detección de cambios”.</li><li>“Hoy vamos a practicar decisiones rápidas sin perder precisión”.</li></ul>
+<h3 class="section-h2">B. Familiarización</h3>
+<p class="doc-p">Los estudiantes completan rondas introductorias para familiarizarse con el ejercicio y la cuadrícula.</p>
+<h3 class="section-h2">C. Entrenamiento enfocado</h3>
+<p class="doc-p">Los estudiantes completan rondas estructuradas dentro del ejercicio seleccionado.</p>
+<h3 class="section-h2">D. Reto progresivo</h3>
+<p class="doc-p">El sistema aumenta la dificultad cuando el estudiante demuestra el nivel de dominio requerido.</p>
+<h3 class="section-h2">E. Revisión del desempeño</h3>
+<p class="doc-p">Los estudiantes revisan sus puntuaciones, precisión y niveles completados.</p>
+<h3 class="section-h2" style="color:#00CED1">F. Reflexión</h3>
+<p class="doc-p">Los estudiantes identifican brevemente qué ayudó o afectó su desempeño.</p>
+<p class="doc-p">Posibles preguntas de reflexión:</p>
+<ul class="doc-list"><li>¿Qué te ayudó a recordar la secuencia?</li><li>¿Respondiste demasiado rápido o demasiado lento?</li><li>¿Qué parte de la cuadrícula no observaste?</li><li>¿Qué harás diferente en la próxima ronda?</li></ul>
+</section>
+<section class="doc-section" id="es-7-ritmo-est-ndar">
+<h2 class="section-h1"><span class="sec-num">7</span>Ritmo estándar</h2>
+<p class="doc-p">Los cuatro ejercicios operan con un ritmo estándar de:</p>
+<h3 class="section-h2">100 BPM</h3>
+<p class="doc-p">Los estudiantes no seleccionan niveles de velocidad para principiantes, intermedios o avanzados.</p>
+<p class="doc-p">El ritmo constante crea un ambiente de entrenamiento uniforme entre:</p>
+<ul class="doc-list"><li>Ejercicios.</li><li>Estudiantes.</li><li>Salones de clase.</li><li>Equipos.</li><li>Dispositivos.</li><li>Competencias escolares.</li></ul>
+<p class="doc-p">El ritmo no aumenta a medida que el estudiante avanza.</p>
+<p class="doc-p">En su lugar, Ritnome aumenta la exigencia de memoria y desempeño mediante:</p>
+<ul class="doc-list"><li>Más información.</li><li>Secuencias más largas.</li><li>Más celdas activas.</li><li>Patrones más complejos.</li><li>Comparaciones más difíciles.</li><li>Mayores expectativas de precisión.</li><li>Mayores requisitos de consistencia.</li></ul>
+<p class="doc-p">El ritmo permanece constante. El reto aumenta.</p>
+</section>
+<section class="doc-section" id="es-8-aumento-autom-tico-del-nivel-de-reto">
+<h2 class="section-h1"><span class="sec-num">8</span>Aumento automático del nivel de reto</h2>
+<p class="doc-p">Ritnome aumenta automáticamente el nivel de dificultad a medida que el estudiante demuestra dominio.</p>
+<p class="doc-p">Los estudiantes no tienen que seleccionar su propia dificultad. El sistema utiliza el desempeño exitoso para determinar cuándo el estudiante está preparado para un nivel más exigente.</p>
+<p class="doc-p">Según el ejercicio, la progresión automática puede incluir:</p>
+<table class="doc-table"><tr><th>Ejercicio</th><th>Cómo aumenta el nivel de dificultad</th></tr><tr><td style="color:#FF6B35;font-weight:900">RECALL</td><td>Secuencias más largas y complejas</td></tr><tr><td style="color:#00CED1;font-weight:900">REFLEX</td><td>Más objetivos simultáneos y mayor cobertura de la cuadrícula</td></tr><tr><td style="color:#00D9A5;font-weight:900">REPLAY</td><td>Secuencias completas más largas y patrones de ejecución más exigentes</td></tr><tr><td style="color:#9ACD32;font-weight:900">RITMO</td><td>Patrones más complejos y cambios menos evidentes</td></tr></table>
+<p class="doc-p">Este modelo ayuda a evitar dos problemas comunes:</p>
+<ul class="doc-list"><li>Que una actividad permanezca demasiado fácil y se vuelva repetitiva.</li><li>Que una actividad se vuelva demasiado difícil antes de que el estudiante esté preparado.</li></ul>
+<p class="doc-p">Los estudiantes progresan al demostrar desempeño, no simplemente por pasar tiempo dentro del programa.</p>
+</section>
+<section class="doc-section" id="es-9-sistema-de-participaci-n">
+<h2 class="section-h1"><span class="sec-num">9</span>Sistema de participación</h2>
+<p class="doc-p">Ritnome está diseñado para exigir participación activa.</p>
+<p class="doc-p">Cada ronda requiere que el estudiante realice una o más de las siguientes acciones:</p>
+<ul class="doc-list"><li>Observar.</li><li>Retener.</li><li>Recordar.</li><li>Comparar.</li><li>Decidir.</li><li>Tocar.</li><li>Ejecutar.</li><li>Corregir.</li><li>Mejorar.</li></ul>
+<p class="doc-p">El programa promueve la participación continua mediante:</p>
+<h3 class="section-h2">Rondas cortas de entrenamiento</h3>
+<p class="doc-p">Los estudiantes reciben oportunidades frecuentes para comenzar nuevamente, mejorar y experimentar progreso.</p>
+<h3 class="section-h2">Retroalimentación inmediata</h3>
+<p class="doc-p">Los estudiantes pueden ver el resultado de su respuesta sin tener que esperar por una evaluación posterior.</p>
+<h3 class="section-h2">Progreso visible</h3>
+<p class="doc-p">Los niveles, las puntuaciones y las rondas exitosas permiten reconocer fácilmente el mejoramiento.</p>
+<h3 class="section-h2">Avance ganado</h3>
+<p class="doc-p">Los estudiantes deben demostrar un desempeño exitoso para avanzar.</p>
+<h3 class="section-h2">Competencia personal</h3>
+<p class="doc-p">Los estudiantes pueden intentar superar sus propios resultados anteriores.</p>
+<h3 class="section-h2">Competencia grupal</h3>
+<p class="doc-p">Las escuelas pueden organizar retos entre salones, equipos, grados o toda la comunidad escolar.</p>
+<h3 class="section-h2">Sistema de juego uniforme</h3>
+<p class="doc-p">Como todos los ejercicios utilizan la misma cuadrícula y el mismo ritmo, los estudiantes concentran su esfuerzo en el entrenamiento y no en aprender controles diferentes.</p>
+<p class="doc-p">Ritnome no premia el tiempo pasivo frente a una pantalla. El progreso debe ganarse mediante participación y desempeño.</p>
+</section>
+<section class="doc-section" id="es-10-marco-de-evaluaci-n">
+<h2 class="section-h1"><span class="sec-num">10</span>Marco de evaluación</h2>
+<p class="doc-p">La evaluación de Ritnome está basada en el desempeño.</p>
+<p class="doc-p">Los estudiantes son evaluados por lo que pueden observar, retener, recordar, comparar y ejecutar correctamente.</p>
+<h3 class="section-h2">Medidas principales de desempeño</h3>
+<ul class="doc-list"><li>Precisión.</li><li>Orden correcto de las secuencias.</li><li>Identificación correcta de objetivos.</li><li>Detección correcta de cambios.</li><li>Rondas completadas.</li><li>Avance de nivel.</li><li>Velocidad de reacción del Calentamiento (equivalente en BPM).</li><li>Consistencia entre intentos.</li></ul>
+<h3 class="section-h2">Evaluación formativa</h3>
+<p class="doc-p">Los educadores pueden utilizar los resultados de las sesiones para identificar:</p>
+<ul class="doc-list"><li>Qué ejercicio representa la mayor fortaleza del estudiante.</li><li>Qué ejercicio requiere práctica adicional.</li><li>Si los errores se relacionan con memoria, atención, toma de decisiones o ejecución.</li><li>Si el estudiante está mejorando a través del tiempo.</li><li>Si el nivel actual de dificultad es adecuado.</li></ul>
+<h3 class="section-h2">Autoevaluación del estudiante</h3>
+<p class="doc-p">Se puede motivar a los estudiantes a revisar:</p>
+<ul class="doc-list"><li>Su ejercicio con mayor precisión.</li><li>Su ejercicio más difícil.</li><li>Su mejor puntuación personal.</li><li>Un error que lograron corregir.</li><li>Una estrategia que mejoró su desempeño.</li><li>Una meta para la próxima sesión.</li></ul>
+<h3 class="section-h2">Dominio</h3>
+<p class="doc-p">El dominio se demuestra mediante un desempeño exitoso repetido en el nivel requerido.</p>
+<p class="doc-p">Una sola ronda correcta no establece dominio. El estudiante debe demostrar que puede realizar la destreza de manera consistente.</p>
+</section>
+<section class="doc-section" id="es-11-secuencia-sugerida-del-curr-culo">
+<h2 class="section-h1"><span class="sec-num">11</span>Secuencia sugerida del currículo</h2>
+<p class="doc-p">Las escuelas pueden presentar el currículo siguiendo el siguiente orden:</p>
+<h3 class="section-h2">Fase 1: Orientación a la cuadrícula</h3>
+<p class="doc-p">Los estudiantes aprenden la cuadrícula Ritnome, el método de respuesta, el ritmo de 100 BPM, el sistema de puntuación y las expectativas de juego preciso.</p>
+<h3 class="section-h2" style="color:#FF6B35">Fase 2: RECALL</h3>
+<p class="doc-p">Los estudiantes comienzan con memoria secuencial directa y recuperación ordenada de información.</p>
+<h3 class="section-h2" style="color:#00CED1">Fase 3: REFLEX</h3>
+<p class="doc-p">Los estudiantes amplían su atención a toda la cuadrícula y practican la toma rápida y precisa de decisiones.</p>
+<h3 class="section-h2" style="color:#00D9A5">Fase 4: REPLAY</h3>
+<p class="doc-p">Los estudiantes conectan la retención completa de información con una ejecución física organizada.</p>
+<h3 class="section-h2" style="color:#9ACD32">Fase 5: RITMO</h3>
+<p class="doc-p">Los estudiantes utilizan conjuntamente la memoria, la comparación y la detección de cambios.</p>
+<h3 class="section-h2">Fase 6: Entrenamiento integrado</h3>
+<p class="doc-p">Los estudiantes rotan por los cuatro ejercicios durante un mismo ciclo de entrenamiento.</p>
+<h3 class="section-h2">Fase 7: Desempeño y competencia</h3>
+<p class="doc-p">Los estudiantes aplican sus destrezas en retos personales, eventos de salón, competencias de equipo o actividades escolares de Memory eSports.</p>
+</section>
+<section class="doc-section" id="es-12-opciones-de-implementaci-n">
+<h2 class="section-h1"><span class="sec-num">12</span>Opciones de implementación</h2>
+<p class="doc-p">El currículo Ritnome puede implementarse en:</p>
+<ul class="doc-list"><li>Educación física.</li><li>Enriquecimiento académico.</li><li>Periodos de apoyo académico.</li><li>Programas de tecnología.</li><li>Esports educativos.</li><li>Programas extracurriculares.</li><li>Clubes estudiantiles.</li><li>Periodos de intervención.</li><li>Competencias escolares.</li><li>Entrenamiento individual.</li><li>Desarrollo de equipos.</li></ul>
+<p class="doc-p">El currículo puede utilizarse mediante dispositivos compatibles, incluyendo:</p>
+<ul class="doc-list"><li>Visores PICO.</li><li>Computadoras de escritorio.</li><li>Chromebooks.</li><li>Pantallas interactivas (Promethean o similar).</li><li>Dispositivos con pantalla táctil.</li><li>Ratón.</li><li>Panel táctil o trackpad.</li></ul>
+<p class="doc-p">El objetivo de entrenamiento permanece igual en todos los dispositivos.</p>
+<p class="doc-p">Las pantallas interactivas y los Chromebooks cumplen funciones pedagógicas distintas. El educador utiliza la pantalla interactiva para presentar un ejercicio, demostrar la cuadrícula y el método de respuesta, y modelar un desempeño correcto para toda la clase. Luego, los estudiantes completan sus rondas individuales de entrenamiento en sus propios Chromebooks, donde las respuestas, la precisión y el progreso de cada estudiante se registran de manera individual.</p>
+</section>
+<section class="doc-section" id="es-13-funci-n-del-educador">
+<h2 class="section-h1"><span class="sec-num">13</span>Función del educador</h2>
+<p class="doc-p">El educador no tiene que dirigir cada respuesta individual. El sistema presenta los ejercicios, registra el desempeño y controla la progresión.</p>
+<p class="doc-p">La función del educador es:</p>
+<ul class="doc-list"><li>Explicar el propósito del entrenamiento.</li><li>Establecer expectativas de participación.</li><li>Promover la precisión antes que la velocidad al azar.</li><li>Revisar el progreso de los estudiantes.</li><li>Ayudar a los estudiantes a identificar estrategias útiles.</li><li>Organizar entrenamientos individuales o grupales.</li><li>Reconocer el mejoramiento y el dominio.</li><li>Relacionar las destrezas desarrolladas con actividades académicas y escolares.</li></ul>
+</section>
+<section class="doc-section" id="es-14-identidad-del-curr-culo">
+<h2 class="section-h1"><span class="sec-num">14</span>Identidad del currículo</h2>
+<p class="doc-p">Ritnome no es una colección de juegos sin relación entre sí.</p>
+<p class="doc-p">Los cuatro ejercicios forman un currículo integrado:</p>
+<h3 class="section-h2" style="color:#FF6B35">RECALL</h3>
+<p class="doc-p">Recuerda el orden.</p>
+<h3 class="section-h2" style="color:#00CED1">REFLEX</h3>
+<p class="doc-p">Encuentra todos los objetivos y decide rápidamente.</p>
+<h3 class="section-h2" style="color:#00D9A5">REPLAY</h3>
+<p class="doc-p">Retén la secuencia completa y ejecútala.</p>
+<h3 class="section-h2" style="color:#9ACD32">RITMO</h3>
+<p class="doc-p">Recuerda el patrón y detecta el cambio.</p>
+<p class="doc-p">En conjunto, los ejercicios guían al estudiante a través de un ciclo completo de desempeño:</p>
+<p class="doc-p">Observar. Retener. Recordar. Comparar. Decidir. Ejecutar.</p>
+</section>
+<section class="doc-section" id="es-15-visi-n-del-curr-culo-ritnome">
+<h2 class="section-h1"><span class="sec-num">15</span>Visión del currículo Ritnome</h2>
+<p class="doc-p">El Currículo Ritnome Memory eSports transforma el entrenamiento de la memoria en una experiencia estructurada, activa, medible, progresiva y competitiva.</p>
+<p class="doc-p">Los estudiantes utilizan una cuadrícula conocida y un ritmo constante mientras desarrollan cuatro áreas distintas del desempeño.</p>
+<p class="doc-p">El resultado es un currículo que puede crecer junto con el estudiante sin obligarlo a aprender nuevamente cómo participar.</p>
+<p class="doc-p">La misma cuadrícula. El mismo ritmo. Un nuevo reto en cada nivel.</p>
+<h3 class="section-h2">RITNOME</h3>
+</section></main>
+  </div>
+  <div class="footer">
+    <div class="footer-signoff">Entrena la memoria. Fortalece el desempe&ntilde;o. Haz que el recuerdo sea autom&aacute;tico.</div>
+    <div class="footer-logo">RITNOME<span>.</span></div>
+  </div>
 </div>
 
 <script>
-function setLang(lang){
-  document.documentElement.lang=lang;
-  document.querySelectorAll('[data-en]').forEach(function(el){
-    var t=el.getAttribute('data-'+lang);
-    if(t!=null)el.innerHTML=t;
-  });
-  document.getElementById('btn-en').classList.toggle('on',lang==='en');
-  document.getElementById('btn-es').classList.toggle('on',lang==='es');
-  try{localStorage.setItem('rct-lang',lang)}catch(e){}
-}
-// Restore last choice, or follow the browser's language on first visit.
-(function(){
-  var saved=null;
-  try{saved=localStorage.getItem('rct-lang')}catch(e){}
-  if(!saved){
-    saved=(navigator.language||'en').toLowerCase().indexOf('es')===0?'es':'en';
-  }
-  setLang(saved);
-})();
+var btnEN=document.getElementById('btnEN');
+var btnES=document.getElementById('btnES');
+var en=document.getElementById('content-en');
+var es=document.getElementById('content-es');
 
-// Ambient star field
-(function(){
-  var c=document.getElementById('stars');
-  if(!c)return;
-  var ctx=c.getContext('2d'),stars=[];
-  function size(){c.width=innerWidth;c.height=document.body.scrollHeight}
-  function build(){
-    stars=[];
-    var n=Math.min(220,Math.floor(c.width*c.height/9000));
-    for(var i=0;i<n;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.2,o:Math.random()*.6+.1,s:Math.random()*.4+.1});
-  }
-  function draw(){
-    ctx.clearRect(0,0,c.width,c.height);
-    var t=Date.now()/1000;
-    for(var i=0;i<stars.length;i++){
-      var s=stars[i],p=s.o+Math.sin(t*s.s)*.12;
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);
-      ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill();
-    }
-    requestAnimationFrame(draw);
-  }
-  function init(){size();build()}
-  window.addEventListener('resize',init);
-  setTimeout(init,100);init();draw();
-})();
+btnEN.onclick=function(){
+  en.classList.add('active');es.classList.remove('active');
+  btnEN.classList.add('active');btnES.classList.remove('active');
+  document.documentElement.lang='en';
+  window.scrollTo(0,0);
+};
+btnES.onclick=function(){
+  es.classList.add('active');en.classList.remove('active');
+  btnES.classList.add('active');btnEN.classList.remove('active');
+  document.documentElement.lang='es';
+  window.scrollTo(0,0);
+};
 </script>
+
 </body>
 </html>
