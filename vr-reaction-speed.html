@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reaction Speed | RITNOME</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#space{position:fixed;inset:0;background:radial-gradient(ellipse at center,#180000 0%,#000 70%);overflow:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+#edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(255,30,60,.28),0 0 80px rgba(255,30,60,.1)}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
+
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:14px 22px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+.hud-box{text-align:center}
+.hud-label{font-size:.5rem;color:#ff1e3c;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.hud-val{font-size:2rem;font-weight:900;line-height:1}
+#hScore{color:#fff;font-size:2.6rem}#hLastMs{color:#ffd35a}#hBest{font-size:1.3rem;color:#9fb3c8}
+
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;font-size:1.6rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
+#msg.watch{color:#ff1e3c}#msg.go{color:#ffd35a}
+
+#target{position:fixed;z-index:15;border-radius:50%;cursor:pointer;transform:translate(-50%,-50%) scale(0);transition:transform .12s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;pointer-events:none}
+#target.visible{transform:translate(-50%,-50%) scale(1);pointer-events:all}
+#target-inner{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff6b7f,#ff1e3c);box-shadow:0 0 40px rgba(255,30,60,.9),0 0 80px rgba(255,30,60,.5)}
+.ripple{position:fixed;border-radius:50%;border:3px solid #ff1e3c;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:rippleOut .5s ease-out forwards}
+@keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.5);opacity:1}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+
+#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:10px 16px 14px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
+.ctrl-btn{height:48px;flex:0 1 170px;max-width:200px;border:2px solid rgba(255,30,60,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px);text-decoration:none;display:flex;align-items:center;justify-content:center}
+
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#180000 0%,#000 70%);padding:20px;text-align:center}
+.vrr-logo{font-size:2.8rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 60px rgba(255,30,60,1);margin-bottom:6px}
+.vrr-logo span{color:#ff1e3c}
+.vrr-sub{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#ff1e3c;margin-bottom:28px}
+.rule-t{font-size:.9rem;color:#cbd5e1;line-height:1.5;max-width:420px;margin-bottom:26px}
+.rule-t b{color:#fff}
+.big-btn{width:100%;max-width:440px;height:72px;border:none;border-radius:20px;background:linear-gradient(135deg,#ff1e3c,#d6102e);color:#fff;font-size:1.3rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,30,60,.7);animation:btnPulse 2s ease-in-out infinite}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(255,30,60,.7)}50%{box-shadow:0 0 80px rgba(255,30,60,1)}}
+.intro-back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:60}
+.intro-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(255,30,60,.4);background:rgba(0,0,0,.5);color:#ff1e3c;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:60}
+@media(max-width:768px){.intro-fs{display:none}}
+.best-line{margin-top:18px;font-size:.85rem;color:#9fb3c8}
+.best-line b{color:#ff1e3c}
+
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#180000 0%,#000 70%);text-align:center;padding:20px}
+.final-num{font-size:6rem;font-weight:900;color:#ff1e3c;line-height:1;text-shadow:0 0 60px rgba(255,30,60,.9)}
+.final-label{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:#9fb3c8;margin-top:10px}
+.final-bpm{margin-top:6px;font-size:1.1rem;color:#ffd35a;font-weight:900}
+#screen-end h2{font-size:1.8rem;font-weight:900;margin:24px 0 8px}
+#endSub{font-size:.9rem;color:#9fb3c8;line-height:1.6;max-width:400px}
+.next-player-btn{margin-top:28px;height:64px;padding:0 40px;border:none;border-radius:16px;background:linear-gradient(120deg,#ff1e3c,#d6102e);color:#fff;font-size:1.15rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,30,60,.6)}
+.session-line{margin-top:22px;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#7fa8c0}
+
+#countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#180000 0%,#000 70%)}
+#bigCount{font-size:8rem;font-weight:900;color:#ff1e3c;text-shadow:0 0 60px rgba(255,30,60,.9)}
+@media(max-width:420px){.vrr-logo{font-size:2.1rem}.big-btn{height:60px;font-size:1.1rem}}
+</style>
+</head>
+<body>
+<button id="rp-sound-toggle" onclick="rpToggleSound()" aria-label="Toggle sound" title="Toggle beat sound" style="position:fixed;top:14px;right:14px;z-index:9999;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">🔊</button>
+<script>
+(function(){
+  var _ctxs = [];
+  var NativeAC = window.AudioContext || window.webkitAudioContext;
+  if (NativeAC){
+    function WrappedAC(){
+      var ctx = new NativeAC();
+      _ctxs.push(ctx);
+      if (window.__rpMuted && ctx.suspend) { try{ctx.suspend()}catch(e){} }
+      return ctx;
+    }
+    WrappedAC.prototype = NativeAC.prototype;
+    window.AudioContext = WrappedAC;
+    window.webkitAudioContext = WrappedAC;
+  }
+  window.__rpMuted = false;
+  window.rpToggleSound = function(){
+    window.__rpMuted = !window.__rpMuted;
+    var btn = document.getElementById('rp-sound-toggle');
+    _ctxs.forEach(function(c){
+      try{ if(window.__rpMuted){ c.suspend&&c.suspend(); } else { c.resume&&c.resume(); } }catch(e){}
+    });
+    if(btn){ btn.textContent = window.__rpMuted ? '🔇' : '🔊'; btn.style.opacity = window.__rpMuted ? '.55' : '1'; }
+  };
+})();
+</script>
+
+<div id="space">
+  <canvas id="stars"></canvas>
+  <div id="edge-glow"></div>
+  <div id="flash"></div>
+</div>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
+  <div class="hud-box"><div class="hud-label">Last</div><div class="hud-val" id="hLastMs">--</div></div>
+  <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
+</div>
+
+<div id="msg" class="watch"></div>
+<div id="target"><div id="target-inner"></div></div>
+
+<div id="controls">
+  <a class="ctrl-btn" href="/vr-lab.html">← Exit</a>
+  <button class="ctrl-btn" id="fsBtnGame">⛶ Full Court</button>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro">
+  <a class="intro-back" href="/vr-lab.html">← Exit</a>
+  <button class="intro-fs" id="fsBtn">⛶ Fullscreen</button>
+  <div class="vrr-logo">REACTION <span>SPEED</span></div>
+  <div class="vrr-sub">Pure Reaction · To The Beat</div>
+  <div class="rule-t"><b>50 targets.</b> A cell lights up — tap it as fast as you can. No deadline, no guessing which color — just how fast you are. Every reaction is scored on speed, and shown as its own beats-per-minute equivalent.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">▶ START</button>
+  <div class="best-line" id="bestLine"></div>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown"><div id="bigCount">3</div></div>
+
+<!-- END -->
+<div id="screen-end">
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Final Score</div>
+  <div class="final-bpm" id="endAvgBpm"></div>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div id="endSub">Great reflexes. Next player, beat this number!</div>
+  <button class="next-player-btn" id="nextPlayerBtn">▶ Next Player</button>
+  <div class="session-line" id="sessionLine"></div>
+</div>
+
+<script>
+var BPM=100;
+var PACE_MS=Math.round(60000/BPM); // one full beat at 100 BPM between one tap resolving and the next target appearing
+var TOTAL=50;
+var BEST_KEY='rct-reaction-speed-best';
+
+function $(id){return document.getElementById(id)}
+
+var phase='idle';
+var idx=0,score=0,best=0,totalRT=0,rtCount=0,bestRT=0;
+var timers=[],targetEl=$('target'),targetInner=$('target-inner');
+var targetX=0,targetY=0,tapLocked=false,shownAt=0;
+var sessionBest=0, playersThisSession=0;
+
+function loadBest(){
+  best=0;
+  try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
+  $('hBest').textContent=best;
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
+}
+function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+
+var fsb=$('fsBtn');
+if(fsb)fsb.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+var fsg=$('fsBtnGame');
+if(fsg)fsg.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+(function(){
+  var c=$('stars'),ctx=c.getContext('2d'),stars=[];
+  function size(){c.width=innerWidth;c.height=innerHeight}
+  size();addEventListener('resize',size);
+  for(var i=0;i<150;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);var t=Date.now()/1000;stars.forEach(function(s){var p=s.o+Math.sin(t*s.s)*.13;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill()});requestAnimationFrame(draw)})();
+})();
+
+function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+function bpmFromMs(v){return v?Math.round(60000/v):0}
+function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
+function flash(){var f=$('flash');f.style.background='rgba(255,30,60,.12)';f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},100)}
+
+function startDrill(){
+  if(phase==='running')return;
+  try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
+  $('screen-intro').style.display='none';
+  $('countdown').style.display='flex';
+  var n=3;$('bigCount').textContent=n;
+  var iv=setInterval(function(){
+    n--;
+    if(n<=0){clearInterval(iv);$('countdown').style.display='none';runDrill()}
+    else{$('bigCount').textContent=n}
+  },800);
+}
+
+function runDrill(){
+  phase='running';idx=0;score=0;totalRT=0;rtCount=0;bestRT=0;
+  $('hScore').textContent='0';$('hLastMs').textContent='--';
+  msg('GET READY...','go');
+  timers.push(setTimeout(function(){msg('','go');nextTarget()},900));
+}
+
+function nextTarget(){
+  if(phase!=='running')return;
+  var pad=70;
+  targetX=pad+Math.random()*(innerWidth-pad*2);
+  targetY=140+Math.random()*(innerHeight-230);
+  targetEl.style.left=targetX+'px';targetEl.style.top=targetY+'px';
+  var size=90;
+  targetEl.style.width=size+'px';targetEl.style.height=size+'px';
+  targetEl.classList.add('visible');
+  shownAt=performance.now();
+}
+targetEl.addEventListener('pointerdown',function(e){e.preventDefault();handleTap()});
+
+function handleTap(){
+  if(phase!=='running')return;
+  if(!targetEl.classList.contains('visible'))return;
+  if(tapLocked)return;
+  tapLocked=true;setTimeout(function(){tapLocked=false},40);
+
+  var rt=performance.now()-shownAt;
+  targetEl.classList.remove('visible');
+  ripple(targetX,targetY);flash();
+
+  idx++;
+  totalRT+=rt;rtCount++;
+  if(!bestRT||rt<bestRT)bestRT=rt;
+  score+=Math.max(1,Math.round(300-rt/4));
+
+  $('hScore').textContent=score;
+  $('hLastMs').textContent=Math.round(rt);
+  msg(Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM','go');
+
+  if(idx>=TOTAL){
+    timers.push(setTimeout(endDrill,400));
+  }else{
+    timers.push(setTimeout(nextTarget,PACE_MS));
+  }
+}
+
+function initAudio(){}
+
+function endDrill(){
+  if(phase==='done')return;
+  phase='done';clrT();targetEl.classList.remove('visible');
+  var finalScore=score;
+  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
+  var isNew=finalScore>best;
+  if(isNew){best=finalScore;saveBest()}
+  $('endNum').textContent=finalScore;
+  $('endAvgBpm').textContent=avgRT?('AVG '+avgRT+'MS · '+bpmFromMs(avgRT)+' BPM'):'';
+  if(isNew&&finalScore>0){$('endHead').textContent='🎉 New Best!';$('endSub').textContent='You beat your record with '+finalScore+' points. Lightning reflexes!'}
+  else{$('endHead').textContent='Drill Complete!';$('endSub').textContent='Great reflexes. Next player, beat this number!'}
+
+  if(finalScore>sessionBest){
+    sessionBest=finalScore;
+  }
+  playersThisSession++;
+  $('sessionLine').textContent='Players this session: '+playersThisSession+(sessionBest>0?('  ·  Best: '+sessionBest+' pts'):'');
+
+  $('screen-end').style.display='flex';
+}
+
+function nextPlayer(){
+  $('screen-end').style.display='none';
+  startDrill();
+}
+$('nextPlayerBtn').onclick=nextPlayer;
+
+loadBest();
+</script>
+</body>
+</html>
