@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>VR Number Hunt | REACTIFIC™</title>
+<title>VR Number Hunt | RITNOME</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -78,6 +78,16 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   .bottombar{grid-template-columns:1fr 1fr 1fr}
   #fsBtn{display:none}
 }
+
+/* STANDALONE END SCREEN - matches vr-reactific.html's Next Player pattern */
+#screen-end{position:fixed;inset:0;z-index:110;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#140800 0%,#000 70%);text-align:center;padding:20px}
+#screen-end .final-num{font-size:5rem;font-weight:900;color:#ffd35a;line-height:1;text-shadow:0 0 40px rgba(255,211,90,.7)}
+#screen-end .final-label{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#a7adba;margin-top:4px}
+#screen-end h2{font-size:1.8rem;font-weight:900;margin:24px 0 8px;color:#fff}
+#screen-end .end-sub{font-size:.85rem;color:#a7adba;max-width:380px}
+#screen-end .beat-line{margin-top:14px;font-size:1rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#FF1493;min-height:1.2em}
+#screen-end .next-player-btn{margin-top:28px;height:64px;padding:0 40px;border:none;border-radius:16px;background:linear-gradient(120deg,#ff6b00,#ff9500);color:#000;font-size:1.15rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(255,107,0,.6)}
+#screen-end .session-line{margin-top:22px;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#7fa8c0}
 </style>
 </head>
 <body>
@@ -85,7 +95,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <div id="screen-intro">
   <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-lab.html">← Games</a>
   <div class="vrr-logo">NUMBER <span>HUNT</span></div>
-  <div class="vrr-sub">5×10 VR Court · Reactific™</div>
+  <div class="vrr-sub">5×10 VR Court · Ritnome</div>
   <div class="vrr-rule">🎯 FIND THE NUMBER — TAP IT FAST</div>
   <div class="speed-row">
     <button class="speed-btn active" data-time="5000">SLOW<small>5 SEC</small></button>
@@ -97,7 +107,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <strong>LEVEL 1</strong> — find 1 number · starts with 10 cells · grows to 50<br>
     <strong>LEVEL 2</strong> — find 2 numbers · starts again at 10 cells<br>
     <strong>CONTINUOUS</strong> — each round flows automatically<br>
-    <strong>MISS</strong> — stay at your level · try again or restart
+    <strong>MISS</strong> — see your score, then send in the next player
   </div>
 </div>
 
@@ -122,64 +132,42 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   </div>
 </div>
 
+<div id="screen-end">
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Final Score</div>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div class="end-sub" id="endSub">Great hunting. Next player, beat this number!</div>
+  <div class="beat-line" id="beatLine"></div>
+  <button class="next-player-btn" id="nextPlayerBtn">▶ Next Player</button>
+  <div class="session-line" id="sessionLine"></div>
+</div>
+
 <script>
 (function(){
 var $=id=>document.getElementById(id);
 
-// CYCLE MODE — two additions
-var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
-var NEXT_GAME='/vr-reflex.html?cycle=true';
-
 var timeLimit=5000,best=0;
 var MIN_CELLS=10,MAX_CELLS=50,MAX_LEVEL=50;
-
-var API='https://api.reactificgaming.com';
-(function(){
-  var urlToken=new URLSearchParams(window.location.search).get('t');
-  if(urlToken)localStorage.setItem('rct-token',urlToken);
-})();
-
-function submitScore(score,level,mode){
-  var token=localStorage.getItem('rct-token');
-  if(!token)return;
-  fetch(API+'/api/scores/game',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body:JSON.stringify({game_id:'numhunt',score:score,level:level,mode:mode})
-  }).catch(function(err){console.error('Score submit error:',err)});
-}
-
-window.addEventListener('beforeunload',function(){
-  var token=localStorage.getItem('rct-token');
-  if(token && g && g.sc>0){
-    navigator.sendBeacon(API+'/api/scores/game',
-      JSON.stringify({game_id:'numhunt',score:g.sc,level:g.level,mode:'progression'})
-    );
-  }
-});
+var BEST_KEY_PREFIX='rct-numhunt-best-';
 
 document.querySelectorAll('[data-time]').forEach(btn=>{
   btn.onclick=function(){
     timeLimit=Number(btn.dataset.time);
     document.querySelectorAll('[data-time]').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    loadBest();
   }
 });
 
-// If cycle mode, skip intro and go straight to game
-if(cycleMode){
+function bestKey(){return BEST_KEY_PREFIX+timeLimit}
+function loadBest(){try{best=parseInt(localStorage.getItem(bestKey()))||0}catch(e){best=0}}
+function saveBest(){try{localStorage.setItem(bestKey(),String(best))}catch(e){}}
+
+$('startBtn').onclick=function(){
   $('screen-intro').style.display='none';
   $('screen-game').style.display='flex';
-  buildCourt();
-  initGame();
-  setTimeout(startRound,1000);
-}else{
-  $('startBtn').onclick=function(){
-    $('screen-intro').style.display='none';
-    $('screen-game').style.display='flex';
-    buildCourt();initGame();
-  };
-}
+  buildCourt();initGame();
+};
 
 $('menuBtn').onclick=function(){clrT();resetCourt();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
 $('fsBtn').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
@@ -198,6 +186,8 @@ function buildCourt(){
 var g={level:1,cells:10,sc:0,st:0};
 var phase='idle',targets=[],found=[],courtNums=[],timers=[],shrinkRAF=null;
 var tapLocked=false;
+
+var sessionBest=0, playersThisSession=0;
 
 function clrT(){timers.forEach(clearTimeout);timers=[];if(shrinkRAF){cancelAnimationFrame(shrinkRAF);shrinkRAF=null}}
 
@@ -224,6 +214,7 @@ function resetCourt(){
 }
 
 function initGame(){
+  loadBest();
   g={level:1,cells:MIN_CELLS,sc:0,st:0};
   updateHUD();resetCourt();
   $('actBtn').textContent="LET'S GO";
@@ -297,29 +288,22 @@ function handleTap(idx){
     if(found.length>=targets.length){
       clrT();phase='idle';
       g.sc+=g.level*g.cells;g.st++;
-      if(g.st>best)best=g.st;
+      if(g.st>best){best=g.st;saveBest()}
       updateHUD();
       if(g.cells>=MAX_CELLS){
         if(g.level>=MAX_LEVEL){
           msg('🏆 ULTIMATE HUNTER!','perfect');
-          submitScore(g.sc,g.level,'compete');
-          if(cycleMode){
-            timers.push(setTimeout(function(){msg('NEXT GAME...','watch');timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200))},1500));
-          }else{
-            timers.push(setTimeout(restartGame,3000));
-          }
+          timers.push(setTimeout(function(){endDrill(true)},1500));
         }else{
           var nextLevel=g.level+1;
           var nextCells=Math.max(MIN_CELLS,nextLevel);
           msg('🔥 LEVEL '+nextLevel+'!','perfect');
-          submitScore(g.sc,nextLevel,'progression');
           g.level=nextLevel;g.cells=nextCells;
           timers.push(setTimeout(startRound,1200));
         }
       }else{
         g.cells=g.cells+1;
         msg('✅ KEEP HUNTING!','perfect');
-        submitScore(g.sc,g.level,'progression');
         timers.push(setTimeout(startRound,700));
       }
     }else{
@@ -337,27 +321,51 @@ function onMiss(reason){
   cells.forEach(function(c,i){
     if(targets.indexOf(courtNums[i])!==-1&&found.indexOf(courtNums[i])===-1)c.className='cell reveal';
   });
-  g.st=0;
-  if(g.sc>0)submitScore(g.sc,g.level,'progression');
   updateHUD();
   msg(reason,'miss');
-
-  // MISS in cycle mode — advance to next game
-  if(cycleMode){
-    timers.push(setTimeout(function(){
-      msg('NEXT GAME...','watch');
-      timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
-    },1800));
-  }else{
-    timers.push(setTimeout(function(){
-      $('actBtn').textContent="TRY AGAIN";
-      $('actBtn').onclick=startRound;
-      $('actBtn').disabled=false;
-    },1800));
-  }
+  timers.push(setTimeout(function(){endDrill(false)},1500));
 }
 
+function endDrill(maxedOut){
+  var finalScore=g.sc;
+  var isNew=finalScore>0&&g.st>0&&g.st>=best;
+  $('screen-game').style.display='none';
+  $('endNum').textContent=finalScore;
+  if(maxedOut){
+    $('endHead').textContent='🏆 Ultimate Hunter!';
+    $('endSub').textContent='You cleared every level. Legendary run — '+finalScore+' points!';
+  }else if(isNew&&finalScore>0){
+    $('endHead').textContent='🎉 New Best!';
+    $('endSub').textContent='You beat your record with a streak of '+g.st+'. Amazing focus!';
+  }else{
+    $('endHead').textContent='Drill Complete!';
+    $('endSub').textContent='Great hunting. Next player, beat this number!';
+  }
+
+  if(finalScore>sessionBest){
+    sessionBest=finalScore;
+    $('beatLine').textContent='🏆 Top score to beat: '+finalScore;
+  }else if(sessionBest>0){
+    var gap=sessionBest-finalScore;
+    $('beatLine').textContent=(gap===0)?'🔥 Tied the top score!':('Top score to beat: '+sessionBest+'  ('+gap+' away)');
+  }else{
+    $('beatLine').textContent='';
+  }
+  playersThisSession++;
+  $('sessionLine').textContent='Players this session: '+playersThisSession+(sessionBest>0?('  ·  Best: '+sessionBest+' pts'):'');
+
+  $('screen-end').style.display='flex';
+}
+
+function nextPlayer(){
+  $('screen-end').style.display='none';
+  $('screen-game').style.display='flex';
+  restartGame();
+}
+$('nextPlayerBtn').onclick=nextPlayer;
+
 $('actBtn').onclick=startRound;
+loadBest();
 })();
 </script>
 </body>
