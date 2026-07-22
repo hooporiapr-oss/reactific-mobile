@@ -57,7 +57,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   position:fixed;inset:0;display:none;flex-direction:column;
   background:radial-gradient(circle at 16% 5%,rgba(0,217,165,.15),transparent 30%),linear-gradient(180deg,#001810,#000a08);
 }
-.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:6px 10px 4px;flex-shrink:0}
+.topbar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:6px 10px 4px;flex-shrink:0}
 .top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(0,217,165,.3)}
 .top-label{font-size:.5rem;color:#00D9A5;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
 .top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
@@ -85,6 +85,9 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .bot-btn span{display:block;color:#00D9A5;font-size:.55rem;margin-top:1px}
 .start-btn{border-color:#00D9A5;background:linear-gradient(180deg,#00D9A5,#00B894);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(0,217,165,.7)}
 .start-btn:disabled{opacity:.5}
+.repeat-btn{border-color:#ffd35a;background:rgba(255,215,90,.12);color:#ffd35a;display:none}
+.repeat-btn.show{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.repeat-btn:disabled{opacity:.35}
 
 @media (max-width:768px){
   #fsBtn{display:none}
@@ -172,6 +175,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <div class="top-box"><div class="top-label" id="hRdLbl">Sequence</div><div class="top-val" id="hRd">3</div></div>
     <div class="top-box"><div class="top-label" id="hLvLbl">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Repeats</div><div class="top-val" id="hRep">0</div></div>
     <div class="top-box"><div class="top-label">Timer</div><div class="top-val" id="hTr">--</div></div>
   </div>
   <div class="clockbar"><div class="clockbar-fill" id="clockFill" style="width:0%"></div></div>
@@ -181,6 +185,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
     <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn repeat-btn" id="repeatBtn">↻ REPEAT<span>1 per round</span></button>
     <button class="bot-btn" id="restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
     <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
     
@@ -288,7 +293,7 @@ function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i
 function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color=''}}}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hSeq').textContent=bpm+' BPM';
@@ -304,6 +309,7 @@ function updateHUD(){
     $('hLv').textContent=g.best;
   }
   $('hSt').textContent=g.streak;
+  $('hRep').textContent=g.totalRepeats;
   $('ps1').textContent=g.cellCount;
 }
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
@@ -322,35 +328,65 @@ function beatPulse(){
   setTimeout(function(){b.classList.remove('pulse')},Math.min(240,getShowMs()*0.4));
 }
 
-var phase='idle',sequence=[],playerIdx=0,timers=[],firstTapDone=false;
+var phase='idle',sequence=[],playerIdx=0,timers=[],firstTapDone=false,repeatUsedThisRound=false;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
+
+function revealSequence(cb){
+  var showMs=getShowMs(),gapMs=getGapMs();
+  var i=0;
+  function next(){
+    if(phase!=='showing')return;
+    if(i>0)cellSt(sequence[i-1]);
+    if(i<sequence.length){cellSt(sequence[i],'lit',i+1);playNote(sequence[i]);i++;timers.push(setTimeout(next,showMs+gapMs))}
+    else{
+      timers.push(setTimeout(function(){
+        cellSt(sequence[sequence.length-1]);
+        cb();
+      },300));
+    }
+  }
+  next();
+}
+
+function useRepeat(){
+  if(phase!=='tapping'||repeatUsedThisRound)return;
+  repeatUsedThisRound=true;
+  g.totalRepeats++;
+  updateHUD();
+  $('repeatBtn').disabled=true;
+  clrT();stopFullStrobe();stopRecallTimer();
+  phase='showing';playerIdx=0;
+  resetCells();
+  $('clockFill').style.width='100%';$('hTr').textContent='--';
+  msg('↻ REPEAT — WATCH!','watch');
+  timers.push(setTimeout(function(){
+    revealSequence(function(){
+      msg('⚡ REPLAY IT! (5 PTS)','go');
+      phase='tapping';
+      startFullStrobe();
+      startRecallTimer();
+    });
+  },500));
+}
+$('repeatBtn').onclick=useRepeat;
 
 function startRound(){
   if(phase!=='idle')return;
-  clrT();phase='showing';playerIdx=0;firstTapDone=false;
+  clrT();phase='showing';playerIdx=0;firstTapDone=false;repeatUsedThisRound=false;
   resetCells();stopFullStrobe();stopRecallTimer();
-  $('actBtn').disabled=true;$('restartBtn').style.display='none';updateHUD();
+  $('actBtn').disabled=true;$('restartBtn').style.display='none';
+  $('repeatBtn').classList.add('show');$('repeatBtn').disabled=false;
+  updateHUD();
   $('clockFill').style.width='100%';$('hTr').textContent='--';
   sequence=genSeq();
-  var showMs=getShowMs(),gapMs=getGapMs();
   msg('WATCH THE SEQUENCE...','watch');
   timers.push(setTimeout(function(){
-    var i=0;
-    function next(){
-      if(phase!=='showing')return;
-      if(i>0)cellSt(sequence[i-1]);
-      if(i<sequence.length){cellSt(sequence[i],'lit',i+1);playNote(sequence[i]);i++;timers.push(setTimeout(next,showMs+gapMs))}
-      else{
-        timers.push(setTimeout(function(){
-          cellSt(sequence[sequence.length-1]);
-          msg('⚡ REPLAY IT!','go');
-          phase='tapping';
-          startFullStrobe();
-          startRecallTimer();
-        },300));
-      }
-    }
-    next();
+    revealSequence(function(){
+      msg('⚡ REPLAY IT!','go');
+      phase='tapping';
+      startFullStrobe();
+      startRecallTimer();
+    });
   },600));
 }
 
@@ -374,8 +410,9 @@ function handleTap(idx){
     cellSt(idx,'correct',playerIdx+1);playerIdx++;
     if(playerIdx>=sequence.length){
       phase='idle';clrT();stopFullStrobe();stopRecallTimer();
+      $('repeatBtn').classList.remove('show');
       g.streak++;
-      g.sc+=g.cellCount*10;
+      g.sc+=repeatUsedThisRound?5:g.cellCount*10;
 
       if(gameMode==='training'){
         g.roundsDone++;
@@ -384,14 +421,14 @@ function handleTap(idx){
           msg('🏆 LEVEL COMPLETE!','perfect');
           timers.push(setTimeout(showTrainingComplete,900));
         }else{
-          msg('✅ CORRECT! ('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
+          msg((repeatUsedThisRound?'✅ CORRECT (5 PTS) · ':'✅ CORRECT! ')+'('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
           timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
         }
       }else{
         if(g.cellCount>g.best)g.best=g.cellCount;
         g.cellCount++;
         updateHUD();
-        msg('✅ PERFECT! SEQUENCE GROWS...','perfect');
+        msg(repeatUsedThisRound?'✅ CORRECT (5 PTS) · SEQUENCE GROWS...':'✅ PERFECT! SEQUENCE GROWS...','perfect');
         timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
       }
     }
@@ -407,6 +444,7 @@ function handleTimeout(){
 
 function endGame(wrongIdx){
   phase='idle';clrT();stopFullStrobe();stopRecallTimer();
+  $('repeatBtn').classList.remove('show');
   if(wrongIdx!==null)cellSt(wrongIdx,'wrong');
   g.streak=0;updateHUD();
   msg(wrongIdx!==null?'WRONG ORDER!':'⏱ TIME UP!','miss');
@@ -431,10 +469,11 @@ function autoNextRound(){if(phase!=='idle')return;resetCells();$('clockFill').st
 
 function showFinalScore(){
   phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';$('hTr').textContent='--';
+  $('repeatBtn').classList.remove('show');
   if(gameMode==='training'){
-    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc,'miss');
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'miss');
   }else{
-    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS)','miss');
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS · REPEATS '+g.totalRepeats+')','miss');
   }
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
@@ -442,15 +481,17 @@ function showFinalScore(){
 
 function showTrainingComplete(){
   phase='idle';clrT();resetCells();updateHUD();$('clockFill').style.width='0%';$('hTr').textContent='--';
-  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc,'perfect');
+  $('repeatBtn').classList.remove('show');
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'perfect');
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
 }
 
 function restartGame(){
   clrT();phase='idle';stopFullStrobe();stopRecallTimer();
-  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
   resetCells();updateHUD();$('clockFill').style.width='0%';$('hTr').textContent='--';
+  $('repeatBtn').classList.remove('show');
   msg("TAP LET'S GO!",'watch');
   $('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none';
 }
