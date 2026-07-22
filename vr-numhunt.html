@@ -83,7 +83,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <body>
 
 <div id="screen-intro">
-  <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-home.html">← Games</a>
+  <a style="display:inline-block;margin-bottom:18px;padding:10px 20px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;text-decoration:none;align-self:flex-start" href="/vr-lab.html">← Games</a>
   <div class="vrr-logo">NUMBER <span>HUNT</span></div>
   <div class="vrr-sub">5×10 VR Court · Reactific™</div>
   <div class="vrr-rule">🎯 FIND THE NUMBER — TAP IT FAST</div>
@@ -128,7 +128,7 @@ var $=id=>document.getElementById(id);
 
 // CYCLE MODE — two additions
 var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
-var NEXT_GAME='/vr-flash.html?cycle=true';
+var NEXT_GAME='/vr-reflex.html?cycle=true';
 
 var timeLimit=5000,best=0;
 var MIN_CELLS=10,MAX_CELLS=50,MAX_LEVEL=50;
