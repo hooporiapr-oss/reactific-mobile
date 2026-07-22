@@ -57,7 +57,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   position:fixed;inset:0;display:none;flex-direction:column;
   background:radial-gradient(circle at 16% 5%,rgba(154,205,50,.15),transparent 30%),linear-gradient(180deg,#0a1400,#050a00);
 }
-.topbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:6px 10px 4px;flex-shrink:0}
+.topbar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:6px 10px 4px;flex-shrink:0}
 .top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(154,205,50,.3)}
 .top-label{font-size:.5rem;color:#9ACD32;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
 .top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
@@ -90,6 +90,9 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .bot-btn span{display:block;color:#9ACD32;font-size:.55rem;margin-top:1px}
 .start-btn{border-color:#9ACD32;background:linear-gradient(180deg,#B8E050,#9ACD32);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(154,205,50,.7)}
 .start-btn:disabled{opacity:.5}
+.repeat-btn{border-color:#ffd35a;background:rgba(255,215,90,.12);color:#ffd35a;display:none}
+.repeat-btn.show{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.repeat-btn:disabled{opacity:.35}
 
 @media (max-width:768px){
   #fsBtn{display:none}
@@ -139,6 +142,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <div class="top-box"><div class="top-label" id="hRdLbl">Pattern</div><div class="top-val" id="hRd">3</div></div>
     <div class="top-box"><div class="top-label" id="hLvLbl">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Repeats</div><div class="top-val" id="hRep">0</div></div>
     <div class="top-box"><div class="top-label">Timer</div><div class="top-val" id="hPf">--</div></div>
   </div>
   <div class="timerbar"><div class="timerbar-fill" id="timerFill" style="width:100%"></div></div>
@@ -148,6 +152,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
     <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn repeat-btn" id="repeatBtn">↻ REPEAT<span>1 per round</span></button>
     <button class="bot-btn" id="restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
     <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
     
@@ -268,7 +273,7 @@ function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i
 function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color=''}}}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hPhase').textContent=bpm+' BPM';
@@ -284,11 +289,12 @@ function updateHUD(){
     $('hLv').textContent=g.best;
   }
   $('hSt').textContent=g.streak;
+  $('hRep').textContent=g.totalRepeats;
   $('ps1').textContent=g.cellCount;
 }
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 
-var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[],firstTapDone=false;
+var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[],firstTapDone=false,repeatUsedThisRound=false;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 
@@ -303,12 +309,8 @@ function genPatterns(){
   echo[changePos]=newCell;changedCell=newCell;
 }
 
-function startRound(){
-  if(phase!=='idle')return;
-  clrT();canTap=false;stopTimer();stopFullStrobe();firstTapDone=false;
-  phase='watching';genPatterns();
-  resetCells();$('actBtn').disabled=true;$('restartBtn').style.display='none';updateHUD();
-  $('hPf').textContent='--';
+function revealWatchEcho(){
+  phase='watching';resetCells();
   msg('WATCH ORIGINAL','watch');
   var beatIv=getBeatIv();
   var i=0;
@@ -319,6 +321,30 @@ function startRound(){
     else{timers.push(setTimeout(function(){cellSt(original[original.length-1]);startEcho()},beatIv*.6))}
   }
   timers.push(setTimeout(watchNext,500));
+}
+
+function useRepeat(){
+  if(phase!=='finding'||repeatUsedThisRound)return;
+  repeatUsedThisRound=true;
+  g.totalRepeats++;
+  updateHUD();
+  $('repeatBtn').disabled=true;
+  clrT();canTap=false;stopTimer();stopFullStrobe();
+  resetCells();
+  $('hPf').textContent='--';
+  revealWatchEcho();
+}
+$('repeatBtn').onclick=useRepeat;
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();canTap=false;stopTimer();stopFullStrobe();firstTapDone=false;repeatUsedThisRound=false;
+  genPatterns();
+  resetCells();$('actBtn').disabled=true;$('restartBtn').style.display='none';
+  $('repeatBtn').classList.add('show');$('repeatBtn').disabled=false;
+  updateHUD();
+  $('hPf').textContent='--';
+  revealWatchEcho();
 }
 
 function startEcho(){
@@ -338,7 +364,7 @@ function startFind(){
   phase='finding';canTap=true;resetCells();
   /* Genuinely blank — no outlined targets to pick from. The player recalls
      from memory which cell in the pattern was the changed one. */
-  msg('⚡ WHICH ONE CHANGED?','go');
+  msg(repeatUsedThisRound?'⚡ WHICH ONE CHANGED? (5 PTS)':'⚡ WHICH ONE CHANGED?','go');
   startFullStrobe();
   var dur=getFindMs();
   startTimer(dur);
@@ -376,8 +402,9 @@ function revealAnswer(){cellSt(changedCell,'reveal-answer',changePos+1);cellSt(o
 
 function roundSuccess(){
   phase='idle';
+  $('repeatBtn').classList.remove('show');
   g.streak++;
-  g.sc+=g.cellCount*10;
+  g.sc+=repeatUsedThisRound?5:g.cellCount*10;
 
   if(gameMode==='training'){
     g.roundsDone++;
@@ -386,14 +413,14 @@ function roundSuccess(){
       msg('🏆 LEVEL COMPLETE!','perfect');
       timers.push(setTimeout(showTrainingComplete,900));
     }else{
-      msg('✅ CORRECT! ('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
+      msg((repeatUsedThisRound?'✅ CORRECT (5 PTS) · ':'✅ CORRECT! ')+'('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
       timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
     }
   }else{
     if(g.cellCount>g.best)g.best=g.cellCount;
     g.cellCount++;
     updateHUD();
-    msg('✅ CORRECT! PATTERN GROWS...','perfect');
+    msg(repeatUsedThisRound?'✅ CORRECT (5 PTS) · PATTERN GROWS...':'✅ CORRECT! PATTERN GROWS...','perfect');
     timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
   }
 }
@@ -402,6 +429,7 @@ function autoNextRound(){if(phase!=='idle')return;resetCells();stopTimer();$('hP
 
 function endGame(wrongIdx,alreadyRevealed){
   phase='idle';clrT();stopFullStrobe();stopTimer();
+  $('repeatBtn').classList.remove('show');
   if(wrongIdx!==null&&!alreadyRevealed){cellSt(wrongIdx,'wrong');revealAnswer();}
   g.streak=0;updateHUD();
   if(!alreadyRevealed)msg('WRONG CELL!','miss');
@@ -418,10 +446,11 @@ function endGame(wrongIdx,alreadyRevealed){
 
 function showFinalScore(){
   phase='idle';clrT();resetCells();updateHUD();$('hPf').textContent='--';
+  $('repeatBtn').classList.remove('show');
   if(gameMode==='training'){
-    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc,'miss');
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'miss');
   }else{
-    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS)','miss');
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS · REPEATS '+g.totalRepeats+')','miss');
   }
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
@@ -429,15 +458,17 @@ function showFinalScore(){
 
 function showTrainingComplete(){
   phase='idle';clrT();resetCells();updateHUD();$('hPf').textContent='--';
-  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc,'perfect');
+  $('repeatBtn').classList.remove('show');
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'perfect');
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
 }
 
 function restartGame(){
   clrT();phase='idle';canTap=false;stopTimer();stopFullStrobe();
-  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
   resetCells();updateHUD();$('hPf').textContent='--';
+  $('repeatBtn').classList.remove('show');
   msg("TAP LET'S GO!",'watch');
   $('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none';
 }
