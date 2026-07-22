@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (sessionStorage.getItem('rct-gate-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RECOGNITION | Ritnome</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#0a1400 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;
+  padding:20px 16px 24px;
+  box-sizing:border-box;
+}
+.vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(154,205,50,1);margin-bottom:8px}
+.vrr-logo span{color:#9ACD32}
+.vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#9ACD32;margin-bottom:8px;text-align:center}
+.vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#9ACD32,#B8E050);color:#000;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(154,205,50,.7);margin-bottom:14px}
+.big-btn:hover{transform:scale(1.03)}
+.speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(154,205,50,.4);background:rgba(154,205,50,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.speed-btn.active{border-color:#9ACD32;background:rgba(154,205,50,.22);box-shadow:0 0 30px rgba(154,205,50,.6);color:#9ACD32}
+.speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.mode-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;width:100%;max-width:420px}
+.level-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;width:100%;max-width:420px}
+.level-row.hidden{display:none}
+.level-btn{width:100%;min-width:0;height:50px;border:3px solid rgba(154,205,50,.4);background:rgba(154,205,50,.08);border-radius:12px;color:#fff;font-size:.8rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.02em;padding:2px}
+.level-btn.active{border-color:#9ACD32;background:rgba(154,205,50,.22);box-shadow:0 0 24px rgba(154,205,50,.6);color:#9ACD32}
+.level-btn small{display:block;font-size:.55rem;color:#a7adba;line-height:1.2}
+.intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #screen-intro{padding:16px 12px 20px}
+  .vrr-logo{font-size:1.8rem}
+  .vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .speed-row{gap:5px}
+  .speed-btn{height:50px;font-size:.78rem}
+  .speed-btn small{font-size:.5rem}
+  .big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(154,205,50,.15),transparent 30%),linear-gradient(180deg,#0a1400,#050a00);
+}
+.topbar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:6px 10px 4px;flex-shrink:0}
+.top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(154,205,50,.3)}
+.top-label{font-size:.5rem;color:#9ACD32;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.phase-box{border-color:#ffd35a;background:rgba(255,215,0,.06)!important}
+.phase-box .top-label{color:#ffd35a}
+.phase-box .top-val{color:#9ACD32;font-size:.9rem;letter-spacing:.05em}
+.timerbar{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.timerbar-fill{height:100%;width:100%;background:#9ACD32;transition:background .3s}
+.timerbar-fill.warn{background:#FFD700}
+.timerbar-fill.danger{background:#FF1493}
+.msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.msg-bar.watch{color:#ffd35a}.msg-bar.echo{color:#9ACD32}.msg-bar.go{color:#9ACD32}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}
+.stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.star{font-size:1rem;opacity:.2;transition:all .3s}
+.star.earned{opacity:1;filter:drop-shadow(0 0 6px #9ACD32);transform:scale(1.2)}
+.court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0;perspective:800px}
+.court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;width:100%;height:100%;max-height:100%;transform:rotateX(6deg);transform-origin:center bottom;border:2px solid rgba(154,205,50,.25);border-radius:14px;padding:6px;background:rgba(5,10,0,.85);box-shadow:0 0 60px rgba(154,205,50,.3),inset 0 0 40px rgba(154,205,50,.04),0 20px 60px rgba(0,0,0,.8)}
+.cell{border-radius:8px;background:rgba(154,205,50,.08);border:2px solid rgba(154,205,50,.4);display:flex;align-items:center;justify-content:center;font-size:clamp(1rem,2.2vw,2rem);font-weight:900;color:transparent;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.cell:hover{background:rgba(154,205,50,.2);border-color:#9ACD32;transform:scale(1.05)}
+.cell.lit{background:#FFD700!important;border-color:#FFD700!important;box-shadow:0 0 30px rgba(255,215,0,1)!important;color:#000!important;transform:scale(1.06)}
+.cell.echo-lit{background:#9ACD32!important;border-color:#B8E050!important;box-shadow:0 0 30px rgba(154,205,50,1)!important;color:#000!important;transform:scale(1.06)}
+.cell.find-target{border-color:#9ACD32!important;background:rgba(154,205,50,.18)!important;color:#9ACD32!important}
+.cell.correct{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important;color:#000!important}
+.cell.wrong{background:rgba(255,20,147,.35)!important;border-color:#FF1493!important;animation:shake .3s;color:#fff!important}
+.cell.reveal-answer{border:3px solid #00D9A5!important;background:rgba(0,217,165,.2)!important;color:#00D9A5!important}
+.cell.reveal-original{border:3px dashed #FFD700!important;background:rgba(255,215,0,.15)!important;color:#FFD700!important}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.bottombar{display:flex;justify-content:center;flex-wrap:wrap;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.bot-btn{height:48px;flex:0 1 150px;max-width:180px;border:2px solid rgba(154,205,50,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bot-btn span{display:block;color:#9ACD32;font-size:.55rem;margin-top:1px}
+.start-btn{border-color:#9ACD32;background:linear-gradient(180deg,#B8E050,#9ACD32);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(154,205,50,.7)}
+.start-btn:disabled{opacity:.5}
+.repeat-btn{border-color:#ffd35a;background:rgba(255,215,90,.12);color:#ffd35a;display:none}
+.repeat-btn.show{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.repeat-btn:disabled{opacity:.35}
+
+@media (max-width:768px){
+  #fsBtn{display:none}
+}
+.top-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(0,206,209,.4);background:rgba(0,0,0,.5);color:#00CED1;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120}
+@media(max-width:768px){.top-fs{display:none}}
+
+#fsStrobe{position:fixed;inset:0;z-index:110;pointer-events:none;background:#9ACD32;opacity:0}
+</style>
+</head>
+<body>
+
+
+
+<div id="screen-intro">
+  <a style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:120" href="/vr-lab.html">← Games</a>
+  <button class="top-fs" id="fsBtnTop">⛶ Fullscreen</button>
+  <div class="vrr-logo">RE<span>COGNITION</span></div>
+  <div class="vrr-sub">5×10 VR Court · Ritnome Memorization</div>
+  <div class="vrr-rule">👁️ WATCH · ECHO · SPOT THE CHANGE</div>
+  <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#9ACD32;margin-bottom:14px;text-align:center">⚡ RITNOME 100 · 100 BPM</div>
+  <div class="mode-row">
+    <button class="speed-btn active" data-mode="game">GAME<small>Escalating, no limit</small></button>
+    <button class="speed-btn" data-mode="training">TRAINING<small>Fixed level, 10 rounds</small></button>
+  </div>
+  <div class="level-row hidden" id="levelRow">
+    <button class="level-btn active" data-level="1">L1<small>3 cells</small></button>
+    <button class="level-btn" data-level="2">L2<small>4 cells</small></button>
+    <button class="level-btn" data-level="3">L3<small>5 cells</small></button>
+    <button class="level-btn" data-level="4">L4<small>6 cells</small></button>
+    <button class="level-btn" data-level="5">L5<small>7 cells</small></button>
+  </div>
+  <button class="big-btn" id="startBtn">👁️ ENTER THE COURT</button>
+  <div class="intro-info">
+    <strong>WATCH</strong> — original pattern flashes gold<br>
+    <strong>ECHO</strong> — same pattern in lime — ONE cell changed<br>
+    <strong>BLANK</strong> — screen goes dark, beat starts<br>
+    <strong>ONE MISS ENDS IT</strong> — one more cell every round
+  </div>
+</div>
+
+<div id="screen-game">
+  <div id="fsStrobe"></div>
+  <div class="topbar">
+    <div class="top-box"><div class="top-label">Score</div><div class="top-val" id="hSc">0</div></div>
+    <div class="top-box phase-box"><div class="top-label">Tempo</div><div class="top-val" id="hPhase">100 BPM</div></div>
+    <div class="top-box"><div class="top-label" id="hRdLbl">Pattern</div><div class="top-val" id="hRd">3</div></div>
+    <div class="top-box"><div class="top-label" id="hLvLbl">Best</div><div class="top-val" id="hLv">0</div></div>
+    <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
+    <div class="top-box"><div class="top-label">Repeats</div><div class="top-val" id="hRep">0</div></div>
+    <div class="top-box"><div class="top-label">Timer</div><div class="top-val" id="hPf">--</div></div>
+  </div>
+  <div class="timerbar"><div class="timerbar-fill" id="timerFill" style="width:100%"></div></div>
+  <div class="msg-bar watch" id="msg">TAP LET'S GO!</div>
+  <div class="stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Pattern Length</span>&nbsp;<span id="ps1" style="font-size:1.2rem;font-weight:900;color:#9ACD32"></span></div>
+  <div class="court-area"><div class="court" id="court"></div></div>
+  <div class="bottombar">
+    <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
+    <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
+    <button class="bot-btn repeat-btn" id="repeatBtn">↻ REPEAT<span>1 per round</span></button>
+    <button class="bot-btn" id="restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+    <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
+    
+  </div>
+</div>
+
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+
+// CYCLE MODE — two additions
+var cycleMode=new URLSearchParams(window.location.search).get('cycle')==='true';
+var NEXT_GAME='/vr-recall.html?cycle=true';
+
+var bpm=100;
+var STARTING_CELLS=3;
+
+var gameMode='game'; // 'game' | 'training'
+var trainingLevel=1; // 1-5
+var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
+var TRAINING_ROUNDS=10;
+function getInitialCellCount(){return gameMode==='training'?LEVEL_CELLS[trainingLevel]:STARTING_CELLS}
+
+document.querySelectorAll('[data-mode]').forEach(btn=>{
+  btn.onclick=function(){
+    gameMode=btn.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    $('levelRow').classList.toggle('hidden',gameMode!=='training');
+  };
+});
+document.querySelectorAll('[data-level]').forEach(btn=>{
+  btn.onclick=function(){
+    trainingLevel=Number(btn.dataset.level);
+    document.querySelectorAll('[data-level]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+});
+
+function getBeatIv(){return 60000/bpm}
+function getFindMs(){return Math.round((60000/bpm)*10)}
+
+/* Audio beat — the Ritnome click, synced to the full-screen strobe */
+var aCtx=null;
+function gAC(){if(!aCtx){try{aCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return aCtx}
+function beatBeep(){
+  var c=gAC();if(!c)return;
+  try{
+    if(c.state==='suspended')c.resume();
+    var o=c.createOscillator(),g2=c.createGain();
+    o.type='sine';o.frequency.value=440;
+    o.connect(g2);g2.connect(c.destination);
+    g2.gain.setValueAtTime(.18,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(.01,c.currentTime+.12);
+    o.start();o.stop(c.currentTime+.13);
+  }catch(e){}
+}
+
+/* Full-screen strobe — runs only while waiting for the player to react,
+   stops the instant they make their first tap. */
+var strobeInterval=null;
+function startFullStrobe(){
+  stopFullStrobe();
+  var beatMs=getBeatIv();
+  var el=$('fsStrobe');
+  strobeInterval=setInterval(function(){
+    el.style.transition='none';
+    el.style.opacity='.35';
+    beatBeep();
+    setTimeout(function(){
+      el.style.transition='opacity .15s';
+      el.style.opacity='0';
+    },Math.min(120,beatMs*.3));
+  },beatMs);
+}
+function stopFullStrobe(){
+  if(strobeInterval){clearInterval(strobeInterval);strobeInterval=null}
+  var el=$('fsStrobe');el.style.transition='none';el.style.opacity='0';
+}
+
+var timerRAF=null,timerStart=0,timerDur=0,canTap=false;
+function startTimer(dur){
+  timerDur=dur;timerStart=performance.now();$('timerFill').style.width='100%';$('timerFill').className='timerbar-fill';
+  function tick(){
+    var remain=timerDur-(performance.now()-timerStart);
+    var pct=Math.max(0,remain/timerDur);
+    $('timerFill').style.width=(pct*100)+'%';
+    $('hPf').textContent=Math.max(0,remain/1000).toFixed(1)+'s';
+    if(pct<0.3)$('timerFill').className='timerbar-fill danger';else if(pct<0.5)$('timerFill').className='timerbar-fill warn';
+    if(remain<=0){timerRAF=null;handleTimeout();return}
+    if(canTap)timerRAF=requestAnimationFrame(tick);
+  }
+  timerRAF=requestAnimationFrame(tick);
+}
+function stopTimer(){if(timerRAF)cancelAnimationFrame(timerRAF);timerRAF=null;$('timerFill').style.width='100%';$('timerFill').className='timerbar-fill'}
+
+// If cycle mode, skip intro and go straight to game
+if(cycleMode){
+  $('screen-intro').style.display='none';
+  $('screen-game').style.display='flex';
+  buildCourt();
+  updateHUD();
+  setTimeout(startRound,1000);
+}else{
+  $('startBtn').onclick=function(){
+    $('screen-intro').style.display='none';$('screen-game').style.display='flex';
+    g.cellCount=getInitialCellCount();g.roundsDone=0;
+    buildCourt();updateHUD();
+  };
+}
+
+$('menuBtn').onclick=function(){stopTimer();stopFullStrobe();$('screen-game').style.display='none';$('screen-intro').style.display='flex'};
+$('fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+$('fsBtnCourt').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];
+function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i=0;i<50;i++){var c=document.createElement('div');c.className='cell';c.dataset.i=i;c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));court.appendChild(c);cells.push(c)}}
+function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color=''}}}
+function resetCells(){cells.forEach((_,i)=>cellSt(i))}
+
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+function updateHUD(){
+  $('hSc').textContent=g.sc;
+  $('hPhase').textContent=bpm+' BPM';
+  if(gameMode==='training'){
+    $('hRdLbl').textContent='Level';
+    $('hRd').textContent=g.cellCount+' (L'+trainingLevel+')';
+    $('hLvLbl').textContent='Progress';
+    $('hLv').textContent=g.roundsDone+'/'+TRAINING_ROUNDS;
+  }else{
+    $('hRdLbl').textContent='Pattern';
+    $('hRd').textContent=g.cellCount;
+    $('hLvLbl').textContent='Best';
+    $('hLv').textContent=g.best;
+  }
+  $('hSt').textContent=g.streak;
+  $('hRep').textContent=g.totalRepeats;
+  $('ps1').textContent=g.cellCount;
+}
+function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
+
+var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[],firstTapDone=false,repeatUsedThisRound=false;
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+
+function genPatterns(){
+  var len=g.cellCount;
+  var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,len);
+  original=indices.slice();echo=indices.slice();
+  changePos=Math.floor(Math.random()*len);
+  originalCell=indices[changePos];
+  var used=indices.slice(),newCell;
+  do{newCell=Math.floor(Math.random()*50)}while(used.indexOf(newCell)!==-1);
+  echo[changePos]=newCell;changedCell=newCell;
+}
+
+function revealWatchEcho(){
+  phase='watching';resetCells();
+  msg('WATCH ORIGINAL','watch');
+  var beatIv=getBeatIv();
+  var i=0;
+  function watchNext(){
+    if(phase!=='watching')return;
+    if(i>0)cellSt(original[i-1]);
+    if(i<original.length){cellSt(original[i],'lit',i+1);i++;timers.push(setTimeout(watchNext,beatIv))}
+    else{timers.push(setTimeout(function(){cellSt(original[original.length-1]);startEcho()},beatIv*.6))}
+  }
+  timers.push(setTimeout(watchNext,500));
+}
+
+function useRepeat(){
+  if(phase!=='finding'||repeatUsedThisRound)return;
+  repeatUsedThisRound=true;
+  g.totalRepeats++;
+  updateHUD();
+  $('repeatBtn').disabled=true;
+  clrT();canTap=false;stopTimer();stopFullStrobe();
+  resetCells();
+  $('hPf').textContent='--';
+  revealWatchEcho();
+}
+$('repeatBtn').onclick=useRepeat;
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();canTap=false;stopTimer();stopFullStrobe();firstTapDone=false;repeatUsedThisRound=false;
+  genPatterns();
+  resetCells();$('actBtn').disabled=true;$('restartBtn').style.display='none';
+  $('repeatBtn').classList.add('show');$('repeatBtn').disabled=false;
+  updateHUD();
+  $('hPf').textContent='--';
+  revealWatchEcho();
+}
+
+function startEcho(){
+  phase='echoing';resetCells();msg('NOW THE ECHO...','echo');
+  var beatIv=getBeatIv();
+  var i=0;
+  function echoNext(){
+    if(phase!=='echoing')return;
+    if(i>0)cellSt(echo[i-1]);
+    if(i<echo.length){cellSt(echo[i],'echo-lit',i+1);i++;timers.push(setTimeout(echoNext,beatIv))}
+    else{timers.push(setTimeout(function(){cellSt(echo[echo.length-1]);startFind()},beatIv*.6))}
+  }
+  timers.push(setTimeout(echoNext,400));
+}
+
+function startFind(){
+  phase='finding';canTap=true;resetCells();
+  /* Genuinely blank — no outlined targets to pick from. The player recalls
+     from memory which cell in the pattern was the changed one. */
+  msg(repeatUsedThisRound?'⚡ WHICH ONE CHANGED? (5 PTS)':'⚡ WHICH ONE CHANGED?','go');
+  startFullStrobe();
+  var dur=getFindMs();
+  startTimer(dur);
+}
+
+function handleTap(idx){
+  if(phase==='watching'||phase==='echoing'){msg('⏳ WAIT FOR IT...','watch');return;}
+  if(phase!=='finding'||!canTap)return;
+
+  if(!firstTapDone){
+    firstTapDone=true;
+    stopFullStrobe(); // the beat stops the instant a reaction begins
+  }
+
+  canTap=false;stopTimer();clrT();
+
+  if(idx===changedCell){
+    cellSt(idx,'correct',changePos+1);
+    timers.push(setTimeout(function(){cellSt(originalCell,'reveal-original',changePos+1)},300));
+    timers.push(setTimeout(roundSuccess,700));
+  }else{
+    endGame(idx);
+  }
+}
+
+function handleTimeout(){
+  if(phase!=='finding')return;
+  canTap=false;stopFullStrobe();
+  msg("TIME'S UP!",'miss');
+  revealAnswer();
+  endGame(null,true);
+}
+
+function revealAnswer(){cellSt(changedCell,'reveal-answer',changePos+1);cellSt(originalCell,'reveal-original',changePos+1)}
+
+function roundSuccess(){
+  phase='idle';
+  $('repeatBtn').classList.remove('show');
+  g.streak++;
+  g.sc+=repeatUsedThisRound?5:g.cellCount*10;
+
+  if(gameMode==='training'){
+    g.roundsDone++;
+    updateHUD();
+    if(g.roundsDone>=TRAINING_ROUNDS){
+      msg('🏆 LEVEL COMPLETE!','perfect');
+      timers.push(setTimeout(showTrainingComplete,900));
+    }else{
+      msg((repeatUsedThisRound?'✅ CORRECT (5 PTS) · ':'✅ CORRECT! ')+'('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
+      timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+    }
+  }else{
+    if(g.cellCount>g.best)g.best=g.cellCount;
+    g.cellCount++;
+    updateHUD();
+    msg(repeatUsedThisRound?'✅ CORRECT (5 PTS) · PATTERN GROWS...':'✅ CORRECT! PATTERN GROWS...','perfect');
+    timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+  }
+}
+
+function autoNextRound(){if(phase!=='idle')return;resetCells();stopTimer();$('hPf').textContent='--';$('restartBtn').style.display='none';$('actBtn').disabled=true;startRound()}
+
+function endGame(wrongIdx,alreadyRevealed){
+  phase='idle';clrT();stopFullStrobe();stopTimer();
+  $('repeatBtn').classList.remove('show');
+  if(wrongIdx!==null&&!alreadyRevealed){cellSt(wrongIdx,'wrong');revealAnswer();}
+  g.streak=0;updateHUD();
+  if(!alreadyRevealed)msg('WRONG CELL!','miss');
+
+  if(cycleMode){
+    timers.push(setTimeout(function(){
+      msg('NEXT GAME...','watch');
+      timers.push(setTimeout(function(){window.location.href=NEXT_GAME},1200));
+    },1800));
+  }else{
+    timers.push(setTimeout(showFinalScore,1000));
+  }
+}
+
+function showFinalScore(){
+  phase='idle';clrT();resetCells();updateHUD();$('hPf').textContent='--';
+  $('repeatBtn').classList.remove('show');
+  if(gameMode==='training'){
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'miss');
+  }else{
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS · REPEATS '+g.totalRepeats+')','miss');
+  }
+  $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
+  $('restartBtn').style.display='none';
+}
+
+function showTrainingComplete(){
+  phase='idle';clrT();resetCells();updateHUD();$('hPf').textContent='--';
+  $('repeatBtn').classList.remove('show');
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'perfect');
+  $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
+  $('restartBtn').style.display='none';
+}
+
+function restartGame(){
+  clrT();phase='idle';canTap=false;stopTimer();stopFullStrobe();
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+  resetCells();updateHUD();$('hPf').textContent='--';
+  $('repeatBtn').classList.remove('show');
+  msg("TAP LET'S GO!",'watch');
+  $('actBtn').textContent="LET'S GO";$('actBtn').onclick=startRound;$('actBtn').disabled=false;$('restartBtn').style.display='none';
+}
+
+$('actBtn').onclick=startRound;
+buildCourt();
+})();
+</script>
+</body>
+</html>
