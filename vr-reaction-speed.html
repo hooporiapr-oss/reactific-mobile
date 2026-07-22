@@ -16,7 +16,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 .hud-box{text-align:center}
 .hud-label{font-size:.5rem;color:#ff1e3c;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
 .hud-val{font-size:2rem;font-weight:900;line-height:1}
-#hScore{color:#fff;font-size:2.6rem}#hLastMs{color:#ffd35a}#hBest{font-size:1.3rem;color:#9fb3c8}
+#hScore{color:#fff;font-size:2.6rem}#hLastMs{color:#ffd35a}#hBest{font-size:1.3rem;color:#9fb3c8}#hLeft{color:#ff1e3c}
 
 #msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;font-size:1.6rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
 #msg.watch{color:#ff1e3c}#msg.go{color:#ffd35a}
@@ -94,6 +94,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 </div>
 
 <div id="hud">
+  <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
   <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
   <div class="hud-box"><div class="hud-label">Last</div><div class="hud-val" id="hLastMs">--</div></div>
   <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
@@ -188,7 +189,7 @@ function startDrill(){
 
 function runDrill(){
   phase='running';idx=0;score=0;totalRT=0;rtCount=0;bestRT=0;
-  $('hScore').textContent='0';$('hLastMs').textContent='--';
+  $('hScore').textContent='0';$('hLastMs').textContent='--';$('hLeft').textContent=TOTAL;
   msg('GET READY...','go');
   timers.push(setTimeout(function(){msg('','go');nextTarget()},900));
 }
@@ -223,6 +224,7 @@ function handleTap(){
 
   $('hScore').textContent=score;
   $('hLastMs').textContent=Math.round(rt);
+  $('hLeft').textContent=Math.max(0,TOTAL-idx);
   msg(Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM','go');
 
   if(idx>=TOTAL){
