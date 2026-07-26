@@ -89,7 +89,7 @@ select,input{
 }
 .smallBtn.secondary{background:#171c28;border-color:rgba(255,255,255,.18)}
 .choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.modeGrid{grid-template-columns:repeat(2,1fr)}
+.modeGrid{grid-template-columns:repeat(3,1fr)}
 .choiceBtn{
   min-width:0;height:38px;padding:5px 4px;border:1px solid rgba(255,255,255,.16);
   border-radius:8px;background:#151a25;color:#dce2ed;font-size:11px;
@@ -189,6 +189,7 @@ select,input{
           <div class="choiceGrid modeGrid">
             <button class="choiceBtn active" data-mode="focus" type="button">BASKETBALL FOCUS</button>
             <button class="choiceBtn" data-mode="dynamic" type="button">DYNAMIC VISION</button>
+            <button class="choiceBtn" data-mode="shot" type="button">SHOT SELECTION</button>
           </div>
           <div id="modeInfo"></div>
         </div>
@@ -213,6 +214,16 @@ select,input{
             <button class="choiceBtn" data-bpm="100" type="button">100 BPM</button>
           </div>
           <div id="dynamicInfo"></div>
+        </div>
+
+        <div class="section hidden" id="shotOptions">
+          <div class="sectionTitle">Shot cycle speed</div>
+          <div class="choiceGrid">
+            <button class="choiceBtn active" data-shotbpm="60" type="button">60 BPM</button>
+            <button class="choiceBtn" data-shotbpm="80" type="button">80 BPM</button>
+            <button class="choiceBtn" data-shotbpm="100" type="button">100 BPM</button>
+          </div>
+          <div id="shotInfo"></div>
         </div>
 
         <div class="section" id="timeSection">
@@ -255,9 +266,11 @@ var profileStats=document.getElementById("profileStats");
 
 var focusOptions=document.getElementById("focusOptions");
 var dynamicOptions=document.getElementById("dynamicOptions");
+var shotOptions=document.getElementById("shotOptions");
 var modeInfo=document.getElementById("modeInfo");
 var optionInfo=document.getElementById("optionInfo");
 var dynamicInfo=document.getElementById("dynamicInfo");
+var shotInfo=document.getElementById("shotInfo");
 
 var hudPlayer=document.getElementById("hudPlayer");
 var hudSettingLabel=document.getElementById("hudSettingLabel");
@@ -283,6 +296,10 @@ var MODES={
   dynamic:{
     label:"Dynamic Vision",
     description:"A backboard and rim appear in random areas. React and click the rim center before the target disappears."
+  },
+  shot:{
+    label:"Shot Selection",
+    description:"The rim cycles between OPEN (green) and CONTESTED (red). Shoot only when it's open — shooting into a contested rim costs you."
   }
 };
 
@@ -305,6 +322,7 @@ var W=0,H=0,DPR=1;
 var selectedMode="focus";
 var selectedLevel="steady";
 var selectedBpm=60;
+var selectedShotBpm=60;
 var selectedSeconds=60;
 var activeProfile="Guest";
 var profiles=loadProfiles();
@@ -353,6 +371,12 @@ var dynamic={
   pulse:0
 };
 
+var shotState={
+  isOpen:false,
+  cycleTimer:null,
+  busted:false
+};
+
 var particles=[];
 var resultText="";
 var resultUntil=0;
@@ -375,8 +399,15 @@ function blankDynamicStats(){
   };
 }
 
+function blankShotStats(){
+  return{
+    rounds:0,totalShots:0,totalMakes:0,totalSeconds:0,bestStreak:0,
+    bestAccuracy:0,bestNetScore:0,bustCount:0,bestRounds:{}
+  };
+}
+
 function blankPlayer(){
-  return{focus:blankFocusStats(),dynamic:blankDynamicStats()};
+  return{focus:blankFocusStats(),dynamic:blankDynamicStats(),shot:blankShotStats()};
 }
 
 function defaultData(){
@@ -387,8 +418,10 @@ function ensurePlayer(player){
   if(!player){player=blankPlayer();}
   if(!player.focus){player.focus=blankFocusStats();}
   if(!player.dynamic){player.dynamic=blankDynamicStats();}
+  if(!player.shot){player.shot=blankShotStats();}
   ensureFocus(player.focus);
   ensureDynamic(player.dynamic);
+  ensureShot(player.shot);
   return player;
 }
 
@@ -415,6 +448,18 @@ function ensureDynamic(s){
   if(typeof s.fastestReaction!=="number"){s.fastestReaction=0;}
   if(!s.bestRounds){s.bestRounds={};}
   if(!s.bestReactions){s.bestReactions={};}
+}
+
+function ensureShot(s){
+  if(typeof s.rounds!=="number"){s.rounds=0;}
+  if(typeof s.totalShots!=="number"){s.totalShots=0;}
+  if(typeof s.totalMakes!=="number"){s.totalMakes=0;}
+  if(typeof s.totalSeconds!=="number"){s.totalSeconds=0;}
+  if(typeof s.bestStreak!=="number"){s.bestStreak=0;}
+  if(typeof s.bestAccuracy!=="number"){s.bestAccuracy=0;}
+  if(typeof s.bestNetScore!=="number"){s.bestNetScore=0;}
+  if(typeof s.bustCount!=="number"){s.bustCount=0;}
+  if(!s.bestRounds){s.bestRounds={};}
 }
 
 function migrateLegacy(){
@@ -533,6 +578,7 @@ function deleteProfile(){
 
 function focusRecordKey(){return selectedLevel+"_"+selectedSeconds;}
 function dynamicRecordKey(){return selectedBpm+"_"+selectedSeconds;}
+function shotRecordKey(){return selectedShotBpm+"_"+selectedSeconds;}
 
 function formatOne(value){
   value=isFinite(value)?value:0;
@@ -560,7 +606,7 @@ function updateProfileStats(){
       " · Best streak "+f.bestStreak+
       " · Best "+LEVELS[selectedLevel].label+" "+selectedSeconds+"s: "+best+
       " makes · "+formatOne(bestEff)+"/min";
-  }else{
+  }else if(selectedMode==="dynamic"){
     var d=player.dynamic;
     var dynAccuracy=d.totalTargets?Math.round(d.totalHits/d.totalTargets*100):0;
     var hitsPerMin=d.totalSeconds?d.totalHits*60/d.totalSeconds:0;
@@ -573,6 +619,16 @@ function updateProfileStats(){
       " · Fastest "+formatMs(d.fastestReaction)+
       " · Best "+selectedBpm+" BPM "+selectedSeconds+"s: "+dynBest+
       " hits · avg "+formatMs(dynReaction);
+  }else{
+    var sh=player.shot;
+    var shotAccuracy=sh.totalShots?Math.round(sh.totalMakes/sh.totalShots*100):0;
+    var shotBest=sh.bestRounds[shotRecordKey()]||0;
+    profileStats.innerHTML=
+      "<strong>"+escapeHtml(activeProfile)+"</strong> · Shot Selection rounds "+sh.rounds+
+      " · Career "+shotAccuracy+"% good shots"+
+      " · Best streak "+sh.bestStreak+
+      " · Busts "+sh.bustCount+
+      " · Best "+selectedShotBpm+" BPM "+selectedSeconds+"s net score: "+shotBest;
   }
 }
 
@@ -583,14 +639,18 @@ function selectMode(mode){
   setActiveButtons("[data-mode]","data-mode",mode);
   focusOptions.className=mode==="focus"?"section":"section hidden";
   dynamicOptions.className=mode==="dynamic"?"section":"section hidden";
+  shotOptions.className=mode==="shot"?"section":"section hidden";
   modeInfo.textContent=MODES[mode].description;
 
   if(mode==="focus"){
     optionInfo.textContent=LEVELS[selectedLevel].description;
     startBtn.textContent="START FOCUS ROUND";
-  }else{
+  }else if(mode==="dynamic"){
     updateDynamicInfo();
     startBtn.textContent="START DYNAMIC ROUND";
+  }else{
+    updateShotInfo();
+    startBtn.textContent="START SHOT ROUND";
   }
 
   updateProfileStats();
@@ -620,6 +680,22 @@ function updateDynamicInfo(){
   var visible=Math.round(60000/selectedBpm);
   dynamicInfo.textContent=
     "The target stays visible for "+visible+" ms, then disappears. The next target appears after a fixed 1,000 ms delay.";
+}
+
+function selectShotBpm(value){
+  value=parseInt(value,10);
+  if(value!==60&&value!==80&&value!==100){value=60;}
+  selectedShotBpm=value;
+  setActiveButtons("[data-shotbpm]","data-shotbpm",String(value));
+  updateShotInfo();
+  updateProfileStats();
+  updateHud();
+}
+
+function updateShotInfo(){
+  var cycleMs=Math.round(60000/selectedShotBpm);
+  shotInfo.textContent=
+    "The rim switches between open and contested every "+cycleMs+" ms. Shoot only when it's green — a wrong shot costs a point, and three wrong shots ends the round.";
 }
 
 function selectTime(value){
@@ -697,7 +773,7 @@ function updateHud(t){
   hudScore.textContent=score;
   hudAttempts.textContent=attempts;
   hudStreak.textContent=streak;
-  hudAccuracy.textContent=attempts?Math.round(score/attempts*100)+"%":"0%";
+  hudAccuracy.textContent=(selectedMode!=="shot"&&attempts)?Math.round(score/attempts*100)+"%":(selectedMode==="shot"?"--":"0%");
 
   if(selectedMode==="focus"){
     hudSettingLabel.textContent="Level";
@@ -706,13 +782,20 @@ function updateHud(t){
     hudAttemptLabel.textContent="Shots";
     hudMetricLabel.textContent="Focus Eff.";
     hudMetric.textContent=formatOne(gameRunning?score*60/elapsedSeconds(t):0);
-  }else{
+  }else if(selectedMode==="dynamic"){
     hudSettingLabel.textContent="Pulse";
     hudSetting.textContent=selectedBpm+" BPM";
     hudScoreLabel.textContent="Hits";
     hudAttemptLabel.textContent="Targets";
     hudMetricLabel.textContent="Avg React";
     hudMetric.textContent=reactionCount?Math.round(totalReaction/reactionCount)+" ms":"--";
+  }else{
+    hudSettingLabel.textContent="Pulse";
+    hudSetting.textContent=selectedShotBpm+" BPM";
+    hudScoreLabel.textContent="Net Score";
+    hudAttemptLabel.textContent="Shots";
+    hudMetricLabel.textContent="Good Shots";
+    hudMetric.textContent=attempts?Math.round((score>0?score:0)/attempts*100)+"%":"0%";
   }
 }
 
@@ -991,6 +1074,78 @@ function updateDynamic(t){
   }
 }
 
+// ── SHOT SELECTION — the rim cycles between OPEN and CONTESTED at a fixed
+//    BPM, same restraint-under-a-rule mechanic as Reactific's go/no-go.
+//    The rim stays centered and still — no movement, no appearing/vanishing
+//    — so all of the player's attention goes to reading the state
+//    correctly, not to tracking anything.
+function shotCycleIntervalMs(){
+  return Math.round(60000/selectedShotBpm);
+}
+
+function startShotSelection(){
+  shotState.isOpen=false;
+  shotState.busted=false;
+  hoop.x=hoop.baseX;
+  hoop.y=hoop.baseY;
+  if(shotState.cycleTimer){clearInterval(shotState.cycleTimer);}
+  shotState.cycleTimer=setInterval(shotCycleTick,shotCycleIntervalMs());
+}
+
+function shotCycleTick(){
+  if(!gameRunning||!roundStarted||selectedMode!=="shot"){return;}
+  shotState.isOpen=!shotState.isOpen;
+}
+
+function stopShotSelection(){
+  if(shotState.cycleTimer){clearInterval(shotState.cycleTimer);shotState.cycleTimer=null;}
+}
+
+function handleShotClick(x,y){
+  if(selectedMode!=="shot"||!gameRunning||!roundStarted||!acceptingInput||shotState.busted){return;}
+
+  var t=now();
+  attempts++;
+
+  clickMarker.x=x;
+  clickMarker.y=y;
+  clickMarker.until=t+360;
+
+  if(shotState.isOpen){
+    // GOOD SHOT — took it while open. A make clears any prior bad shots
+    // back to zero first, same forgiveness rule as Reactific.
+    if(score<0){score=0;}
+    score++;
+    streak++;
+    if(streak>bestStreak){bestStreak=streak;}
+    clickMarker.success=true;
+    resultText="GOOD SHOT!";
+    resultUntil=t+600;
+    createParticles(hoop.x,hoop.y,true);
+    beep(true);
+    setMessage("Good shot! Wait for the next open look.");
+  }else{
+    // BAD SHOT SELECTION — took it while contested.
+    streak=0;
+    score--;
+    clickMarker.success=false;
+    resultText="CONTESTED!";
+    resultUntil=t+600;
+    createParticles(x,y,false);
+    beep(false);
+    if(score<=-3){
+      shotState.busted=true;
+      setMessage("Too many bad shots — round over.");
+      updateHud(t);
+      setTimeout(finishRound,900);
+      return;
+    }
+    setMessage("Contested look — wait for green.");
+  }
+
+  updateHud(t);
+}
+
 function createParticles(x,y,success){
   var i;
   for(i=0;i<16;i++){
@@ -1054,6 +1209,10 @@ function startRound(e){
   dynamic.nextAt=0;
   dynamic.resolved=false;
 
+  stopShotSelection();
+  shotState.isOpen=false;
+  shotState.busted=false;
+
   gameRunning=true;
   roundStarted=false;
   acceptingInput=false;
@@ -1067,7 +1226,7 @@ function startRound(e){
   backBtn.style.display="block";
   hud.style.display="flex";
   updateHud();
-  setMessage(selectedMode==="focus"?"Get ready to focus...":"Get ready to react...");
+  setMessage(selectedMode==="focus"?"Get ready to focus...":(selectedMode==="dynamic"?"Get ready to react...":"Get ready to read the rim..."));
 
   var root=document.documentElement;
   var requestFull=root.requestFullscreen||root.mozRequestFullScreen||root.webkitRequestFullscreen;
@@ -1082,9 +1241,12 @@ function beginTimedRound(t){
 
   if(selectedMode==="focus"){
     setMessage("Track the center, lock focus, and click.");
-  }else{
+  }else if(selectedMode==="dynamic"){
     dynamic.nextAt=t+250;
     setMessage("Watch for the first target.");
+  }else{
+    startShotSelection();
+    setMessage("Watch the rim — shoot only when it's open.");
   }
   updateHud(t);
 }
@@ -1117,6 +1279,7 @@ function finishRound(){
   dynamic.visible=false;
   shotInProgress=false;
   shot=null;
+  stopShotSelection();
 
   var accuracy=attempts?Math.round(score/attempts*100):0;
   var player=ensurePlayer(profiles.players[activeProfile]);
@@ -1142,7 +1305,7 @@ function finishRound(){
       "Makes: "+score+" of "+attempts+" · Accuracy: "+accuracy+"%<br>"+
       "Perfect focus: "+perfects+" · Best streak: "+bestStreak+"<br>"+
       "Focus Efficiency: "+formatOne(efficiency)+" makes per minute";
-  }else{
+  }else if(selectedMode==="dynamic"){
     var hitsPerMin=selectedSeconds?score*60/selectedSeconds:0;
     var averageReaction=reactionCount?totalReaction/reactionCount:0;
     var d=player.dynamic;
@@ -1169,6 +1332,26 @@ function finishRound(){
       "Average reaction: "+formatMs(averageReaction)+" · Fastest: "+formatMs(fastestReaction)+"<br>"+
       "Best streak: "+bestStreak+" · False starts: "+falseStarts+
       " · Hit pace: "+formatOne(hitsPerMin)+"/min";
+  }else{
+    var netScore=score;
+    var goodShotPct=attempts?Math.round((score>0?score:0)/attempts*100):0;
+    var sh=player.shot;
+    key=shotRecordKey();
+
+    sh.rounds++;
+    sh.totalShots+=attempts;
+    sh.totalMakes+=(score>0?score:0);
+    sh.totalSeconds+=selectedSeconds;
+    if(bestStreak>sh.bestStreak){sh.bestStreak=bestStreak;}
+    if(goodShotPct>sh.bestAccuracy){sh.bestAccuracy=goodShotPct;}
+    if(shotState.busted){sh.bustCount++;}
+    if(netScore>(sh.bestRounds[key]||0)){sh.bestRounds[key]=netScore;}
+    if(netScore>sh.bestNetScore){sh.bestNetScore=netScore;}
+
+    resultBox.innerHTML=
+      (shotState.busted?"<strong>Shot Selection — round over (busted)</strong><br>":"<strong>Shot Selection complete</strong><br>")+
+      "Net score: "+netScore+" · Shots taken: "+attempts+" · Good shots: "+goodShotPct+"%<br>"+
+      "Best streak: "+bestStreak+" · Best net score at this speed: "+(sh.bestRounds[key]||0);
   }
 
   profiles.players[activeProfile]=player;
@@ -1176,7 +1359,7 @@ function finishRound(){
   saveProfiles();
 
   resultBox.style.display="block";
-  startBtn.textContent=selectedMode==="focus"?"PLAY FOCUS AGAIN":"PLAY DYNAMIC AGAIN";
+  startBtn.textContent=selectedMode==="focus"?"PLAY FOCUS AGAIN":(selectedMode==="dynamic"?"PLAY DYNAMIC AGAIN":"PLAY SHOT SELECTION AGAIN");
   overlay.style.display="flex";
   backBtn.style.display="none";
   hud.style.display="none";
@@ -1198,6 +1381,7 @@ function returnToSelection(e){
   shotInProgress=false;
   shot=null;
   dynamic.visible=false;
+  stopShotSelection();
   particles=[];
   resultText="";
   clickMarker.until=0;
@@ -1206,7 +1390,7 @@ function returnToSelection(e){
   resultBox.style.display="none";
   backBtn.style.display="none";
   hud.style.display="none";
-  startBtn.textContent=selectedMode==="focus"?"START FOCUS ROUND":"START DYNAMIC ROUND";
+  startBtn.textContent=selectedMode==="focus"?"START FOCUS ROUND":(selectedMode==="dynamic"?"START DYNAMIC ROUND":"START SHOT ROUND");
   setMessage("Choose a player, training mode, and round time.");
   updateProfileStats();
 
@@ -1238,6 +1422,62 @@ function drawCourt(){
   ctx.moveTo(W*.5,H*.45);
   ctx.lineTo(W*.5,H);
   ctx.stroke();
+}
+
+function drawShotRim(t){
+  var boardW=hoop.rx*3.4;
+  var boardH=hoop.rx*1.72;
+  var boardX=hoop.x-boardW/2;
+  var boardY=hoop.y-boardH*.85;
+  var open=shotState.isOpen;
+  var rimColor=open?"#3ddc6a":"#ff3b3b";
+  var rimGlow=open?"rgba(61,220,106,.9)":"rgba(255,59,59,.9)";
+
+  ctx.save();
+
+  ctx.fillStyle="rgba(235,245,255,.13)";
+  ctx.strokeStyle="rgba(235,245,255,.56)";
+  ctx.lineWidth=4;
+  ctx.fillRect(boardX,boardY,boardW,boardH);
+  ctx.strokeRect(boardX,boardY,boardW,boardH);
+
+  ctx.strokeStyle="rgba(255,255,255,.72)";
+  ctx.lineWidth=3;
+  ctx.strokeRect(hoop.x-hoop.rx*.58,hoop.y-hoop.rx*.52,hoop.rx*1.16,hoop.rx*.72);
+
+  var pulse=1+Math.sin(t/260)*.05;
+  ctx.strokeStyle=rimColor;
+  ctx.lineWidth=Math.max(7,hoop.rx*.12);
+  ctx.shadowColor=rimGlow;
+  ctx.shadowBlur=22;
+  ctx.beginPath();
+  ctx.ellipse(hoop.x,hoop.y,hoop.rx*pulse,hoop.ry*pulse,0,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(255,255,255,.55)";
+  ctx.lineWidth=2;
+  var n;
+  for(n=-3;n<=3;n++){
+    ctx.beginPath();
+    ctx.moveTo(hoop.x+n*hoop.rx*.22,hoop.y+hoop.ry*.75);
+    ctx.lineTo(hoop.x+n*hoop.rx*.12,hoop.y+hoop.rx*.82);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.ellipse(hoop.x,hoop.y+hoop.rx*.82,hoop.rx*.38,hoop.ry*.55,0,0,Math.PI*2);
+  ctx.stroke();
+
+  // Text label as a redundant signal alongside color, so this never
+  // depends on color alone to be understood.
+  ctx.textAlign="center";
+  ctx.font="bold "+Math.max(16,Math.min(26,W*.026))+"px Arial";
+  ctx.fillStyle=rimColor;
+  ctx.shadowColor=rimGlow;
+  ctx.shadowBlur=10;
+  ctx.fillText(open?"OPEN — SHOOT!":"CONTESTED",hoop.x,boardY-14);
+
+  ctx.restore();
 }
 
 function drawBackboardAndRim(t,dynamicMode){
@@ -1462,7 +1702,7 @@ function frame(t){
     updateFocusHoop(t);
     updateFocusLock(t);
     updateFocusShot(t);
-  }else{
+  }else if(selectedMode==="dynamic"){
     updateDynamic(t);
   }
 
@@ -1472,10 +1712,12 @@ function frame(t){
     drawBackboardAndRim(t,false);
     drawChestGuide();
     drawBall();
-  }else if(dynamic.visible){
+  }else if(selectedMode==="dynamic"&&dynamic.visible){
     drawBackboardAndRim(t,true);
-  }else if(gameRunning&&roundStarted){
+  }else if(selectedMode==="dynamic"&&gameRunning&&roundStarted){
     drawDynamicWaiting();
+  }else if(selectedMode==="shot"&&gameRunning&&roundStarted){
+    drawShotRim(t);
   }
 
   drawClickMarker(t);
@@ -1492,8 +1734,10 @@ function handleCanvasClick(e){
 
   if(selectedMode==="focus"){
     beginFocusShot(cursor.x,cursor.y);
-  }else{
+  }else if(selectedMode==="dynamic"){
     handleDynamicClick(cursor.x,cursor.y);
+  }else{
+    handleShotClick(cursor.x,cursor.y);
   }
 
   if(e.preventDefault){e.preventDefault();}
@@ -1535,6 +1779,13 @@ for(i=0;i<bpmButtons.length;i++){
   },false);
 }
 
+var shotBpmButtons=document.querySelectorAll("[data-shotbpm]");
+for(i=0;i<shotBpmButtons.length;i++){
+  shotBpmButtons[i].addEventListener("click",function(){
+    selectShotBpm(this.getAttribute("data-shotbpm"));
+  },false);
+}
+
 var timeButtons=document.querySelectorAll("[data-time]");
 for(i=0;i<timeButtons.length;i++){
   timeButtons[i].addEventListener("click",function(){
@@ -1557,6 +1808,7 @@ resize();
 refreshProfiles();
 selectLevel("steady");
 selectBpm(60);
+selectShotBpm(60);
 selectTime(60);
 selectMode("focus");
 updateHud();
