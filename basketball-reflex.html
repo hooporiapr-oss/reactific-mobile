@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Basketball Reflex | Hooporia</title>
+<style>
+/* -- Basketball REFLEX (embedded, own scope) -- */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#reflex_screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#001818 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;
+  padding:20px 16px 24px;
+  box-sizing:border-box;
+}
+.rbb-vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(255,149,0,1);margin-bottom:8px}
+.rbb-vrr-logo span{color:#ff9500}
+.rbb-vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#ff9500;margin-bottom:8px;text-align:center}
+.rbb-vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.rbb-big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#ff9500,#ffb274);color:#000;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,149,0,.7);margin-bottom:14px}
+.rbb-big-btn:hover{transform:scale(1.03)}
+.rbb-speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.rbb-speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(255,149,0,.4);background:rgba(255,149,0,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.rbb-speed-btn.rbb-active{border-color:#ff9500;background:rgba(255,149,0,.22);box-shadow:0 0 30px rgba(255,149,0,.6);color:#ff9500}
+.rbb-speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.rbb-mode-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;width:100%;max-width:420px}
+.rbb-level-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;width:100%;max-width:420px}
+.rbb-level-row.rbb-hidden{display:none}
+.rbb-level-btn{width:100%;min-width:0;height:50px;border:3px solid rgba(255,149,0,.4);background:rgba(255,149,0,.08);border-radius:12px;color:#fff;font-size:.8rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.02em;padding:2px}
+.rbb-level-btn.rbb-active{border-color:#ff9500;background:rgba(255,149,0,.22);box-shadow:0 0 24px rgba(255,149,0,.6);color:#ff9500}
+.rbb-level-btn small{display:block;font-size:.55rem;color:#a7adba;line-height:1.2}
+.rbb-intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.rbb-intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #reflex_screen-intro{padding:16px 12px 20px}
+  .rbb-vrr-logo{font-size:1.8rem}
+  .rbb-vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .rbb-vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .rbb-speed-row{gap:5px}
+  .rbb-speed-btn{height:50px;font-size:.78rem}
+  .rbb-speed-btn small{font-size:.5rem}
+  .rbb-big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .rbb-intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#reflex_screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(255,149,0,.15),transparent 30%),linear-gradient(180deg,#001818,#000a0a);
+}
+.rbb-topbar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:6px 10px 4px;flex-shrink:0}
+.rbb-top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(255,149,0,.3)}
+.rbb-top-label{font-size:.5rem;color:#ff9500;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.rbb-top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.rbb-info-box{border-color:#ffd35a;background:rgba(255,215,0,.06)!important}
+.rbb-info-box .rbb-top-label{color:#ffd35a}
+.rbb-info-box .rbb-top-val{color:#ff9500;font-size:1rem}
+.rbb-clockbar{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.rbb-clockbar-fill{height:100%;background:linear-gradient(90deg,#ff9500,#ffb274);transition:width .1s linear}
+.rbb-msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.rbb-msg-bar.rbb-watch{color:#ffd35a}.rbb-msg-bar.rbb-go{color:#ff9500}.rbb-msg-bar.rbb-perfect{color:#00D9A5}.rbb-msg-bar.rbb-miss{color:#FF1493}
+.rbb-stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.rbb-star{font-size:1rem;opacity:.2;transition:all .3s}
+.rbb-star.rbb-earned{opacity:1;filter:drop-shadow(0 0 6px #ff9500);transform:scale(1.2)}
+.rbb-court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0}
+.rbb-court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;border:2px solid rgba(255,149,0,.4);border-radius:14px;padding:6px;background-color:#2b1810;background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20100%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%0A%20%20%3Crect%20width%3D%22200%22%20height%3D%22100%22%20fill%3D%22%233a1c0b%22/%3E%0A%20%20%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%22198%22%20height%3D%2298%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cline%20x1%3D%22100%22%20y1%3D%221%22%20x2%3D%22100%22%20y2%3D%2299%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%22100%22%20cy%3D%2250%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Crect%20x%3D%221%22%20y%3D%2231%22%20width%3D%2238%22%20height%3D%2238%22%20fill%3D%22rgba%28255%2C107%2C0%2C.08%29%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%2239%22%20cy%3D%2250%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cpath%20d%3D%22M%201%2C10%20A%2084%2C84%200%200%2C1%2061%2C50%20A%2084%2C84%200%200%2C1%201%2C90%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.3%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Crect%20x%3D%22161%22%20y%3D%2231%22%20width%3D%2238%22%20height%3D%2238%22%20fill%3D%22rgba%28255%2C107%2C0%2C.08%29%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%22161%22%20cy%3D%2250%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cpath%20d%3D%22M%20199%2C10%20A%2084%2C84%200%200%2C0%20139%2C50%20A%2084%2C84%200%200%2C0%20199%2C90%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.3%29%22%20stroke-width%3D%221.5%22/%3E%0A%3C/svg%3E%0A');background-size:100% 100%;box-shadow:0 0 60px rgba(255,149,0,.25),inset 0 0 40px rgba(255,149,0,.05),0 20px 60px rgba(0,0,0,.8)}
+.rbb-cell{border-radius:8px;background:rgba(255,149,0,.05);border:2px solid rgba(255,149,0,.28);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.rbb-cell:hover{background:rgba(255,149,0,.2);border-color:#ff9500;transform:scale(1.05)}
+.rbb-cell.rbb-lit{background:#ff9500!important;border-color:#ffb274!important;box-shadow:0 0 30px rgba(255,149,0,1)!important;transform:scale(1.05)}
+.rbb-cell.rbb-selected{background:rgba(255,149,0,.35)!important;border-color:#ff9500!important;box-shadow:0 0 14px rgba(255,149,0,.6)!important}
+.rbb-cell.rbb-correct{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important}
+.rbb-cell.rbb-wrong{background:rgba(255,20,147,.35)!important;border-color:#FF1493!important;animation:shake .3s}
+.rbb-cell.rbb-missed{border:3px dashed #ff9500!important;background:rgba(255,149,0,.15)!important}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.rbb-bottombar{display:flex;justify-content:center;flex-wrap:wrap;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.rbb-bot-btn{height:48px;flex:0 1 150px;max-width:180px;border:2px solid rgba(255,149,0,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.rbb-bot-btn span{display:block;color:#ff9500;font-size:.55rem;margin-top:1px}
+.rbb-start-btn{border-color:#ff9500;background:linear-gradient(180deg,#ffb274,#ff9500);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(255,149,0,.7)}
+.rbb-start-btn:disabled{opacity:.5}
+.rbb-repeat-btn{border-color:#ffd35a;background:rgba(255,215,90,.12);color:#ffd35a;display:none}
+.rbb-repeat-btn.rbb-show{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rbb-repeat-btn:disabled{opacity:.35}
+
+@media (max-width:768px){
+  #fsBtn{display:none}
+}
+.rbb-top-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(255,149,0,.4);background:rgba(0,0,0,.5);color:#ff9500;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120}
+@media(max-width:768px){.rbb-top-fs{display:none}}
+
+#reflex_fsStrobe{position:fixed;inset:0;z-index:110;pointer-events:none;background:#ff9500;opacity:0}
+</style>
+</head>
+<body>
+<div id="reflex_screen-intro">
+  <button style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120" id="reflexExitBtn" type="button">← Back</button>
+  <button class="rbb-top-fs" id="reflex_fsBtnTop">⛶ Fullscreen</button>
+  <div class="rbb-vrr-logo">BASKETBALL <span>REFLEX</span></div>
+  <div class="rbb-vrr-sub">Full Court · Hooporia Basketball Memory</div>
+  <div class="rbb-vrr-rule">👀 WATCH THE FLASH — FIND THEM ALL</div>
+  <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#ff9500;margin-bottom:14px;text-align:center">⚡ RITNOME 100 · 100 BPM</div>
+  <div class="rbb-mode-row">
+    <button class="rbb-speed-btn rbb-active" data-gamemode="game">GAME<small>Escalating, no limit</small></button>
+    <button class="rbb-speed-btn" data-gamemode="training">TRAINING<small>Fixed level, 10 rounds</small></button>
+  </div>
+  <div class="rbb-level-row rbb-hidden" id="reflex_levelRow">
+    <button class="rbb-level-btn rbb-active" data-level="1">L1<small>3 cells</small></button>
+    <button class="rbb-level-btn" data-level="2">L2<small>4 cells</small></button>
+    <button class="rbb-level-btn" data-level="3">L3<small>5 cells</small></button>
+    <button class="rbb-level-btn" data-level="4">L4<small>6 cells</small></button>
+    <button class="rbb-level-btn" data-level="5">L5<small>7 cells</small></button>
+  </div>
+  <button class="rbb-big-btn" id="reflex_startBtn">👀 ENTER THE COURT</button>
+  <div class="rbb-intro-info">
+    <strong>WATCH</strong> — multiple cells flash cyan<br>
+    <strong>BLANK</strong> — screen goes dark, beat starts<br>
+    <strong>FIND</strong> — tap them all before the beat runs out<br>
+    <strong>ONE MISS ENDS IT</strong> — one more rbb-cell flashes every round
+  </div>
+</div>
+
+<div id="reflex_screen-game">
+  <div id="reflex_fsStrobe"></div>
+  <div class="rbb-topbar">
+    <div class="rbb-top-box"><div class="rbb-top-label">Score</div><div class="rbb-top-val" id="reflex_hSc">0</div></div>
+    <div class="rbb-top-box rbb-info-box"><div class="rbb-top-label">Tempo</div><div class="rbb-top-val" id="reflex_hFind">100 BPM</div></div>
+    <div class="rbb-top-box"><div class="rbb-top-label" id="reflex_hRdLbl">Targets</div><div class="rbb-top-val" id="reflex_hRd">3</div></div>
+    <div class="rbb-top-box"><div class="rbb-top-label" id="reflex_hLvLbl">Best</div><div class="rbb-top-val" id="reflex_hLv">0</div></div>
+    <div class="rbb-top-box"><div class="rbb-top-label">Streak</div><div class="rbb-top-val" id="reflex_hSt">0</div></div>
+    <div class="rbb-top-box"><div class="rbb-top-label">Repeats</div><div class="rbb-top-val" id="reflex_hRep">0</div></div>
+    <div class="rbb-top-box"><div class="rbb-top-label">Timer</div><div class="rbb-top-val" id="reflex_hPf">--</div></div>
+  </div>
+  <div class="rbb-clockbar"><div class="rbb-clockbar-fill" id="reflex_clockFill" style="width:0%"></div></div>
+  <div class="rbb-msg-bar rbb-watch" id="reflex_msg">TAP LET'S GO!</div>
+  <div class="rbb-stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Target Count</span>&nbsp;<span id="reflex_ps1" style="font-size:1.2rem;font-weight:900;color:#ff9500"></span></div>
+  <div class="rbb-court-area"><div class="rbb-court" id="reflex_court"></div></div>
+  <div class="rbb-bottombar">
+    <button class="rbb-bot-btn" id="reflex_menuBtn">← Home<span>Settings</span></button>
+    <button class="rbb-bot-btn rbb-start-btn" id="reflex_actBtn">LET'S GO</button>
+    <button class="rbb-bot-btn rbb-repeat-btn" id="reflex_repeatBtn">↻ REPEAT<span>1 per round</span></button>
+    <button class="rbb-bot-btn" id="reflex_restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+  </div>
+</div>
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+
+var bpm=100;
+var STARTING_CELLS=3;
+
+var gameMode='game'; // 'game' | 'training'
+var trainingLevel=1; // 1-5
+var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
+var TRAINING_ROUNDS=10;
+function getInitialCellCount(){return gameMode==='training'?LEVEL_CELLS[trainingLevel]:STARTING_CELLS}
+
+document.querySelectorAll('[data-gamemode]').forEach(btn=>{
+  btn.onclick=function(){
+    gameMode=btn.dataset.gamemode;
+    document.querySelectorAll('[data-gamemode]').forEach(b=>b.classList.remove('rbb-active'));
+    btn.classList.add('rbb-active');
+    $('reflex_levelRow').classList.toggle('rbb-hidden',gameMode!=='training');
+  };
+});
+document.querySelectorAll('[data-level]').forEach(btn=>{
+  btn.onclick=function(){
+    trainingLevel=Number(btn.dataset.level);
+    document.querySelectorAll('[data-level]').forEach(b=>b.classList.remove('rbb-active'));
+    btn.classList.add('rbb-active');
+  };
+});
+
+/* Audio beat — the Ritnome click, synced to the full-screen strobe */
+var aCtx=null;
+function gAC(){if(!aCtx){try{aCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return aCtx}
+function beatBeep(){
+  var c=gAC();if(!c)return;
+  try{
+    if(c.state==='suspended')c.resume();
+    var o=c.createOscillator(),g2=c.createGain();
+    o.type='sine';o.frequency.value=440;
+    o.connect(g2);g2.connect(c.destination);
+    g2.gain.setValueAtTime(.18,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(.01,c.currentTime+.12);
+    o.start();o.stop(c.currentTime+.13);
+  }catch(e){}
+}
+
+/* Full-screen strobe — runs only while waiting for the player to react,
+   stops the instant they make their first tap. */
+var strobeInterval=null;
+function startFullStrobe(){
+  stopFullStrobe();
+  var beatMs=60000/bpm;
+  var el=$('reflex_fsStrobe');
+  strobeInterval=setInterval(function(){
+    el.style.transition='none';
+    el.style.opacity='.35';
+    beatBeep();
+    setTimeout(function(){
+      el.style.transition='opacity .15s';
+      el.style.opacity='0';
+    },Math.min(120,beatMs*.3));
+  },beatMs);
+}
+function stopFullStrobe(){
+  if(strobeInterval){clearInterval(strobeInterval);strobeInterval=null}
+  var el=$('reflex_fsStrobe');el.style.transition='none';el.style.opacity='0';
+}
+
+$('reflex_startBtn').onclick=function(){
+  $('reflex_screen-intro').style.display='none';$('reflex_screen-game').style.display='flex';
+  g.cellCount=getInitialCellCount();g.roundsDone=0;
+  buildCourt();updateHUD();
+  resizeCourtToFit();
+  try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
+  };
+
+// Keeps the court at a true 2:1 ratio (matching the drawn court background
+// exactly), fitting the largest size that stays inside the available area.
+function resizeCourtToFit(){
+  var area=document.querySelector('.rbb-court-area');
+  var court=document.getElementById('reflex_court');
+  if(!area||!court)return;
+  var areaW=area.clientWidth;
+  var areaH=area.clientHeight;
+  if(!areaW||!areaH)return;
+  var targetW=areaW;
+  var targetH=targetW/2;
+  if(targetH>areaH){
+    targetH=areaH;
+    targetW=targetH*2;
+  }
+  court.style.width=targetW+'px';
+  court.style.height=targetH+'px';
+}
+window.addEventListener('resize',resizeCourtToFit);
+
+$('reflex_menuBtn').onclick=function(){stopFullStrobe();stopRecallTimer();$('reflex_screen-game').style.display='none';$('reflex_screen-intro').style.display='flex'};
+$('reflex_fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];
+function buildCourt(){var court=$('reflex_court');court.innerHTML='';cells=[];for(var i=0;i<50;i++){var c=document.createElement('div');c.className='rbb-cell';c.dataset.i=i;c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));court.appendChild(c);cells.push(c)}}
+function cellSt(i,st){cells[i].className='rbb-cell';if(st)cells[i].classList.add(st)}
+function resetCells(){cells.forEach((_,i)=>cellSt(i))}
+
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+function updateHUD(){
+  $('reflex_hSc').textContent=g.sc;
+  $('reflex_hFind').textContent=bpm+' BPM';
+  if(gameMode==='training'){
+    $('reflex_hRdLbl').textContent='Level';
+    $('reflex_hRd').textContent=g.cellCount+' (L'+trainingLevel+')';
+    $('reflex_hLvLbl').textContent='Progress';
+    $('reflex_hLv').textContent=g.roundsDone+'/'+TRAINING_ROUNDS;
+  }else{
+    $('reflex_hRdLbl').textContent='Targets';
+    $('reflex_hRd').textContent=g.cellCount;
+    $('reflex_hLvLbl').textContent='Best';
+    $('reflex_hLv').textContent=g.best;
+  }
+  $('reflex_hSt').textContent=g.streak;
+  $('reflex_hRep').textContent=g.totalRepeats;
+  $('reflex_ps1').textContent=g.cellCount;
+}
+function msg(txt,cls){var el=$('reflex_msg');el.textContent=txt;el.className='rbb-msg-bar '+(cls||'rbb-watch')}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+
+function getBeatMs(){return Math.round((60000/bpm)*10)}
+
+/* Recall timer — one beat per target in the current round, ticking down live. */
+var recallDeadline=0,recallRAF=null;
+function startRecallTimer(){
+  var dur=getBeatMs();
+  recallDeadline=performance.now()+dur;
+  function tick(){
+    var remain=recallDeadline-performance.now();
+    var pct=Math.max(0,remain/dur);
+    $('reflex_clockFill').style.width=(pct*100)+'%';
+    $('reflex_hPf').textContent=Math.max(0,remain/1000).toFixed(1)+'s';
+    if(remain<=0){recallRAF=null;handleTimeout();return}
+    if(phase==='tapping')recallRAF=requestAnimationFrame(tick);
+  }
+  recallRAF=requestAnimationFrame(tick);
+}
+function stopRecallTimer(){if(recallRAF){cancelAnimationFrame(recallRAF);recallRAF=null}}
+
+var phase='idle',targets=[],found=[],timers=[],firstTapDone=false,repeatUsedThisRound=false;
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+
+function revealTargets(cb){
+  targets.forEach(function(idx){cellSt(idx,'rbb-lit')});
+  var showMs=Math.round(60000/bpm)+((g.cellCount-1)*120);
+  timers.push(setTimeout(function(){
+    targets.forEach(function(idx){cellSt(idx)});
+    cb();
+  },showMs));
+}
+
+function useRepeat(){
+  if(phase!=='tapping'||repeatUsedThisRound)return;
+  repeatUsedThisRound=true;
+  g.totalRepeats++;
+  updateHUD();
+  $('reflex_repeatBtn').disabled=true;
+  clrT();stopFullStrobe();stopRecallTimer();
+  phase='showing';found=[];
+  resetCells();
+  $('reflex_clockFill').style.width='100%';$('reflex_hPf').textContent='--';
+  msg('↻ REPEAT — WATCH!','rbb-watch');
+  timers.push(setTimeout(function(){
+    revealTargets(function(){
+      msg('⚡ FIND THEM ALL! (5 PTS)','rbb-go');
+      phase='tapping';
+      startFullStrobe();
+      startRecallTimer();
+    });
+  },500));
+}
+$('reflex_repeatBtn').onclick=useRepeat;
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();phase='showing';found=[];firstTapDone=false;repeatUsedThisRound=false;
+  resetCells();stopFullStrobe();stopRecallTimer();
+  $('reflex_actBtn').disabled=true;$('reflex_restartBtn').style.display='none';
+  $('reflex_repeatBtn').classList.add('rbb-show');$('reflex_repeatBtn').disabled=false;
+  updateHUD();
+  $('reflex_clockFill').style.width='100%';$('reflex_hPf').textContent='--';
+  var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,g.cellCount);
+  targets=indices;
+  msg('WATCH!','rbb-watch');
+  timers.push(setTimeout(function(){
+    revealTargets(function(){
+      msg('⚡ FIND THEM ALL!','rbb-go');
+      phase='tapping';
+      startFullStrobe();
+      startRecallTimer();
+    });
+  },600));
+}
+
+var tapLocked=false;
+function handleTap(idx){
+  if(phase==='showing'){msg('⏳ WAIT FOR IT...','rbb-watch');return;}
+  if(phase!=='tapping')return;
+  if(tapLocked)return;
+  tapLocked=true;
+  setTimeout(function(){tapLocked=false},80);
+
+  if(!firstTapDone){
+    firstTapDone=true;
+    stopFullStrobe(); // the beat stops the instant a reaction begins
+  }
+
+  if(targets.indexOf(idx)!==-1&&found.indexOf(idx)===-1){
+    cellSt(idx,'rbb-correct');found.push(idx);
+    if(found.length>=targets.length){
+      phase='idle';clrT();stopFullStrobe();stopRecallTimer();
+      $('reflex_repeatBtn').classList.remove('rbb-show');
+      g.streak++;
+      g.sc+=repeatUsedThisRound?5:g.cellCount*10;
+
+      if(gameMode==='training'){
+        g.roundsDone++;
+        updateHUD();
+        if(g.roundsDone>=TRAINING_ROUNDS){
+          msg('🏆 LEVEL COMPLETE!','rbb-perfect');
+          timers.push(setTimeout(showTrainingComplete,900));
+        }else{
+          msg((repeatUsedThisRound?'✅ CORRECT (5 PTS) · ':'✅ CORRECT! ')+'('+g.roundsDone+'/'+TRAINING_ROUNDS+')','rbb-perfect');
+          timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+        }
+      }else{
+        if(g.cellCount>g.best)g.best=g.cellCount;
+        g.cellCount++;
+        updateHUD();
+        msg(repeatUsedThisRound?'✅ CORRECT (5 PTS) · MORE CELLS...':'✅ PERFECT! MORE CELLS...','rbb-perfect');
+        timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+      }
+    }
+  }else if(targets.indexOf(idx)===-1){
+    endGame(idx);
+  }
+  // tapping an already-found target again is a harmless no-op
+}
+
+function handleTimeout(){
+  if(phase!=='tapping')return;
+  endGame(null);
+}
+
+function endGame(wrongIdx){
+  phase='idle';clrT();stopFullStrobe();stopRecallTimer();
+  $('reflex_repeatBtn').classList.remove('rbb-show');
+  if(wrongIdx!==null)cellSt(wrongIdx,'rbb-wrong');
+  g.streak=0;updateHUD();
+  msg(wrongIdx!==null?'WRONG CELL!':'⏱ TIME UP!','rbb-miss');
+
+  timers.push(setTimeout(function(){
+    targets.forEach(function(pi){if(found.indexOf(pi)===-1)cellSt(pi,'rbb-missed')});
+    timers.push(setTimeout(showFinalScore,900));
+  },400));
+}
+
+function autoNextRound(){if(phase!=='idle')return;resetCells();$('reflex_clockFill').style.width='0%';$('reflex_hPf').textContent='--';$('reflex_actBtn').disabled=true;$('reflex_restartBtn').style.display='none';startRound()}
+
+function showFinalScore(){
+  phase='idle';clrT();resetCells();updateHUD();$('reflex_clockFill').style.width='0%';$('reflex_hPf').textContent='--';
+  $('reflex_repeatBtn').classList.remove('rbb-show');
+  if(gameMode==='training'){
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'rbb-miss');
+  }else{
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS · REPEATS '+g.totalRepeats+')','rbb-miss');
+  }
+  $('reflex_actBtn').textContent="PLAY AGAIN";$('reflex_actBtn').onclick=restartGame;$('reflex_actBtn').disabled=false;
+  $('reflex_restartBtn').style.display='none';
+}
+
+function showTrainingComplete(){
+  phase='idle';clrT();resetCells();updateHUD();$('reflex_clockFill').style.width='0%';$('reflex_hPf').textContent='--';
+  $('reflex_repeatBtn').classList.remove('rbb-show');
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'rbb-perfect');
+  $('reflex_actBtn').textContent="PLAY AGAIN";$('reflex_actBtn').onclick=restartGame;$('reflex_actBtn').disabled=false;
+  $('reflex_restartBtn').style.display='none';
+}
+
+function restartGame(){
+  clrT();phase='idle';stopFullStrobe();stopRecallTimer();
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+  resetCells();updateHUD();$('reflex_clockFill').style.width='0%';$('reflex_hPf').textContent='--';
+  $('reflex_repeatBtn').classList.remove('rbb-show');
+  msg("TAP LET'S GO!",'rbb-watch');
+  $('reflex_actBtn').textContent="LET'S GO";$('reflex_actBtn').onclick=startRound;$('reflex_actBtn').disabled=false;$('reflex_restartBtn').style.display='none';
+}
+$('reflex_actBtn').onclick=startRound;
+buildCourt();
+$('reflexExitBtn').onclick=function(){stopFullStrobe();stopRecallTimer();$('reflex_screen-game').style.display='none';$('reflex_screen-intro').style.display='flex'};
+})();
+</script>
+</body>
+</html>
