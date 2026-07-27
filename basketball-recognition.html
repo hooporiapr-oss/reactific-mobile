@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Basketball Recognition | Hooporia</title>
+<style>
+/* -- Basketball RECOGNITION (embedded, own scope) -- */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+#recog_screen-intro{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#0a1400 0%,#000 70%);z-index:100;
+  overflow-y:auto;overflow-x:hidden;
+  padding:20px 16px 24px;
+  box-sizing:border-box;
+}
+.rcg-vrr-logo{font-size:2.4rem;font-weight:900;font-style:italic;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1;color:#fff;text-shadow:0 0 60px rgba(255,149,0,1);margin-bottom:8px}
+.rcg-vrr-logo span{color:#ff9500}
+.rcg-vrr-sub{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:#ff9500;margin-bottom:8px;text-align:center}
+.rcg-vrr-rule{font-size:.9rem;color:#ffd35a;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:20px;text-align:center}
+.rcg-big-btn{width:100%;max-width:420px;height:68px;border:none;border-radius:20px;background:linear-gradient(135deg,#ff9500,#B8E050);color:#000;font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(255,149,0,.7);margin-bottom:14px}
+.rcg-big-btn:hover{transform:scale(1.03)}
+.rcg-speed-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;width:100%;max-width:420px}
+.rcg-speed-btn{width:100%;min-width:0;height:58px;border:3px solid rgba(255,149,0,.4);background:rgba(255,149,0,.08);border-radius:14px;color:#fff;font-size:.9rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;padding:4px 2px}
+.rcg-speed-btn.rcg-active{border-color:#ff9500;background:rgba(255,149,0,.22);box-shadow:0 0 30px rgba(255,149,0,.6);color:#ff9500}
+.rcg-speed-btn small{display:block;font-size:.58rem;color:#a7adba;letter-spacing:.02em;white-space:normal;line-height:1.2}
+.rcg-mode-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;width:100%;max-width:420px}
+.rcg-level-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;width:100%;max-width:420px}
+.rcg-level-row.hidden{display:none}
+.rcg-level-btn{width:100%;min-width:0;height:50px;border:3px solid rgba(255,149,0,.4);background:rgba(255,149,0,.08);border-radius:12px;color:#fff;font-size:.8rem;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.02em;padding:2px}
+.rcg-level-btn.rcg-active{border-color:#ff9500;background:rgba(255,149,0,.22);box-shadow:0 0 24px rgba(255,149,0,.6);color:#ff9500}
+.rcg-level-btn small{display:block;font-size:.55rem;color:#a7adba;line-height:1.2}
+.rcg-intro-info{font-size:.75rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase;text-align:center;line-height:1.8;width:100%;max-width:420px}
+.rcg-intro-info strong{color:#ffd35a}
+
+@media (max-width:420px){
+  #recog_screen-intro{padding:16px 12px 20px}
+  .rcg-vrr-logo{font-size:1.8rem}
+  .rcg-vrr-sub{font-size:.62rem;margin-bottom:6px}
+  .rcg-vrr-rule{font-size:.7rem;margin-bottom:14px}
+  .rcg-speed-row{gap:5px}
+  .rcg-speed-btn{height:50px;font-size:.78rem}
+  .rcg-speed-btn small{font-size:.5rem}
+  .rcg-big-btn{height:56px;font-size:1rem;margin-bottom:10px}
+  .rcg-intro-info{font-size:.62rem;line-height:1.6}
+}
+
+#recog_screen-game{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(circle at 16% 5%,rgba(255,149,0,.15),transparent 30%),linear-gradient(180deg,#0a1400,#050a00);
+}
+.rcg-topbar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:6px 10px 4px;flex-shrink:0}
+.rcg-top-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:4px 6px;background:rgba(0,0,0,.4);border:2px solid rgba(255,149,0,.3)}
+.rcg-top-label{font-size:.5rem;color:#ff9500;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px}
+.rcg-top-val{font-size:1.3rem;font-weight:900;line-height:1;color:#fff}
+.rcg-phase-box{border-color:#ffd35a;background:rgba(255,215,0,.06)!important}
+.rcg-phase-box .rcg-top-label{color:#ffd35a}
+.rcg-phase-box .rcg-top-val{color:#ff9500;font-size:.9rem;letter-spacing:.05em}
+.rcg-timerbar{height:6px;background:rgba(255,255,255,.08);flex-shrink:0;overflow:hidden}
+.rcg-timerbar-fill{height:100%;width:100%;background:#ff9500;transition:background .3s}
+.rcg-timerbar-fill.rcg-warn{background:#FFD700}
+.rcg-timerbar-fill.rcg-danger{background:#FF1493}
+.rcg-msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
+.rcg-msg-bar.rcg-watch{color:#ffd35a}.rcg-msg-bar.rcg-echo{color:#ff9500}.rcg-msg-bar.rcg-go{color:#ff9500}.rcg-msg-bar.rcg-perfect{color:#00D9A5}.rcg-msg-bar.rcg-miss{color:#FF1493}
+.rcg-stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.rcg-star{font-size:1rem;opacity:.2;transition:all .3s}
+.rcg-star.rcg-earned{opacity:1;filter:drop-shadow(0 0 6px #ff9500);transform:scale(1.2)}
+.rcg-court-area{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 8px;min-height:0}
+.rcg-court{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(5,1fr);gap:4px;border:2px solid rgba(255,149,0,.4);border-radius:14px;padding:6px;background-color:#2b1810;background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20100%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%0A%20%20%3Crect%20width%3D%22200%22%20height%3D%22100%22%20fill%3D%22%233a1c0b%22/%3E%0A%20%20%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%22198%22%20height%3D%2298%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cline%20x1%3D%22100%22%20y1%3D%221%22%20x2%3D%22100%22%20y2%3D%2299%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%22100%22%20cy%3D%2250%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Crect%20x%3D%221%22%20y%3D%2231%22%20width%3D%2238%22%20height%3D%2238%22%20fill%3D%22rgba%28255%2C107%2C0%2C.08%29%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%2239%22%20cy%3D%2250%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cpath%20d%3D%22M%201%2C10%20A%2084%2C84%200%200%2C1%2061%2C50%20A%2084%2C84%200%200%2C1%201%2C90%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.3%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Crect%20x%3D%22161%22%20y%3D%2231%22%20width%3D%2238%22%20height%3D%2238%22%20fill%3D%22rgba%28255%2C107%2C0%2C.08%29%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Ccircle%20cx%3D%22161%22%20cy%3D%2250%22%20r%3D%2213%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.35%29%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cpath%20d%3D%22M%20199%2C10%20A%2084%2C84%200%200%2C0%20139%2C50%20A%2084%2C84%200%200%2C0%20199%2C90%22%20fill%3D%22none%22%20stroke%3D%22rgba%28255%2C178%2C116%2C.3%29%22%20stroke-width%3D%221.5%22/%3E%0A%3C/svg%3E%0A');background-size:100% 100%;box-shadow:0 0 60px rgba(255,149,0,.25),inset 0 0 40px rgba(255,149,0,.05),0 20px 60px rgba(0,0,0,.8)}
+.rcg-cell{border-radius:8px;background:rgba(255,149,0,.05);border:2px solid rgba(255,149,0,.28);display:flex;align-items:center;justify-content:center;font-size:clamp(1rem,2.2vw,2rem);font-weight:900;color:transparent;cursor:pointer;transition:all .08s;min-height:0;min-width:0;touch-action:manipulation}
+.rcg-cell:hover{background:rgba(255,149,0,.2);border-color:#ff9500;transform:scale(1.05)}
+.rcg-cell.rcg-lit{background:#FFD700!important;border-color:#FFD700!important;box-shadow:0 0 30px rgba(255,215,0,1)!important;color:#000!important;transform:scale(1.06)}
+.rcg-cell.rcg-echo-lit{background:#ff9500!important;border-color:#B8E050!important;box-shadow:0 0 30px rgba(255,149,0,1)!important;color:#000!important;transform:scale(1.06)}
+.rcg-cell.rcg-find-target{border-color:#ff9500!important;background:rgba(255,149,0,.18)!important;color:#ff9500!important}
+.rcg-cell.rcg-correct{background:#00D9A5!important;border-color:#00D9A5!important;box-shadow:0 0 20px rgba(0,217,165,.8)!important;color:#000!important}
+.rcg-cell.rcg-wrong{background:rgba(255,20,147,.35)!important;border-color:#FF1493!important;animation:shake .3s;color:#fff!important}
+.rcg-cell.rcg-reveal-answer{border:3px solid #00D9A5!important;background:rgba(0,217,165,.2)!important;color:#00D9A5!important}
+.rcg-cell.rcg-reveal-original{border:3px dashed #FFD700!important;background:rgba(255,215,0,.15)!important;color:#FFD700!important}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.rcg-bottombar{display:flex;justify-content:center;flex-wrap:wrap;padding:4px 10px 6px;gap:8px;flex-shrink:0}
+.rcg-bot-btn{height:48px;flex:0 1 150px;max-width:180px;border:2px solid rgba(255,149,0,.5);background:rgba(0,0,0,.4);border-radius:12px;color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.rcg-bot-btn span{display:block;color:#ff9500;font-size:.55rem;margin-top:1px}
+.rcg-start-btn{border-color:#ff9500;background:linear-gradient(180deg,#B8E050,#ff9500);color:#000;font-size:1.1rem;box-shadow:0 0 18px rgba(255,149,0,.7)}
+.rcg-start-btn:disabled{opacity:.5}
+.rcg-repeat-btn{border-color:#ffd35a;background:rgba(255,215,90,.12);color:#ffd35a;display:none}
+.rcg-repeat-btn.rcg-show{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rcg-repeat-btn:disabled{opacity:.35}
+
+@media (max-width:768px){
+  #fsBtn{display:none}
+}
+.rcg-top-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(0,206,209,.4);background:rgba(0,0,0,.5);color:#00CED1;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120}
+@media(max-width:768px){.rcg-top-fs{display:none}}
+
+#recog_fsStrobe{position:fixed;inset:0;z-index:110;pointer-events:none;background:#ff9500;opacity:0}
+</style>
+</head>
+<body>
+<div id="recog_screen-intro">
+  <button style="position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:120" id="recognitionExitBtn" type="button">← Back</button>
+  <button class="rcg-top-fs" id="recog_fsBtnTop">⛶ Fullscreen</button>
+  <div class="rcg-vrr-logo">BASKETBALL <span>RECOGNITION</span></div>
+  <div class="rcg-vrr-sub">Full Court · Hooporia Basketball Memory</div>
+  <div class="rcg-vrr-rule">👁️ WATCH · ECHO · SPOT THE CHANGE</div>
+  <div style="font-size:.85rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:#ff9500;margin-bottom:14px;text-align:center">⚡ RITNOME 100 · 100 BPM</div>
+  <div class="rcg-mode-row">
+    <button class="rcg-speed-btn rcg-active" data-gamemode="game">GAME<small>Escalating, no limit</small></button>
+    <button class="rcg-speed-btn" data-gamemode="training">TRAINING<small>Fixed level, 10 rounds</small></button>
+  </div>
+  <div class="rcg-level-row hidden" id="recog_levelRow">
+    <button class="rcg-level-btn rcg-active" data-level="1">L1<small>3 cells</small></button>
+    <button class="rcg-level-btn" data-level="2">L2<small>4 cells</small></button>
+    <button class="rcg-level-btn" data-level="3">L3<small>5 cells</small></button>
+    <button class="rcg-level-btn" data-level="4">L4<small>6 cells</small></button>
+    <button class="rcg-level-btn" data-level="5">L5<small>7 cells</small></button>
+  </div>
+  <button class="rcg-big-btn" id="recog_startBtn">👁️ ENTER THE COURT</button>
+  <div class="rcg-intro-info">
+    <strong>WATCH</strong> — original pattern flashes gold<br>
+    <strong>ECHO</strong> — same pattern in lime — ONE rcg-cell changed<br>
+    <strong>BLANK</strong> — screen goes dark, beat starts<br>
+    <strong>ONE MISS ENDS IT</strong> — one more rcg-cell every round
+  </div>
+</div>
+
+<div id="recog_screen-game">
+  <div id="recog_fsStrobe"></div>
+  <div class="rcg-topbar">
+    <div class="rcg-top-box"><div class="rcg-top-label">Score</div><div class="rcg-top-val" id="recog_hSc">0</div></div>
+    <div class="rcg-top-box rcg-phase-box"><div class="rcg-top-label">Tempo</div><div class="rcg-top-val" id="recog_hPhase">100 BPM</div></div>
+    <div class="rcg-top-box"><div class="rcg-top-label" id="recog_hRdLbl">Pattern</div><div class="rcg-top-val" id="recog_hRd">3</div></div>
+    <div class="rcg-top-box"><div class="rcg-top-label" id="recog_hLvLbl">Best</div><div class="rcg-top-val" id="recog_hLv">0</div></div>
+    <div class="rcg-top-box"><div class="rcg-top-label">Streak</div><div class="rcg-top-val" id="recog_hSt">0</div></div>
+    <div class="rcg-top-box"><div class="rcg-top-label">Repeats</div><div class="rcg-top-val" id="recog_hRep">0</div></div>
+    <div class="rcg-top-box"><div class="rcg-top-label">Timer</div><div class="rcg-top-val" id="recog_hPf">--</div></div>
+  </div>
+  <div class="rcg-timerbar"><div class="rcg-timerbar-fill" id="recog_timerFill" style="width:100%"></div></div>
+  <div class="rcg-msg-bar rcg-watch" id="recog_msg">TAP LET'S GO!</div>
+  <div class="rcg-stars"><span style="font-size:.65rem;color:#8892a0;letter-spacing:.1em;text-transform:uppercase">Pattern Length</span>&nbsp;<span id="recog_ps1" style="font-size:1.2rem;font-weight:900;color:#ff9500"></span></div>
+  <div class="rcg-court-area"><div class="rcg-court" id="recog_court"></div></div>
+  <div class="rcg-bottombar">
+    <button class="rcg-bot-btn" id="recog_menuBtn">← Home<span>Settings</span></button>
+    <button class="rcg-bot-btn rcg-start-btn" id="recog_actBtn">LET'S GO</button>
+    <button class="rcg-bot-btn rcg-repeat-btn" id="recog_repeatBtn">↻ REPEAT<span>1 per round</span></button>
+    <button class="rcg-bot-btn" id="recog_restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
+  </div>
+</div>
+<script>
+(function(){
+var $=id=>document.getElementById(id);
+
+var bpm=100;
+var STARTING_CELLS=3;
+
+var gameMode='game'; // 'game' | 'training'
+var trainingLevel=1; // 1-5
+var LEVEL_CELLS={1:3,2:4,3:5,4:6,5:7};
+var TRAINING_ROUNDS=10;
+function getInitialCellCount(){return gameMode==='training'?LEVEL_CELLS[trainingLevel]:STARTING_CELLS}
+
+document.querySelectorAll('[data-gamemode]').forEach(btn=>{
+  btn.onclick=function(){
+    gameMode=btn.dataset.gamemode;
+    document.querySelectorAll('[data-gamemode]').forEach(b=>b.classList.remove('rcg-active'));
+    btn.classList.add('rcg-active');
+    $('recog_levelRow').classList.toggle('rcg-hidden',gameMode!=='training');
+  };
+});
+document.querySelectorAll('[data-level]').forEach(btn=>{
+  btn.onclick=function(){
+    trainingLevel=Number(btn.dataset.level);
+    document.querySelectorAll('[data-level]').forEach(b=>b.classList.remove('rcg-active'));
+    btn.classList.add('rcg-active');
+  };
+});
+
+function getBeatIv(){return 60000/bpm}
+function getFindMs(){return Math.round((60000/bpm)*10)}
+
+/* Audio beat — the Ritnome click, synced to the full-screen strobe */
+var aCtx=null;
+function gAC(){if(!aCtx){try{aCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return aCtx}
+function beatBeep(){
+  var c=gAC();if(!c)return;
+  try{
+    if(c.state==='suspended')c.resume();
+    var o=c.createOscillator(),g2=c.createGain();
+    o.type='sine';o.frequency.value=440;
+    o.connect(g2);g2.connect(c.destination);
+    g2.gain.setValueAtTime(.18,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(.01,c.currentTime+.12);
+    o.start();o.stop(c.currentTime+.13);
+  }catch(e){}
+}
+
+/* Full-screen strobe — runs only while waiting for the player to react,
+   stops the instant they make their first tap. */
+var strobeInterval=null;
+function startFullStrobe(){
+  stopFullStrobe();
+  var beatMs=getBeatIv();
+  var el=$('recog_fsStrobe');
+  strobeInterval=setInterval(function(){
+    el.style.transition='none';
+    el.style.opacity='.35';
+    beatBeep();
+    setTimeout(function(){
+      el.style.transition='opacity .15s';
+      el.style.opacity='0';
+    },Math.min(120,beatMs*.3));
+  },beatMs);
+}
+function stopFullStrobe(){
+  if(strobeInterval){clearInterval(strobeInterval);strobeInterval=null}
+  var el=$('recog_fsStrobe');el.style.transition='none';el.style.opacity='0';
+}
+
+var timerRAF=null,timerStart=0,timerDur=0,canTap=false;
+function startTimer(dur){
+  timerDur=dur;timerStart=performance.now();$('recog_timerFill').style.width='100%';$('recog_timerFill').className='rcg-timerbar-fill';
+  function tick(){
+    var remain=timerDur-(performance.now()-timerStart);
+    var pct=Math.max(0,remain/timerDur);
+    $('recog_timerFill').style.width=(pct*100)+'%';
+    $('recog_hPf').textContent=Math.max(0,remain/1000).toFixed(1)+'s';
+    if(pct<0.3)$('recog_timerFill').className='rcg-timerbar-fill rcg-danger';else if(pct<0.5)$('recog_timerFill').className='rcg-timerbar-fill rcg-warn';
+    if(remain<=0){timerRAF=null;handleTimeout();return}
+    if(canTap)timerRAF=requestAnimationFrame(tick);
+  }
+  timerRAF=requestAnimationFrame(tick);
+}
+function stopTimer(){if(timerRAF)cancelAnimationFrame(timerRAF);timerRAF=null;$('recog_timerFill').style.width='100%';$('recog_timerFill').className='rcg-timerbar-fill'}
+
+$('recog_startBtn').onclick=function(){
+  $('recog_screen-intro').style.display='none';$('recog_screen-game').style.display='flex';
+  g.cellCount=getInitialCellCount();g.roundsDone=0;
+  buildCourt();updateHUD();
+  resizeCourtToFit();
+  try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
+  };
+
+function resizeCourtToFit(){
+  var area=document.querySelector('.rcg-court-area');
+  var court=document.getElementById('recog_court');
+  if(!area||!court)return;
+  var areaW=area.clientWidth;
+  var areaH=area.clientHeight;
+  if(!areaW||!areaH)return;
+  var targetW=areaW;
+  var targetH=targetW/2;
+  if(targetH>areaH){
+    targetH=areaH;
+    targetW=targetH*2;
+  }
+  court.style.width=targetW+'px';
+  court.style.height=targetH+'px';
+}
+window.addEventListener('resize',resizeCourtToFit);
+
+$('recog_menuBtn').onclick=function(){stopTimer();stopFullStrobe();$('recog_screen-game').style.display='none';$('recog_screen-intro').style.display='flex'};
+$('recog_fsBtnTop').onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+var cells=[];
+function buildCourt(){var court=$('recog_court');court.innerHTML='';cells=[];for(var i=0;i<50;i++){var c=document.createElement('div');c.className='rcg-cell';c.dataset.i=i;c.addEventListener('pointerdown',(function(idx){return function(e){e.preventDefault();handleTap(idx)}})(i));court.appendChild(c);cells.push(c)}}
+function cellSt(i,st,num){cells[i].className='rcg-cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color=''}}}
+function resetCells(){cells.forEach((_,i)=>cellSt(i))}
+
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+function updateHUD(){
+  $('recog_hSc').textContent=g.sc;
+  $('recog_hPhase').textContent=bpm+' BPM';
+  if(gameMode==='training'){
+    $('recog_hRdLbl').textContent='Level';
+    $('recog_hRd').textContent=g.cellCount+' (L'+trainingLevel+')';
+    $('recog_hLvLbl').textContent='Progress';
+    $('recog_hLv').textContent=g.roundsDone+'/'+TRAINING_ROUNDS;
+  }else{
+    $('recog_hRdLbl').textContent='Pattern';
+    $('recog_hRd').textContent=g.cellCount;
+    $('recog_hLvLbl').textContent='Best';
+    $('recog_hLv').textContent=g.best;
+  }
+  $('recog_hSt').textContent=g.streak;
+  $('recog_hRep').textContent=g.totalRepeats;
+  $('recog_ps1').textContent=g.cellCount;
+}
+function msg(txt,cls){var el=$('recog_msg');el.textContent=txt;el.className='rcg-msg-bar '+(cls||'rcg-watch')}
+
+var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[],firstTapDone=false,repeatUsedThisRound=false;
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+
+function genPatterns(){
+  var len=g.cellCount;
+  var indices=shuffle(Array.from({length:50},(_,i)=>i)).slice(0,len);
+  original=indices.slice();echo=indices.slice();
+  changePos=Math.floor(Math.random()*len);
+  originalCell=indices[changePos];
+  var used=indices.slice(),newCell;
+  do{newCell=Math.floor(Math.random()*50)}while(used.indexOf(newCell)!==-1);
+  echo[changePos]=newCell;changedCell=newCell;
+}
+
+function revealWatchEcho(){
+  phase='watching';resetCells();
+  msg('WATCH ORIGINAL','rcg-watch');
+  var beatIv=getBeatIv();
+  var i=0;
+  function watchNext(){
+    if(phase!=='watching')return;
+    if(i>0)cellSt(original[i-1]);
+    if(i<original.length){cellSt(original[i],'rcg-lit',i+1);i++;timers.push(setTimeout(watchNext,beatIv))}
+    else{timers.push(setTimeout(function(){cellSt(original[original.length-1]);startEcho()},beatIv*.6))}
+  }
+  timers.push(setTimeout(watchNext,500));
+}
+
+function useRepeat(){
+  if(phase!=='finding'||repeatUsedThisRound)return;
+  repeatUsedThisRound=true;
+  g.totalRepeats++;
+  updateHUD();
+  $('recog_repeatBtn').disabled=true;
+  clrT();canTap=false;stopTimer();stopFullStrobe();
+  resetCells();
+  $('recog_hPf').textContent='--';
+  revealWatchEcho();
+}
+$('recog_repeatBtn').onclick=useRepeat;
+
+function startRound(){
+  if(phase!=='idle')return;
+  clrT();canTap=false;stopTimer();stopFullStrobe();firstTapDone=false;repeatUsedThisRound=false;
+  genPatterns();
+  resetCells();$('recog_actBtn').disabled=true;$('recog_restartBtn').style.display='none';
+  $('recog_repeatBtn').classList.add('rcg-show');$('recog_repeatBtn').disabled=false;
+  updateHUD();
+  $('recog_hPf').textContent='--';
+  revealWatchEcho();
+}
+
+function startEcho(){
+  phase='echoing';resetCells();msg('NOW THE ECHO...','rcg-echo');
+  var beatIv=getBeatIv();
+  var i=0;
+  function echoNext(){
+    if(phase!=='echoing')return;
+    if(i>0)cellSt(echo[i-1]);
+    if(i<echo.length){cellSt(echo[i],'rcg-echo-lit',i+1);i++;timers.push(setTimeout(echoNext,beatIv))}
+    else{timers.push(setTimeout(function(){cellSt(echo[echo.length-1]);startFind()},beatIv*.6))}
+  }
+  timers.push(setTimeout(echoNext,400));
+}
+
+function startFind(){
+  phase='finding';canTap=true;resetCells();
+  /* Genuinely blank — no outlined targets to pick from. The player recalls
+     from memory which cell in the pattern was the changed one. */
+  msg(repeatUsedThisRound?'⚡ WHICH ONE CHANGED? (5 PTS)':'⚡ WHICH ONE CHANGED?','rcg-go');
+  startFullStrobe();
+  var dur=getFindMs();
+  startTimer(dur);
+}
+
+function handleTap(idx){
+  if(phase==='watching'||phase==='echoing'){msg('⏳ WAIT FOR IT...','rcg-watch');return;}
+  if(phase!=='finding'||!canTap)return;
+
+  if(!firstTapDone){
+    firstTapDone=true;
+    stopFullStrobe(); // the beat stops the instant a reaction begins
+  }
+
+  canTap=false;stopTimer();clrT();
+
+  if(idx===changedCell){
+    cellSt(idx,'rcg-correct',changePos+1);
+    timers.push(setTimeout(function(){cellSt(originalCell,'rcg-reveal-original',changePos+1)},300));
+    timers.push(setTimeout(roundSuccess,700));
+  }else{
+    endGame(idx);
+  }
+}
+
+function handleTimeout(){
+  if(phase!=='finding')return;
+  canTap=false;stopFullStrobe();
+  msg("TIME'S UP!",'rcg-miss');
+  revealAnswer();
+  endGame(null,true);
+}
+
+function revealAnswer(){cellSt(changedCell,'rcg-reveal-answer',changePos+1);cellSt(originalCell,'rcg-reveal-original',changePos+1)}
+
+function roundSuccess(){
+  phase='idle';
+  $('recog_repeatBtn').classList.remove('rcg-show');
+  g.streak++;
+  g.sc+=repeatUsedThisRound?5:g.cellCount*10;
+
+  if(gameMode==='training'){
+    g.roundsDone++;
+    updateHUD();
+    if(g.roundsDone>=TRAINING_ROUNDS){
+      msg('🏆 LEVEL COMPLETE!','rcg-perfect');
+      timers.push(setTimeout(showTrainingComplete,900));
+    }else{
+      msg((repeatUsedThisRound?'✅ CORRECT (5 PTS) · ':'✅ CORRECT! ')+'('+g.roundsDone+'/'+TRAINING_ROUNDS+')','rcg-perfect');
+      timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+    }
+  }else{
+    if(g.cellCount>g.best)g.best=g.cellCount;
+    g.cellCount++;
+    updateHUD();
+    msg(repeatUsedThisRound?'✅ CORRECT (5 PTS) · PATTERN GROWS...':'✅ CORRECT! PATTERN GROWS...','rcg-perfect');
+    timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
+  }
+}
+
+function autoNextRound(){if(phase!=='idle')return;resetCells();stopTimer();$('recog_hPf').textContent='--';$('recog_restartBtn').style.display='none';$('recog_actBtn').disabled=true;startRound()}
+
+function endGame(wrongIdx,alreadyRevealed){
+  phase='idle';clrT();stopFullStrobe();stopTimer();
+  $('recog_repeatBtn').classList.remove('rcg-show');
+  if(wrongIdx!==null&&!alreadyRevealed){cellSt(wrongIdx,'rcg-wrong');revealAnswer();}
+  g.streak=0;updateHUD();
+  if(!alreadyRevealed)msg('WRONG CELL!','rcg-miss');
+
+  timers.push(setTimeout(showFinalScore,1000));
+}
+
+function showFinalScore(){
+  phase='idle';clrT();resetCells();updateHUD();$('recog_hPf').textContent='--';
+  $('recog_repeatBtn').classList.remove('rcg-show');
+  if(gameMode==='training'){
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'rcg-miss');
+  }else{
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS · REPEATS '+g.totalRepeats+')','rcg-miss');
+  }
+  $('recog_actBtn').textContent="PLAY AGAIN";$('recog_actBtn').onclick=restartGame;$('recog_actBtn').disabled=false;
+  $('recog_restartBtn').style.display='none';
+}
+
+function showTrainingComplete(){
+  phase='idle';clrT();resetCells();updateHUD();$('recog_hPf').textContent='--';
+  $('recog_repeatBtn').classList.remove('rcg-show');
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'rcg-perfect');
+  $('recog_actBtn').textContent="PLAY AGAIN";$('recog_actBtn').onclick=restartGame;$('recog_actBtn').disabled=false;
+  $('recog_restartBtn').style.display='none';
+}
+
+function restartGame(){
+  clrT();phase='idle';canTap=false;stopTimer();stopFullStrobe();
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+  resetCells();updateHUD();$('recog_hPf').textContent='--';
+  $('recog_repeatBtn').classList.remove('rcg-show');
+  msg("TAP LET'S GO!",'rcg-watch');
+  $('recog_actBtn').textContent="LET'S GO";$('recog_actBtn').onclick=startRound;$('recog_actBtn').disabled=false;$('recog_restartBtn').style.display='none';
+}
+
+$('recog_actBtn').onclick=startRound;
+buildCourt();
+$('recognitionExitBtn').onclick=function(){stopTimer();stopFullStrobe();$('recog_screen-game').style.display='none';$('recog_screen-intro').style.display='flex'};
+})();
+</script>
+</body>
+</html>
