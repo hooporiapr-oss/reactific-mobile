@@ -80,11 +80,17 @@ var $=function(id){return document.getElementById(id)};
 
 // ══════════════════════════════════════════════════════
 //  LICENSE SYSTEM — codes are checked against Supabase.
-//  To issue / expire / revoke licenses, use the Supabase
-//  dashboard (Table Editor → licenses). No file edits needed.
+//  To issue / expire / revoke licenses, use admin.html
+//  (Table Editor → licenses, or the Ritnome/Hooporia tabs
+//  in admin.html). No file edits needed.
+//
+//  This gate is scoped to product='ritnome' — a code
+//  issued for Hooporia will NOT unlock this gate, and
+//  vice versa, even though both live in the same table.
 // ══════════════════════════════════════════════════════
 var SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+var PRODUCT = 'ritnome';
 // ══════════════════════════════════════════════════════
 
 function tryEnter(){
@@ -93,11 +99,12 @@ function tryEnter(){
   $('gate-err').style.color = '';
   $('gate-err').textContent = 'Checking…';
 
-  // Query Supabase: does a row exist with this code (case-insensitive), active = true?
+  // Query Supabase: does a row exist with this code (case-insensitive), active = true, product = ritnome?
   var url = SUPABASE_URL + '/rest/v1/licenses'
-    + '?select=code,expires_at,active'
+    + '?select=code,expires_at,active,product'
     + '&code=ilike.' + encodeURIComponent(input)
-    + '&active=eq.true';
+    + '&active=eq.true'
+    + '&product=eq.' + PRODUCT;
 
   fetch(url, {
     headers: {
@@ -109,7 +116,7 @@ function tryEnter(){
   .then(function(rows){
     var lic = (rows && rows.length) ? rows[0] : null;
 
-    // not found or inactive
+    // not found, inactive, or belongs to a different product
     if (!lic){ return reject('Invalid code — check with your administrator'); }
 
     // expired?
