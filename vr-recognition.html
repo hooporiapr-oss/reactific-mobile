@@ -70,6 +70,14 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .timerbar-fill.danger{background:#FF1493}
 .msg-bar{text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;min-height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 10px}
 .msg-bar.watch{color:#ffd35a}.msg-bar.echo{color:#9ACD32}.msg-bar.go{color:#9ACD32}.msg-bar.perfect{color:#00D9A5}.msg-bar.miss{color:#FF1493}
+.msg-bar.repeat{
+  color:#ffd35a;background:rgba(255,211,90,.14);border-radius:10px;
+  animation:repeatFlash .5s ease-out;
+}
+@keyframes repeatFlash{
+  0%{transform:scale(1.06);background:rgba(255,211,90,.4)}
+  100%{transform:scale(1);background:rgba(255,211,90,.14)}
+}
 .stars{display:flex;gap:8px;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
 .star{font-size:1rem;opacity:.2;transition:all .3s}
 .star.earned{opacity:1;filter:drop-shadow(0 0 6px #9ACD32);transform:scale(1.2)}
@@ -130,7 +138,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <strong>WATCH</strong> — original pattern flashes gold<br>
     <strong>ECHO</strong> — same pattern in lime — ONE cell changed<br>
     <strong>BLANK</strong> — screen goes dark, beat starts<br>
-    <strong>ONE MISS ENDS IT</strong> — one more cell every round
+    <strong>MISS IT?</strong> — hit REPEAT before time runs out for another shot at reduced points, twice max
   </div>
 </div>
 
@@ -142,7 +150,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <div class="top-box"><div class="top-label" id="hRdLbl">Pattern</div><div class="top-val" id="hRd">3</div></div>
     <div class="top-box"><div class="top-label" id="hLvLbl">Best</div><div class="top-val" id="hLv">0</div></div>
     <div class="top-box"><div class="top-label">Streak</div><div class="top-val" id="hSt">0</div></div>
-    <div class="top-box"><div class="top-label">Repeats</div><div class="top-val" id="hRep">0</div></div>
+    <div class="top-box"><div class="top-label">Repeats Left</div><div class="top-val" id="hAtt">2</div></div>
     <div class="top-box"><div class="top-label">Timer</div><div class="top-val" id="hPf">--</div></div>
   </div>
   <div class="timerbar"><div class="timerbar-fill" id="timerFill" style="width:100%"></div></div>
@@ -152,7 +160,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="bottombar">
     <button class="bot-btn" id="menuBtn">← Home<span>Settings</span></button>
     <button class="bot-btn start-btn" id="actBtn">LET'S GO</button>
-    <button class="bot-btn repeat-btn" id="repeatBtn">↻ REPEAT<span>1 per round</span></button>
+    <button class="bot-btn repeat-btn" id="repeatBtn">↻ REPEAT<span>2 per round</span></button>
     <button class="bot-btn" id="restartBtn" style="display:none;visibility:hidden;pointer-events:none;width:0;height:0;padding:0;margin:0;border:0;overflow:hidden;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#8892a0;font-size:.8rem" onclick="restartGame()">↺ Restart<span style="color:#555">Level 1</span></button>
     <button class="bot-btn" id="fsBtnCourt">⛶ Full Court<span>Fullscreen</span></button>
     
@@ -249,6 +257,26 @@ function startTimer(dur){
 }
 function stopTimer(){if(timerRAF)cancelAnimationFrame(timerRAF);timerRAF=null;$('timerFill').style.width='100%';$('timerFill').className='timerbar-fill'}
 
+// Same clock, different consequence: while offering a repeat window, if
+// nothing is clicked before this runs out, it counts as forfeiting the
+// chance — same as if the answer itself had been wrong.
+var repeatWindowRAF=null;
+function startRepeatWindowTimer(dur){
+  var start=performance.now();
+  $('timerFill').style.width='100%';$('timerFill').className='timerbar-fill';
+  function tick(){
+    var remain=dur-(performance.now()-start);
+    var pct=Math.max(0,remain/dur);
+    $('timerFill').style.width=(pct*100)+'%';
+    $('hPf').textContent=Math.max(0,remain/1000).toFixed(1)+'s';
+    if(pct<0.3)$('timerFill').className='timerbar-fill danger';else if(pct<0.5)$('timerFill').className='timerbar-fill warn';
+    if(remain<=0){repeatWindowRAF=null;handleRepeatWindowMiss();return}
+    if(phase==='repeat-window')repeatWindowRAF=requestAnimationFrame(tick);
+  }
+  repeatWindowRAF=requestAnimationFrame(tick);
+}
+function stopRepeatWindowTimer(){if(repeatWindowRAF)cancelAnimationFrame(repeatWindowRAF);repeatWindowRAF=null;$('timerFill').style.width='100%';$('timerFill').className='timerbar-fill'}
+
 // If cycle mode, skip intro and go straight to game
 if(cycleMode){
   $('screen-intro').style.display='none';
@@ -273,7 +301,7 @@ function buildCourt(){var court=$('court');court.innerHTML='';cells=[];for(var i
 function cellSt(i,st,num){cells[i].className='cell';cells[i].textContent='';cells[i].style.color='transparent';if(st){cells[i].classList.add(st);if(num!==undefined){cells[i].textContent=num;cells[i].style.color=''}}}
 function resetCells(){cells.forEach((_,i)=>cellSt(i))}
 
-var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+var g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
 function updateHUD(){
   $('hSc').textContent=g.sc;
   $('hPhase').textContent=bpm+' BPM';
@@ -289,12 +317,12 @@ function updateHUD(){
     $('hLv').textContent=g.best;
   }
   $('hSt').textContent=g.streak;
-  $('hRep').textContent=g.totalRepeats;
+  $('hAtt').textContent=Math.max(0,2-repeatOfferNum);
   $('ps1').textContent=g.cellCount;
 }
 function msg(txt,cls){var el=$('msg');el.textContent=txt;el.className='msg-bar '+(cls||'watch')}
 
-var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[],firstTapDone=false,repeatUsedThisRound=false;
+var phase='idle',original=[],echo=[],changedCell=-1,originalCell=-1,changePos=-1,timers=[],firstTapDone=false,attemptNum=0,repeatOfferNum=0;
 function clrT(){timers.forEach(clearTimeout);timers=[]}
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
 
@@ -323,25 +351,63 @@ function revealWatchEcho(){
   timers.push(setTimeout(watchNext,500));
 }
 
-function useRepeat(){
-  if(phase!=='finding'||repeatUsedThisRound)return;
-  repeatUsedThisRound=true;
-  g.totalRepeats++;
-  updateHUD();
-  $('repeatBtn').disabled=true;
+// A wrong answer no longer ends the game outright — it opens a timed
+// window where the player must actively click REPEAT to get another
+// chance. Missing that window (timeout) counts the same as failing it.
+// Up to two such windows per round: 1st repeat used = cellCount*5 if
+// then correct, 2nd repeat used = cellCount*1. A failure (wrong answer
+// or window timeout) while already on the 2nd window ends the game —
+// the answer only gets revealed at that final point, never before, so
+// a repeat chance never spoils itself.
+function handleFailure(wrongIdx){
+  if(wrongIdx!==null)cellSt(wrongIdx,'wrong');
+  if(repeatOfferNum<2){
+    repeatOfferNum++;
+    timers.push(setTimeout(offerRepeatWindow,900));
+  }else{
+    revealAnswer();
+    endGame(wrongIdx,true);
+  }
+}
+
+function offerRepeatWindow(){
   clrT();canTap=false;stopTimer();stopFullStrobe();
+  phase='repeat-window';
+  resetCells();
+  $('repeatBtn').classList.add('show');$('repeatBtn').disabled=false;
+  updateHUD();
+  $('hPf').textContent='--';
+  var upcomingPts=repeatOfferNum===1?g.cellCount*5:g.cellCount*1;
+  msg('↻ REPEAT AVAILABLE — CLICK NOW! ('+upcomingPts+' PTS)','repeat');
+  startRepeatWindowTimer(getFindMs());
+}
+
+function handleRepeatWindowMiss(){
+  if(phase!=='repeat-window')return;
+  stopRepeatWindowTimer();
+  handleFailure(null);
+}
+
+function useRepeat(){
+  if(phase!=='repeat-window')return;
+  stopRepeatWindowTimer();
+  attemptNum++;
+  $('repeatBtn').disabled=true;
+  clrT();canTap=false;stopFullStrobe();
   resetCells();
   $('hPf').textContent='--';
-  revealWatchEcho();
+  var pts=attemptNum===1?g.cellCount*5:g.cellCount*1;
+  msg('↻ REPEAT '+attemptNum+' · WORTH '+pts,'repeat');
+  timers.push(setTimeout(revealWatchEcho,700));
 }
 $('repeatBtn').onclick=useRepeat;
 
 function startRound(){
   if(phase!=='idle')return;
-  clrT();canTap=false;stopTimer();stopFullStrobe();firstTapDone=false;repeatUsedThisRound=false;
+  clrT();canTap=false;stopTimer();stopFullStrobe();firstTapDone=false;attemptNum=0;repeatOfferNum=0;
   genPatterns();
   resetCells();$('actBtn').disabled=true;$('restartBtn').style.display='none';
-  $('repeatBtn').classList.add('show');$('repeatBtn').disabled=false;
+  $('repeatBtn').classList.remove('show');
   updateHUD();
   $('hPf').textContent='--';
   revealWatchEcho();
@@ -364,7 +430,8 @@ function startFind(){
   phase='finding';canTap=true;resetCells();
   /* Genuinely blank — no outlined targets to pick from. The player recalls
      from memory which cell in the pattern was the changed one. */
-  msg(repeatUsedThisRound?'⚡ WHICH ONE CHANGED? (5 PTS)':'⚡ WHICH ONE CHANGED?','go');
+  var pts=attemptNum===1?g.cellCount*5:g.cellCount*1;
+  msg(attemptNum===0?'⚡ WHICH ONE CHANGED?':'⚡ WHICH ONE CHANGED? ('+pts+' PT'+(pts===1?'':'S')+')','go');
   startFullStrobe();
   var dur=getFindMs();
   startTimer(dur);
@@ -386,16 +453,14 @@ function handleTap(idx){
     timers.push(setTimeout(function(){cellSt(originalCell,'reveal-original',changePos+1)},300));
     timers.push(setTimeout(roundSuccess,700));
   }else{
-    endGame(idx);
+    handleFailure(idx);
   }
 }
 
 function handleTimeout(){
   if(phase!=='finding')return;
   canTap=false;stopFullStrobe();
-  msg("TIME'S UP!",'miss');
-  revealAnswer();
-  endGame(null,true);
+  handleFailure(null);
 }
 
 function revealAnswer(){cellSt(changedCell,'reveal-answer',changePos+1);cellSt(originalCell,'reveal-original',changePos+1)}
@@ -404,7 +469,9 @@ function roundSuccess(){
   phase='idle';
   $('repeatBtn').classList.remove('show');
   g.streak++;
-  g.sc+=repeatUsedThisRound?5:g.cellCount*10;
+  var pts=attemptNum===0?g.cellCount*10:(attemptNum===1?g.cellCount*5:g.cellCount*1);
+  g.sc+=pts;
+  var ptsLabel=attemptNum===0?'':(' ('+pts+' PT'+(pts===1?'':'S')+') · ');
 
   if(gameMode==='training'){
     g.roundsDone++;
@@ -413,14 +480,14 @@ function roundSuccess(){
       msg('🏆 LEVEL COMPLETE!','perfect');
       timers.push(setTimeout(showTrainingComplete,900));
     }else{
-      msg((repeatUsedThisRound?'✅ CORRECT (5 PTS) · ':'✅ CORRECT! ')+'('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
+      msg('✅ CORRECT'+ptsLabel+' ('+g.roundsDone+'/'+TRAINING_ROUNDS+')','perfect');
       timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
     }
   }else{
     if(g.cellCount>g.best)g.best=g.cellCount;
     g.cellCount++;
     updateHUD();
-    msg(repeatUsedThisRound?'✅ CORRECT (5 PTS) · PATTERN GROWS...':'✅ CORRECT! PATTERN GROWS...','perfect');
+    msg('✅ '+(attemptNum===0?'CORRECT! ':'CORRECT'+ptsLabel)+'PATTERN GROWS...','perfect');
     timers.push(setTimeout(function(){resetCells();autoNextRound()},700));
   }
 }
@@ -428,11 +495,12 @@ function roundSuccess(){
 function autoNextRound(){if(phase!=='idle')return;resetCells();stopTimer();$('hPf').textContent='--';$('restartBtn').style.display='none';$('actBtn').disabled=true;startRound()}
 
 function endGame(wrongIdx,alreadyRevealed){
-  phase='idle';clrT();stopFullStrobe();stopTimer();
+  phase='idle';clrT();stopFullStrobe();stopTimer();stopRepeatWindowTimer();
   $('repeatBtn').classList.remove('show');
   if(wrongIdx!==null&&!alreadyRevealed){cellSt(wrongIdx,'wrong');revealAnswer();}
   g.streak=0;updateHUD();
-  if(!alreadyRevealed)msg('WRONG CELL!','miss');
+  if(!alreadyRevealed)msg('WRONG CELL — GAME OVER!','miss');
+  else msg((wrongIdx!==null?'WRONG CELL':"TIME'S UP")+' — GAME OVER!','miss');
 
   if(cycleMode){
     timers.push(setTimeout(function(){
@@ -448,9 +516,9 @@ function showFinalScore(){
   phase='idle';clrT();resetCells();updateHUD();$('hPf').textContent='--';
   $('repeatBtn').classList.remove('show');
   if(gameMode==='training'){
-    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'miss');
+    msg(g.roundsDone+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' · SCORE '+g.sc,'miss');
   }else{
-    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS · REPEATS '+g.totalRepeats+')','miss');
+    msg('GAME OVER — SCORE '+g.sc+' ('+bpm+' BPM · BEST '+g.best+' CELLS)','miss');
   }
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
@@ -459,14 +527,15 @@ function showFinalScore(){
 function showTrainingComplete(){
   phase='idle';clrT();resetCells();updateHUD();$('hPf').textContent='--';
   $('repeatBtn').classList.remove('show');
-  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc+' · REPEATS '+g.totalRepeats,'perfect');
+  msg('🏆 '+TRAINING_ROUNDS+'/'+TRAINING_ROUNDS+' — LEVEL '+trainingLevel+' COMPLETE! · SCORE '+g.sc,'perfect');
   $('actBtn').textContent="PLAY AGAIN";$('actBtn').onclick=restartGame;$('actBtn').disabled=false;
   $('restartBtn').style.display='none';
 }
 
 function restartGame(){
-  clrT();phase='idle';canTap=false;stopTimer();stopFullStrobe();
-  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0,totalRepeats:0};
+  clrT();phase='idle';canTap=false;stopTimer();stopFullStrobe();stopRepeatWindowTimer();
+  g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
+  attemptNum=0;repeatOfferNum=0;
   resetCells();updateHUD();$('hPf').textContent='--';
   $('repeatBtn').classList.remove('show');
   msg("TAP LET'S GO!",'watch');
