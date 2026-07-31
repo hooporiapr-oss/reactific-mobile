@@ -277,25 +277,6 @@ function startRecallTimer(){
 }
 function stopRecallTimer(){if(recallRAF){cancelAnimationFrame(recallRAF);recallRAF=null}}
 
-// Same clock, different consequence: while offering a repeat window, if
-// nothing is clicked before this runs out, it counts as forfeiting the
-// chance — same as if the answer itself had been wrong.
-var repeatWindowDeadline=0,repeatWindowRAF=null;
-function startRepeatWindowTimer(){
-  var dur=getBeatMs();
-  repeatWindowDeadline=performance.now()+dur;
-  function tick(){
-    var remain=repeatWindowDeadline-performance.now();
-    var pct=Math.max(0,remain/dur);
-    $('clockFill').style.width=(pct*100)+'%';
-    $('hTr').textContent=Math.max(0,remain/1000).toFixed(1)+'s';
-    if(remain<=0){repeatWindowRAF=null;handleRepeatWindowMiss();return}
-    if(phase==='repeat-window')repeatWindowRAF=requestAnimationFrame(tick);
-  }
-  repeatWindowRAF=requestAnimationFrame(tick);
-}
-function stopRepeatWindowTimer(){if(repeatWindowRAF){cancelAnimationFrame(repeatWindowRAF);repeatWindowRAF=null}}
-
 // If cycle mode, skip intro and go straight to game
 if(cycleMode){
   $('screen-intro').style.display='none';
@@ -399,19 +380,11 @@ function offerRepeatWindow(){
   updateHUD();
   $('clockFill').style.width='100%';$('hTr').textContent='--';
   var upcomingPts=repeatOfferNum===1?g.cellCount*5:g.cellCount*1;
-  msg('↻ REPEAT AVAILABLE — CLICK NOW! ('+upcomingPts+' PTS)','repeat');
-  startRepeatWindowTimer();
-}
-
-function handleRepeatWindowMiss(){
-  if(phase!=='repeat-window')return;
-  stopRepeatWindowTimer();
-  handleFailure(null);
+  msg('↻ REPEAT AVAILABLE — TAP WHEN READY ('+upcomingPts+' PTS)','repeat');
 }
 
 function useRepeat(){
   if(phase!=='repeat-window')return;
-  stopRepeatWindowTimer();
   attemptNum++;
   $('repeatBtn').disabled=true;
   clrT();stopFullStrobe();
@@ -506,7 +479,7 @@ function handleTimeout(){
 }
 
 function endGame(wrongIdx){
-  phase='idle';clrT();stopFullStrobe();stopRecallTimer();stopRepeatWindowTimer();
+  phase='idle';clrT();stopFullStrobe();stopRecallTimer();
   $('repeatBtn').classList.remove('show');
   if(wrongIdx!==null)cellSt(wrongIdx,'wrong');
   g.streak=0;updateHUD();
@@ -551,7 +524,7 @@ function showTrainingComplete(){
 }
 
 function restartGame(){
-  clrT();phase='idle';stopFullStrobe();stopRecallTimer();stopRepeatWindowTimer();
+  clrT();phase='idle';stopFullStrobe();stopRecallTimer();
   g={sc:0,cellCount:getInitialCellCount(),best:0,streak:0,roundsDone:0};
   attemptNum=0;repeatOfferNum=0;
   resetCells();updateHUD();$('clockFill').style.width='0%';$('hTr').textContent='--';
