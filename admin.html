@@ -28,6 +28,10 @@
 
   /* dashboard */
   #dash{display:none}
+  .prod-tabs{display:flex;gap:8px;margin-bottom:18px}
+  .prod-tab{padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:#8892a0;font-weight:800;font-size:.82rem;cursor:pointer;letter-spacing:.02em}
+  .prod-tab.active{background:rgba(255,30,60,.16);border-color:rgba(255,30,60,.5);color:#fff}
+  #add-product-label,#list-product-label{color:#8892a0;font-weight:700;text-transform:none;letter-spacing:0;font-size:.85rem}
   .add-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:18px 20px;margin-bottom:22px}
   .add-title{font-size:.7rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#8892a0;margin-bottom:14px}
   .add-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
@@ -84,8 +88,13 @@
 
   <!-- DASHBOARD -->
   <div id="dash">
+    <div class="prod-tabs">
+      <button class="prod-tab active" id="tab-ritnome" onclick="switchProduct('ritnome')">⚡ Ritnome</button>
+      <button class="prod-tab" id="tab-hooporia" onclick="switchProduct('hooporia')">🏀 Hooporia</button>
+    </div>
+
     <div class="add-card">
-      <div class="add-title">➕ Add a License</div>
+      <div class="add-title">➕ Add a License <span id="add-product-label"></span></div>
       <div class="add-row">
         <div class="af"><label>Code</label><input id="a-code" placeholder="LINCOLN-PREP-2026" maxlength="40"></div>
         <div class="af"><label>School Name</label><input id="a-school" placeholder="Lincoln Prep Academy" maxlength="60"></div>
@@ -97,7 +106,7 @@
     </div>
 
     <div class="list-head">
-      <div class="list-title">Licensed Schools <span class="count" id="count"></span></div>
+      <div class="list-title">Licensed Schools <span id="list-product-label"></span> <span class="count" id="count"></span></div>
       <button class="refresh" onclick="loadLicenses()">↻ Refresh</button>
     </div>
 
@@ -120,6 +129,19 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = (id) => document.getElementById(id);
 
+let currentProduct = 'ritnome';
+
+window.switchProduct = function(product){
+  currentProduct = product;
+  $('tab-ritnome').className = 'prod-tab' + (product==='ritnome' ? ' active' : '');
+  $('tab-hooporia').className = 'prod-tab' + (product==='hooporia' ? ' active' : '');
+  const label = product==='ritnome' ? '(Ritnome)' : '(Hooporia)';
+  $('add-product-label').textContent = label;
+  $('list-product-label').textContent = label;
+  loadLicenses();
+};
+
+
 // ── auth ──
 async function checkSession(){
   const { data } = await sb.auth.getSession();
@@ -132,7 +154,7 @@ sb.auth.onAuthStateChange(function(event, session){
 });
 
 function showLogin(){ $('login').style.display='block'; $('dash').style.display='none'; $('signout-btn').style.display='none'; }
-function showDash(){ $('login').style.display='none'; $('dash').style.display='block'; $('signout-btn').style.display='inline-block'; loadLicenses(); }
+function showDash(){ $('login').style.display='none'; $('dash').style.display='block'; $('signout-btn').style.display='inline-block'; switchProduct(currentProduct); }
 
 window.login = async function(){
   const email = $('l-email').value.trim();
@@ -150,7 +172,7 @@ window.loadLicenses = async function(){
   const tbody = $('rows');
   tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
   try {
-    const { data, error } = await sb.from('licenses').select('*');
+    const { data, error } = await sb.from('licenses').select('*').eq('product', currentProduct);
     if (error){ console.error('loadLicenses error:', error); tbody.innerHTML = '<tr><td colspan="6" class="empty">Error: '+error.message+'</td></tr>'; return; }
     const rows = (data || []).slice().sort(function(a,b){
       // sort by expires_at ascending, nulls last
@@ -159,7 +181,7 @@ window.loadLicenses = async function(){
       if (!b.expires_at) return -1;
       return a.expires_at < b.expires_at ? -1 : 1;
     });
-    if (!rows.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
+    if (!rows.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No '+currentProduct+' licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
     $('count').textContent = '('+rows.length+')';
     renderRows(rows, tbody);
   } catch(e){
@@ -206,10 +228,10 @@ window.addLicense = async function(){
   const notes = $('a-notes').value.trim() || null;
   if (!code){ setAddMsg('Enter a code','bad'); return; }
   if (!school){ setAddMsg('Enter a school name','bad'); return; }
-  const { error } = await sb.from('licenses').insert({ code, school_name: school, expires_at: expires, notes, active: true });
+  const { error } = await sb.from('licenses').insert({ code, school_name: school, expires_at: expires, notes, active: true, product: currentProduct });
   if (error){ setAddMsg(error.code==='23505' ? 'That code already exists' : error.message, 'bad'); return; }
   $('a-code').value=''; $('a-school').value=''; $('a-expires').value=''; $('a-notes').value='';
-  setAddMsg('✓ License added','ok');
+  setAddMsg('✓ License added to '+currentProduct,'ok');
   loadLicenses();
 };
 function setAddMsg(m,c){ $('add-msg').className='msg '+c; $('add-msg').textContent=m; setTimeout(function(){ if($('add-msg').textContent===m) $('add-msg').textContent=''; }, 4000); }
