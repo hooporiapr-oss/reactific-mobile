@@ -46,12 +46,14 @@ body{
   overflow-y:auto;
   text-align:center;
 }
-h1{
-  font-size:clamp(1.6rem,4vw,2.3rem);
-  letter-spacing:.02em;
-  margin-bottom:2px;
+.logoImg{
+  display:block;
+  width:100%;
+  max-width:480px;
+  height:auto;
+  margin:0 auto 8px;
+  filter:drop-shadow(0 0 30px rgba(155,89,182,.35));
 }
-h1 span{color:#9B59B6}
 .readyBanner{
   display:block;
   width:100%;
@@ -192,7 +194,7 @@ footer{
 
 <div id="stage">
   <div id="panel">
-    <h1>Ritnome <span>Memory</span></h1>
+    <img class="logoImg" src="ritnome.png" alt="Ritnome">
     <button id="revealBtn" class="reveal-btn">▶ Click Here To Select Your Training Mode</button>
 
     <div id="cardsContainer" class="cardsHidden">
