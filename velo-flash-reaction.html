@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FLASH REACTION | Reaction Velocity</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#space{position:fixed;inset:0;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);overflow:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+#edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(124,58,237,.28),0 0 80px rgba(124,58,237,.1)}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
+
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:14px 22px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+.hud-box{text-align:center}
+.hud-label{font-size:.5rem;color:#7c3aed;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.hud-val{font-size:2rem;font-weight:900;line-height:1}
+#hLeft{color:#a78bfa}#hScore{color:#fff;font-size:2.6rem}#hLastMs{color:#ffd35a}#hBest{font-size:1.3rem;color:#9fb3c8}
+
+#msg{position:fixed;top:16%;left:50%;transform:translate(-50%,0);z-index:20;font-size:1.5rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
+#msg.watch{color:#7c3aed}#msg.go{color:#ffd35a}#msg.correct{color:#00D9A5}#msg.wrong{color:#FF1493}
+
+/* stimulus stage — the ball flashes once at a random static spot, no
+   wandering, then vanishes to a blank screen while awaiting the tap. */
+#stage{position:fixed;top:10%;bottom:34%;left:0;right:0;z-index:12}
+#stimulus{
+  position:absolute;top:50%;width:110px;height:110px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);
+  transition:transform .08s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:3.2rem;color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.6),0 0 4px rgba(0,0,0,.5);
+  background:radial-gradient(circle at 35% 32%,#6bfcff,#00e5ff 55%,#00a8c2 85%);
+  box-shadow:0 0 40px rgba(0,229,255,.85),0 0 80px rgba(0,229,255,.45);
+}
+#stimulus.visible{transform:translate(-50%,-50%) scale(1)}
+
+.ripple{position:fixed;border-radius:50%;border:3px solid #7c3aed;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:rippleOut .5s ease-out forwards}
+@keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.5);opacity:1}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+
+/* choice buttons — big, spatially matched left/right, always available */
+#choices{
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:20;
+  display:grid;grid-template-columns:88px 88px 88px;grid-template-rows:76px 76px 76px;gap:8px;
+}
+.choice-btn{border:3px solid rgba(124,58,237,.5);background:rgba(124,58,237,.08);border-radius:16px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .08s}
+.choice-btn .arrow-glyph{font-size:1.9rem;line-height:1}
+.choice-btn:active{background:rgba(124,58,237,.35);transform:scale(.94)}
+#btnUp{grid-column:2;grid-row:1}
+#btnLeft{grid-column:1;grid-row:2}
+#btnRight{grid-column:3;grid-row:2}
+#btnDown{grid-column:2;grid-row:3}
+
+#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:8px 16px 10px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
+.ctrl-btn{height:40px;flex:0 1 170px;max-width:200px;border:2px solid rgba(124,58,237,.5);background:rgba(0,0,0,.4);border-radius:10px;color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
+
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);padding:20px;text-align:center}
+.vrr-logo{font-size:2.1rem;font-weight:900;font-style:italic;letter-spacing:.05em;text-transform:uppercase;text-shadow:0 0 60px rgba(124,58,237,1);margin-bottom:6px}
+.vrr-logo span{color:#7c3aed}
+.vrr-sub{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#7c3aed;margin-bottom:28px}
+.rule-t{font-size:.9rem;color:#cbd5e1;line-height:1.5;max-width:440px;margin-bottom:26px}
+.rule-t b{color:#fff}
+.big-btn{width:100%;max-width:440px;height:72px;border:none;border-radius:20px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:1.3rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(124,58,237,.7);animation:btnPulse 2s ease-in-out infinite}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(124,58,237,.7)}50%{box-shadow:0 0 80px rgba(124,58,237,1)}}
+.intro-back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:60}
+.intro-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(124,58,237,.4);background:rgba(0,0,0,.5);color:#a78bfa;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:60}
+@media(max-width:768px){.intro-fs{display:none}}
+.best-line{margin-top:18px;font-size:.85rem;color:#9fb3c8}
+.best-line b{color:#7c3aed}
+
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);text-align:center;padding:20px}
+
+#screen-box{position:fixed;inset:0;z-index:58;display:none;flex-direction:column;align-items:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);padding:70px 16px 24px;overflow-y:auto}
+.box-title{font-size:1.7rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(255,140,0,.8);margin-bottom:2px}
+.box-title span{color:#00e5ff}
+.box-sub{font-size:.65rem;letter-spacing:.24em;text-transform:uppercase;color:#7c3aed;margin-bottom:22px}
+.box-section{width:100%;max-width:440px;margin-bottom:24px}
+.box-section-label{font-size:.65rem;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#ffd35a;margin-bottom:8px;text-align:left;padding-left:4px}
+.box-table{width:100%;border-collapse:collapse;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.3);border-radius:12px;overflow:hidden}
+.box-table th{background:rgba(124,58,237,.18);color:#a78bfa;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:8px 6px;text-align:center;border-bottom:1px solid rgba(124,58,237,.3)}
+.box-table td{padding:12px 6px;text-align:center;font-weight:900;font-size:1.1rem;color:#fff}
+.box-table .box-pts{color:#00e5ff;font-size:1.4rem}
+.box-empty{color:#7fa8c0;font-size:.85rem;padding:24px 8px;font-style:italic}
+.box-back-btn{width:100%;max-width:440px;height:56px;border:none;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(124,58,237,.6);margin-top:6px}
+.box-recent-row{font-size:.75rem;color:#9fb3c8;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;padding:8px 10px}
+.box-recent-row:last-child{border-bottom:none}
+.box-recent-row b{color:#ffd35a}
+.box-open-btn{width:100%;max-width:420px;height:52px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.1);border-radius:14px;color:#00e5ff;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:6px}
+.final-num{font-size:6rem;font-weight:900;color:#7c3aed;line-height:1;text-shadow:0 0 60px rgba(124,58,237,.9)}
+.final-label{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:#9fb3c8;margin-top:10px}
+.final-bpm-big{font-size:1.8rem;font-weight:900;color:#ffd35a;margin-top:10px}
+.final-acc{margin-top:6px;font-size:1.1rem;color:#ffd35a;font-weight:900}
+.final-misses{margin-top:10px;font-size:1.3rem;font-weight:900;color:#FF1493;text-shadow:0 0 20px rgba(255,20,147,.5)}
+.final-misses.clean{color:#00D9A5;text-shadow:0 0 20px rgba(0,217,165,.5)}
+#screen-end h2{font-size:1.8rem;font-weight:900;margin:24px 0 8px}
+#endSub{font-size:.9rem;color:#9fb3c8;line-height:1.6;max-width:400px}
+.next-player-btn{margin-top:28px;height:64px;padding:0 40px;border:none;border-radius:16px;background:linear-gradient(120deg,#7c3aed,#5b21b6);color:#fff;font-size:1.15rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(124,58,237,.6)}
+.session-line{margin-top:22px;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#7fa8c0}
+
+#countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%)}
+#bigCount{font-size:8rem;font-weight:900;color:#7c3aed;text-shadow:0 0 60px rgba(124,58,237,.9)}
+@media(max-width:420px){.vrr-logo{font-size:1.5rem}.big-btn{height:60px;font-size:1.1rem}
+  #choices{grid-template-columns:70px 70px 70px;grid-template-rows:62px 62px 62px;gap:6px}
+  .choice-btn .arrow-glyph{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+<div id="space">
+  <canvas id="stars"></canvas>
+  <div id="edge-glow"></div>
+  <div id="flash"></div>
+</div>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
+  <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
+  <div class="hud-box"><div class="hud-label">Last</div><div class="hud-val" id="hLastMs">--</div></div>
+  <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
+</div>
+
+<div id="msg" class="watch"></div>
+<div id="stage"><div id="stimulus"></div></div>
+
+<div id="choices">
+  <button class="choice-btn" id="btnUp" data-dir="up"><span class="arrow-glyph">▲</span></button>
+  <button class="choice-btn" id="btnLeft" data-dir="left"><span class="arrow-glyph">◀</span></button>
+  <button class="choice-btn" id="btnRight" data-dir="right"><span class="arrow-glyph">▶</span></button>
+  <button class="choice-btn" id="btnDown" data-dir="down"><span class="arrow-glyph">▼</span></button>
+</div>
+
+<div id="controls">
+  <a class="ctrl-btn" href="vr-lab.html">← Exit</a>
+  <button class="ctrl-btn" id="fsBtnGame">⛶ Full Screen</button>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro">
+  <a class="intro-back" href="vr-lab.html">← Exit</a>
+  <button class="intro-fs" id="fsBtn">⛶ Fullscreen</button>
+  <div class="vrr-logo">FLASH <span>REACTION</span></div>
+  <div class="vrr-sub">Reaction Velocity · Flash &amp; Recall</div>
+  <div class="rule-t"><b>50 rounds.</b> A target flashes once, at a new spot each time — no wandering, one beat at 180 BPM — carrying an arrow. Then it's gone, screen goes black. Read it, remember it, and tap the matching direction whenever you're ready. Same scoring, same rules as Choice Reaction — just testing the moment right after, not the moment you're looking straight at it.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">▶ START</button>
+  <div class="best-line" id="bestLine"></div>
+  <button class="box-open-btn" id="openBoxBtn">📊 THE BOX SCORE</button>
+</div>
+
+<!-- THE BOX SCORE -->
+<div id="screen-box">
+  <div class="box-title">THE <span>BOX SCORE</span></div>
+  <div class="box-sub">Flash Reaction · Career Stats</div>
+
+  <div class="box-section">
+    <div class="box-section-label">Last Game</div>
+    <table class="box-table">
+      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>AVG MS</th><th>MISS</th></tr></thead>
+      <tbody><tr>
+        <td class="box-pts" id="boxLastPts">--</td>
+        <td id="boxLastFg">--</td>
+        <td id="boxLastFgPct">--</td>
+        <td id="boxLastMs">--</td>
+        <td id="boxLastMiss">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Career</div>
+    <table class="box-table">
+      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>AVG MS</th><th>MISS/G</th></tr></thead>
+      <tbody><tr>
+        <td id="boxGP">--</td>
+        <td class="box-pts" id="boxPPG">--</td>
+        <td id="boxCareerFgPct">--</td>
+        <td id="boxHigh">--</td>
+        <td id="boxCareerMs">--</td>
+        <td id="boxCareerMiss">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Recent Games</div>
+    <div class="box-table" id="boxRecentList" style="border-radius:12px"></div>
+  </div>
+
+  <button class="box-back-btn" id="closeBoxBtn">← Back</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown"><div id="bigCount">3</div></div>
+
+<!-- END -->
+<div id="screen-end">
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Total Points</div>
+  <div class="final-bpm-big" id="endBpm"></div>
+  <div class="final-acc" id="endAcc"></div>
+  <div class="final-misses" id="endMisses"></div>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div id="endSub">Great choices. Next player, beat this number!</div>
+  <button class="next-player-btn" id="nextPlayerBtn">▶ Next Player</button>
+  <button class="box-open-btn" id="openBoxBtnEnd">📊 THE BOX SCORE</button>
+  <div class="session-line" id="sessionLine"></div>
+  <a class="intro-back" href="vr-lab.html" style="position:static;margin-top:22px;display:inline-block">← Exit</a>
+</div>
+
+<script>
+var FLASH_BPM=180; // settled on through real testing — the one speed that works
+function getFlashMs(){return Math.round(60000/FLASH_BPM)}
+var PACE_MS=600;
+var TOTAL=50;
+var BEST_KEY='rct-flashreaction-best';
+var BEST_MS_KEY='rct-flashreaction-best-ms';
+
+function $(id){return document.getElementById(id)}
+
+var phase='idle';
+var idx=0,score=0,best=0,correctCount=0,totalRT=0,rtCount=0,bestAvgMs=0,misses=0;
+var timers=[],tapLocked=false,shownAt=0,currentSide=null,awaitingResponse=false;
+var sessionBest=0, playersThisSession=0;
+var stimulus=$('stimulus'),stage=$('stage');
+
+function loadBest(){
+  best=0;
+  try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
+  try{bestAvgMs=parseInt(localStorage.getItem(BEST_MS_KEY)||'0',10)||0}catch(e){bestAvgMs=0}
+  $('hBest').textContent=best;
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
+}
+function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+function saveBestMs(){try{localStorage.setItem(BEST_MS_KEY,String(bestAvgMs))}catch(e){}}
+
+// THE BOX SCORE — same personal, on-device stat sheet as the other
+// reaction games, kept under its own separate key so this game's
+// career line never blends with Choice Reaction's or Go/No-Go's.
+var BOX_KEY='rct-flashreaction-boxscore';
+function loadBoxData(){
+  try{
+    var raw=localStorage.getItem(BOX_KEY);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMs:0,totalMisses:0,high:0,recent:[]};
+}
+function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
+
+function recordGameToBoxScore(finalScore,made,attempts,avgMs,missCount){
+  var d=loadBoxData();
+  if(typeof d.totalMisses!=='number')d.totalMisses=0; // safe upgrade for any box score saved before this stat existed
+  d.gp++;
+  d.totalPts+=finalScore;
+  d.totalMade+=made;
+  d.totalAttempts+=attempts;
+  d.totalMs+=avgMs;
+  d.totalMisses+=missCount;
+  if(finalScore>d.high)d.high=finalScore;
+  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,ms:avgMs,miss:missCount,date:new Date().toLocaleDateString()});
+  if(d.recent.length>8)d.recent=d.recent.slice(0,8);
+  saveBoxData(d);
+  return d;
+}
+
+function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
+
+function renderBoxScore(lastGame){
+  var d=loadBoxData();
+  if(typeof d.totalMisses!=='number')d.totalMisses=0;
+
+  if(lastGame){
+    $('boxLastPts').textContent=lastGame.pts;
+    $('boxLastFg').textContent=lastGame.made+'-'+lastGame.attempts;
+    $('boxLastFgPct').textContent=pct(lastGame.made,lastGame.attempts);
+    $('boxLastMs').textContent=lastGame.ms>0?lastGame.ms+' ms':'--';
+    $('boxLastMiss').textContent=(typeof lastGame.miss==='number')?lastGame.miss:'--';
+  }else if(d.recent.length){
+    var l=d.recent[0];
+    $('boxLastPts').textContent=l.pts;
+    $('boxLastFg').textContent=l.made+'-'+l.attempts;
+    $('boxLastFgPct').textContent=pct(l.made,l.attempts);
+    $('boxLastMs').textContent=l.ms>0?l.ms+' ms':'--';
+    $('boxLastMiss').textContent=(typeof l.miss==='number')?l.miss:'--';
+  }else{
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMs').textContent='--';$('boxLastMiss').textContent='--';
+  }
+
+  $('boxGP').textContent=d.gp;
+  $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
+  $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
+  $('boxHigh').textContent=d.high>0?d.high:'--';
+  $('boxCareerMs').textContent=d.gp>0?Math.round(d.totalMs/d.gp)+' ms':'--';
+  $('boxCareerMiss').textContent=d.gp>0?(d.totalMisses/d.gp).toFixed(1):'--';
+
+  var listEl=$('boxRecentList');
+  if(!d.recent.length){
+    listEl.innerHTML='<div class="box-empty">No games played yet — play a round to start your box score.</div>';
+  }else{
+    listEl.innerHTML=d.recent.map(function(g){
+      var missText=(typeof g.miss==='number')?(' · '+g.miss+' miss'+(g.miss===1?'':'es')):'';
+      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' ('+pct(g.made,g.attempts)+') · '+g.ms+'ms'+missText+'</span></div>';
+    }).join('');
+  }
+}
+
+var boxReturnScreen='screen-intro';
+$('openBoxBtn').onclick=function(){
+  boxReturnScreen='screen-intro';
+  renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);
+  $('screen-intro').style.display='none';
+  $('screen-box').style.display='flex';
+};
+$('openBoxBtnEnd').onclick=function(){
+  boxReturnScreen='screen-end';
+  renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);
+  $('screen-end').style.display='none';
+  $('screen-box').style.display='flex';
+};
+$('closeBoxBtn').onclick=function(){
+  $('screen-box').style.display='none';
+  document.getElementById(boxReturnScreen).style.display='flex';
+};
+
+var fsb=$('fsBtn');
+if(fsb)fsb.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+var fsg=$('fsBtnGame');
+if(fsg)fsg.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+(function(){
+  var c=$('stars'),ctx=c.getContext('2d'),stars=[];
+  function size(){c.width=innerWidth;c.height=innerHeight}
+  size();addEventListener('resize',size);
+  for(var i=0;i<150;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);var t=Date.now()/1000;stars.forEach(function(s){var p=s.o+Math.sin(t*s.s)*.13;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill()});requestAnimationFrame(draw)})();
+})();
+
+function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+function bpmFromMs(v){return v?Math.round(60000/v):0}
+function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
+function flash(color){var f=$('flash');f.style.background=color;f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},100)}
+
+function startDrill(){
+  if(phase==='running')return;
+  try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
+  $('screen-intro').style.display='none';
+  $('countdown').style.display='flex';
+  var n=3;$('bigCount').textContent=n;
+  var iv=setInterval(function(){
+    n--;
+    if(n<=0){clearInterval(iv);$('countdown').style.display='none';runDrill()}
+    else{$('bigCount').textContent=n}
+  },800);
+}
+
+function runDrill(){
+  phase='running';idx=0;score=0;correctCount=0;totalRT=0;rtCount=0;misses=0;
+  $('hScore').textContent='0';$('hLastMs').textContent='--';$('hLeft').textContent=TOTAL;
+  msg('GET READY...','go');
+  timers.push(setTimeout(function(){msg('','go');nextTrial()},900));
+}
+
+function randomStagePos(){
+  var stageRect=stage.getBoundingClientRect();
+  var pad=70;
+  var x=pad+Math.random()*(stageRect.width-pad*2);
+  var y=pad+Math.random()*(stageRect.height-pad*2);
+  return {x:x,y:y};
+}
+
+var ARROWS={left:'◀',right:'▶',up:'▲',down:'▼'};
+var DIRS=['left','right','up','down'];
+var noResponseTimer=null;
+
+function nextTrial(){
+  if(phase!=='running')return;
+  currentSide=DIRS[Math.floor(Math.random()*DIRS.length)];
+  stimulus.textContent=ARROWS[currentSide];
+  var pos=randomStagePos();
+  stimulus.style.left=pos.x+'px';
+  stimulus.style.top=pos.y+'px';
+  stimulus.classList.add('visible');
+  shownAt=performance.now();
+  awaitingResponse=true;
+
+  // A single flash, one beat at 120 BPM, no wandering — then it's gone
+  // and the screen goes blank while the response is still fully live.
+  // Tapping is valid the whole time, both during the brief flash and
+  // through the blank screen after — this is deliberately not "you had
+  // to catch it while visible," it's "you saw it, now respond."
+  timers.push(setTimeout(function(){
+    stimulus.classList.remove('visible');
+  },getFlashMs()));
+
+  // Same protection as the other reaction drills — no per-tap deadline,
+  // but 5 real seconds of total silence on one target ends the drill.
+  stopNoResponseTimer();
+  noResponseTimer=setTimeout(handleNoResponse,5000);
+}
+function stopNoResponseTimer(){if(noResponseTimer){clearTimeout(noResponseTimer);noResponseTimer=null}}
+
+function handleNoResponse(){
+  if(phase!=='running')return;
+  if(!awaitingResponse)return;
+  awaitingResponse=false;
+  stimulus.classList.remove('visible');
+  msg('✗ NO RESPONSE — 5 SECONDS','wrong');
+  timers.push(setTimeout(endDrill,600));
+}
+
+function advanceOrEnd(){
+  if(idx>=TOTAL){
+    timers.push(setTimeout(endDrill,500));
+  }else{
+    timers.push(setTimeout(function(){
+      if(phase==='running')msg('','go');
+      nextTrial();
+    },PACE_MS));
+  }
+}
+
+function handleChoice(side){
+  if(phase!=='running')return;
+  if(!awaitingResponse)return;
+  if(tapLocked)return;
+  tapLocked=true;setTimeout(function(){tapLocked=false},40);
+
+  stopNoResponseTimer();
+  awaitingResponse=false;
+  var rt=performance.now()-shownAt;
+  var isCorrect=(side===currentSide);
+  var dotRect=stimulus.getBoundingClientRect();
+  var rx=dotRect.left+dotRect.width/2, ry=dotRect.top+dotRect.height/2;
+  stimulus.classList.remove('visible');
+
+  idx++;
+  totalRT+=rt;rtCount++;
+
+  if(isCorrect){
+    correctCount++;
+    score+=2;
+    ripple(rx,ry);flash('rgba(124,58,237,.14)');
+    $('hLastMs').textContent=Math.round(rt);
+    msg('✓ 2PT SHOT! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','correct');
+  }else{
+    misses++;
+    score=Math.max(0,score-2);
+    flash('rgba(255,20,147,.28)');
+    msg('✗ WRONG DIRECTION! (-2 PTS · '+Math.round(rt)+' MS)','wrong');
+  }
+
+  $('hScore').textContent=score;
+  $('hLeft').textContent=Math.max(0,TOTAL-idx);
+
+  advanceOrEnd();
+}
+
+$('btnUp').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('up')});
+$('btnDown').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('down')});
+$('btnLeft').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('left')});
+$('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('right')});
+
+function endDrill(){
+  if(phase==='done')return;
+  phase='done';clrT();stopNoResponseTimer();awaitingResponse=false;stimulus.classList.remove('visible');
+  var finalScore=score;
+  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
+  var accPct=idx>0?Math.round((correctCount/idx)*100):0;
+  var completed=(idx>=TOTAL);
+  var isNewPts=completed&&finalScore>best;
+  var isNewMs=completed&&avgRT>0&&(bestAvgMs===0||avgRT<bestAvgMs);
+  if(isNewPts){best=finalScore;saveBest()}
+  if(isNewMs){bestAvgMs=avgRT;saveBestMs()}
+
+  $('endNum').textContent=finalScore;
+  $('endBpm').textContent='Avg '+avgRT+' MS · '+bpmFromMs(avgRT)+' BPM';
+  if(completed){
+    $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
+    $('endMisses').textContent=misses+' MISS'+(misses===1?'':'ES')+(misses>0?' (-'+(misses*2)+' PTS)':'');
+    $('endMisses').className='final-misses'+(misses===0?' clean':'');
+  }else{
+    $('endAcc').textContent=idx+'/'+TOTAL+' rounds played';
+    $('endMisses').textContent='';
+  }
+
+  if(!completed){
+    $('endHead').textContent='Drill Ended Early';
+    $('endSub').textContent="Only a completed 50-round drill posts to your Box Score — this one didn't count. Give it another go!";
+  }else if(isNewPts&&finalScore>0){
+    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points, '+correctCount+'/'+TOTAL+' correct. Nothing but net!';
+  }else{
+    $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great choices. Next player, beat this number!';
+  }
+
+  if(completed&&avgRT>0&&(sessionBest===0||avgRT<sessionBest)){
+    sessionBest=avgRT;
+  }
+  playersThisSession++;
+  $('sessionLine').textContent='Players this session: '+playersThisSession+(sessionBest>0?('  ·  Best: '+sessionBest+'ms · '+bpmFromMs(sessionBest)+' BPM'):'');
+
+  if(completed){
+    window.__lastGameBox=recordGameToBoxScore(finalScore,correctCount,idx,avgRT,misses);
+  }
+
+  $('screen-end').style.display='flex';
+}
+
+function nextPlayer(){
+  $('screen-end').style.display='none';
+  startDrill();
+}
+$('nextPlayerBtn').onclick=nextPlayer;
+
+loadBest();
+</script>
+</body>
+</html>
