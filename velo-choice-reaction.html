@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CHOICE REACTION | Reaction Velocity</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#space{position:fixed;inset:0;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);overflow:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+#edge-glow{position:fixed;inset:0;pointer-events:none;z-index:1;border:3px solid transparent;box-shadow:inset 0 0 80px rgba(124,58,237,.28),0 0 80px rgba(124,58,237,.1)}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .1s}
+
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-around;align-items:center;padding:14px 22px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+.hud-box{text-align:center}
+.hud-label{font-size:.5rem;color:#7c3aed;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.hud-val{font-size:2rem;font-weight:900;line-height:1}
+#hLeft{color:#a78bfa}#hScore{color:#fff;font-size:2.6rem}#hLastMs{color:#ffd35a}#hBest{font-size:1.3rem;color:#9fb3c8}
+
+#msg{position:fixed;top:16%;left:50%;transform:translate(-50%,0);z-index:20;font-size:1.5rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:center;pointer-events:none;text-shadow:0 0 30px currentColor;transition:opacity .3s}
+#msg.watch{color:#7c3aed}#msg.go{color:#ffd35a}#msg.correct{color:#00D9A5}#msg.wrong{color:#FF1493}
+
+/* stimulus stage — left half vs right half of the play area */
+#stage{position:fixed;top:10%;bottom:34%;left:0;right:0;z-index:12}
+#stimulus{
+  position:absolute;top:50%;width:110px;height:110px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);
+  transition:transform .1s cubic-bezier(.34,1.56,.64,1),left .5s linear,top .5s linear;
+  background:radial-gradient(circle at 35% 32%,#c8ff8c,#7cfc00 55%,#4e9c00 85%);
+  box-shadow:0 0 40px rgba(124,252,0,.85),0 0 80px rgba(124,252,0,.45);
+  display:flex;align-items:center;justify-content:center;
+  font-size:3.2rem;color:#fff;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.6),0 0 4px rgba(0,0,0,.5);
+}
+#stimulus.visible{transform:translate(-50%,-50%) scale(1)}
+.ripple{position:fixed;border-radius:50%;border:3px solid #7c3aed;transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:14;animation:rippleOut .5s ease-out forwards}
+@keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.5);opacity:1}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+
+/* choice buttons — big, spatially matched left/right */
+#choices{
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:20;
+  display:grid;grid-template-columns:88px 88px 88px;grid-template-rows:76px 76px 76px;gap:8px;
+}
+.choice-btn{border:3px solid rgba(124,58,237,.5);background:rgba(124,58,237,.08);border-radius:16px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .08s}
+.choice-btn .arrow-glyph{font-size:1.9rem;line-height:1}
+.choice-btn:active{background:rgba(124,58,237,.35);transform:scale(.94)}
+#btnUp{grid-column:2;grid-row:1}
+#btnLeft{grid-column:1;grid-row:2}
+#btnRight{grid-column:3;grid-row:2}
+#btnDown{grid-column:2;grid-row:3}
+
+#controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:8px 16px 10px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
+.ctrl-btn{height:40px;flex:0 1 170px;max-width:200px;border:2px solid rgba(124,58,237,.5);background:rgba(0,0,0,.4);border-radius:10px;color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
+
+#screen-intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);padding:20px;text-align:center}
+.vrr-logo{font-size:2.1rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 60px rgba(124,58,237,1);margin-bottom:6px}
+.vrr-logo span{color:#7c3aed}
+.vrr-sub{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#7c3aed;margin-bottom:28px}
+.rule-t{font-size:.9rem;color:#cbd5e1;line-height:1.5;max-width:420px;margin-bottom:26px}
+.rule-t b{color:#fff}
+.big-btn{width:100%;max-width:440px;height:72px;border:none;border-radius:20px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:1.3rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 40px rgba(124,58,237,.7);animation:btnPulse 2s ease-in-out infinite}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 40px rgba(124,58,237,.7)}50%{box-shadow:0 0 80px rgba(124,58,237,1)}}
+.intro-back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:60}
+.intro-fs{position:fixed;top:16px;right:16px;padding:8px 16px;border:2px solid rgba(124,58,237,.4);background:rgba(0,0,0,.5);color:#a78bfa;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;z-index:60}
+@media(max-width:768px){.intro-fs{display:none}}
+.best-line{margin-top:18px;font-size:.85rem;color:#9fb3c8}
+.best-line b{color:#7c3aed}
+
+#screen-end{position:fixed;inset:0;z-index:55;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);text-align:center;padding:20px}
+
+#screen-box{position:fixed;inset:0;z-index:58;display:none;flex-direction:column;align-items:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%);padding:70px 16px 24px;overflow-y:auto}
+.box-title{font-size:1.7rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(124,252,0,.8);margin-bottom:2px}
+.box-title span{color:#7cfc00}
+.box-sub{font-size:.65rem;letter-spacing:.24em;text-transform:uppercase;color:#7c3aed;margin-bottom:22px}
+.box-section{width:100%;max-width:440px;margin-bottom:24px}
+.box-section-label{font-size:.65rem;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#ffd35a;margin-bottom:8px;text-align:left;padding-left:4px}
+.box-table{width:100%;border-collapse:collapse;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.3);border-radius:12px;overflow:hidden}
+.box-table th{background:rgba(124,58,237,.18);color:#a78bfa;font-size:.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:8px 6px;text-align:center;border-bottom:1px solid rgba(124,58,237,.3)}
+.box-table td{padding:12px 6px;text-align:center;font-weight:900;font-size:1.1rem;color:#fff}
+.box-table .box-pts{color:#7cfc00;font-size:1.4rem}
+.box-empty{color:#7fa8c0;font-size:.85rem;padding:24px 8px;font-style:italic}
+.box-back-btn{width:100%;max-width:440px;height:56px;border:none;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(124,58,237,.6);margin-top:6px}
+.box-recent-row{font-size:.75rem;color:#9fb3c8;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;padding:8px 10px}
+.box-recent-row:last-child{border-bottom:none}
+.box-recent-row b{color:#ffd35a}
+.box-open-btn{width:100%;max-width:420px;height:52px;border:2px solid rgba(124,252,0,.5);background:rgba(124,252,0,.1);border-radius:14px;color:#7cfc00;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:6px}
+.final-num{font-size:6rem;font-weight:900;color:#7c3aed;line-height:1;text-shadow:0 0 60px rgba(124,58,237,.9)}
+.final-label{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:#9fb3c8;margin-top:10px}
+.final-bpm-big{font-size:1.8rem;font-weight:900;color:#ffd35a;margin-top:10px}
+.final-acc{margin-top:6px;font-size:1.1rem;color:#ffd35a;font-weight:900}
+#screen-end h2{font-size:1.8rem;font-weight:900;margin:24px 0 8px}
+#endSub{font-size:.9rem;color:#9fb3c8;line-height:1.6;max-width:400px}
+.next-player-btn{margin-top:28px;height:64px;padding:0 40px;border:none;border-radius:16px;background:linear-gradient(120deg,#7c3aed,#5b21b6);color:#fff;font-size:1.15rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(124,58,237,.6)}
+.session-line{margin-top:22px;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#7fa8c0}
+
+#countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0a0818 0%,#000 70%)}
+#bigCount{font-size:8rem;font-weight:900;color:#7c3aed;text-shadow:0 0 60px rgba(124,58,237,.9)}
+@media(max-width:420px){.vrr-logo{font-size:1.5rem}.big-btn{height:60px;font-size:1.1rem}
+  #choices{grid-template-columns:70px 70px 70px;grid-template-rows:62px 62px 62px;gap:6px}
+  .choice-btn .arrow-glyph{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+<button id="rp-sound-toggle" onclick="rpToggleSound()" aria-label="Toggle sound" title="Toggle beat sound" style="position:fixed;top:14px;right:14px;z-index:9999;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">🔊</button>
+<script>
+(function(){
+  var _ctxs = [];
+  var NativeAC = window.AudioContext || window.webkitAudioContext;
+  if (NativeAC){
+    function WrappedAC(){
+      var ctx = new NativeAC();
+      _ctxs.push(ctx);
+      if (window.__rpMuted && ctx.suspend) { try{ctx.suspend()}catch(e){} }
+      return ctx;
+    }
+    WrappedAC.prototype = NativeAC.prototype;
+    window.AudioContext = WrappedAC;
+    window.webkitAudioContext = WrappedAC;
+  }
+  window.__rpMuted = false;
+  window.rpToggleSound = function(){
+    window.__rpMuted = !window.__rpMuted;
+    var btn = document.getElementById('rp-sound-toggle');
+    _ctxs.forEach(function(c){
+      try{ if(window.__rpMuted){ c.suspend&&c.suspend(); } else { c.resume&&c.resume(); } }catch(e){}
+    });
+    if(btn){ btn.textContent = window.__rpMuted ? '🔇' : '🔊'; btn.style.opacity = window.__rpMuted ? '.55' : '1'; }
+  };
+})();
+</script>
+
+<div id="space">
+  <canvas id="stars"></canvas>
+  <div id="edge-glow"></div>
+  <div id="flash"></div>
+</div>
+
+<div id="hud">
+  <div class="hud-box"><div class="hud-label">Left</div><div class="hud-val" id="hLeft">50</div></div>
+  <div class="hud-box"><div class="hud-label">Score</div><div class="hud-val" id="hScore">0</div></div>
+  <div class="hud-box"><div class="hud-label">Last</div><div class="hud-val" id="hLastMs">--</div></div>
+  <div class="hud-box"><div class="hud-label">Best</div><div class="hud-val" id="hBest">0</div></div>
+</div>
+
+<div id="msg" class="watch"></div>
+<div id="stage"><div id="stimulus"></div></div>
+
+<div id="choices">
+  <button class="choice-btn" id="btnUp" data-dir="up"><span class="arrow-glyph">▲</span></button>
+  <button class="choice-btn" id="btnLeft" data-dir="left"><span class="arrow-glyph">◀</span></button>
+  <button class="choice-btn" id="btnRight" data-dir="right"><span class="arrow-glyph">▶</span></button>
+  <button class="choice-btn" id="btnDown" data-dir="down"><span class="arrow-glyph">▼</span></button>
+</div>
+
+<div id="controls">
+  <a class="ctrl-btn" href="vr-lab.html">← Exit</a>
+  <button class="ctrl-btn" id="fsBtnGame">⛶ Full Screen</button>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro">
+  <a class="intro-back" href="vr-lab.html">← Exit</a>
+  <button class="intro-fs" id="fsBtn">⛶ Fullscreen</button>
+  <div class="vrr-logo">CHOICE <span>REACTION</span></div>
+  <div class="vrr-sub">Reaction Velocity · To The Beat</div>
+  <div class="rule-t" id="ruleText"><b>50 rounds.</b> A target wanders the screen carrying an arrow &mdash; <b>&#9664; &#9654; &#9650; &#9660;</b>. Read the arrow, not the position, and tap the matching direction as fast as you can. No deadline — just how fast, and how right, you are.</div>
+  <button class="big-btn" id="bigStart" onclick="startDrill()">▶ START</button>
+  <div class="best-line" id="bestLine"></div>
+  <button class="box-open-btn" id="openBoxBtn">📊 THE BOX SCORE</button>
+</div>
+
+<!-- THE BOX SCORE -->
+<div id="screen-box">
+  <div class="box-title">THE <span>BOX SCORE</span></div>
+  <div class="box-sub">Choice Reaction · Career Stats</div>
+
+  <div class="box-section">
+    <div class="box-section-label">Last Game</div>
+    <table class="box-table">
+      <thead><tr><th>PTS</th><th>FG</th><th>FG%</th><th>AVG MS</th></tr></thead>
+      <tbody><tr>
+        <td class="box-pts" id="boxLastPts">--</td>
+        <td id="boxLastFg">--</td>
+        <td id="boxLastFgPct">--</td>
+        <td id="boxLastMs">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Career</div>
+    <table class="box-table">
+      <thead><tr><th>GP</th><th>PPG</th><th>FG%</th><th>HIGH</th><th>AVG MS</th></tr></thead>
+      <tbody><tr>
+        <td id="boxGP">--</td>
+        <td class="box-pts" id="boxPPG">--</td>
+        <td id="boxCareerFgPct">--</td>
+        <td id="boxHigh">--</td>
+        <td id="boxCareerMs">--</td>
+      </tr></tbody>
+    </table>
+  </div>
+
+  <div class="box-section">
+    <div class="box-section-label">Recent Games</div>
+    <div class="box-table" id="boxRecentList" style="border-radius:12px"></div>
+  </div>
+
+  <button class="box-back-btn" id="closeBoxBtn">← Back</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown"><div id="bigCount">3</div></div>
+
+<!-- END -->
+<div id="screen-end">
+  <div class="final-num" id="endNum">0</div>
+  <div class="final-label">Total Points</div>
+  <div class="final-bpm-big" id="endBpm"></div>
+  <div class="final-acc" id="endAcc"></div>
+  <h2 id="endHead">Drill Complete!</h2>
+  <div id="endSub">Great choices. Next player, beat this number!</div>
+  <button class="next-player-btn" id="nextPlayerBtn">▶ Next Player</button>
+  <button class="box-open-btn" id="openBoxBtnEnd">📊 THE BOX SCORE</button>
+  <div class="session-line" id="sessionLine"></div>
+  <a class="intro-back" href="vr-lab.html" style="position:static;margin-top:22px;display:inline-block">← Exit</a>
+</div>
+
+<script>
+var PACE_MS=600; // one beat at 100 BPM between one choice resolving and the next stimulus
+var TOTAL=50;
+var BEST_KEY='rct-choice-reaction-best';
+var BEST_MS_KEY='rct-choice-reaction-best-ms';
+
+function $(id){return document.getElementById(id)}
+
+var phase='idle';
+var idx=0,score=0,best=0,correctCount=0,totalRT=0,rtCount=0,bestAvgMs=0;
+var timers=[],tapLocked=false,shownAt=0,currentSide=null;
+var sessionBest=0, playersThisSession=0;
+var stimulus=$('stimulus'),stage=$('stage');
+
+function loadBest(){
+  best=0;
+  try{best=parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0}catch(e){}
+  try{bestAvgMs=parseInt(localStorage.getItem(BEST_MS_KEY)||'0',10)||0}catch(e){bestAvgMs=0}
+  $('hBest').textContent=best;
+  $('bestLine').innerHTML=best>0?('Your best: <b>'+best+' pts</b>'):'';
+}
+function saveBest(){try{localStorage.setItem(BEST_KEY,String(best))}catch(e){}}
+function saveBestMs(){try{localStorage.setItem(BEST_MS_KEY,String(bestAvgMs))}catch(e){}}
+
+// THE BOX SCORE — a personal, on-device stat sheet. No accounts, no
+// names, nothing shared with anyone else; just this player's own career
+// line, the same way a real sports box score tracks one player's
+// game. Stored as a single JSON blob: running career totals, plus a
+// short rolling list of recent individual games.
+var BOX_KEY='rct-choice-reaction-boxscore';
+function loadBoxData(){
+  try{
+    var raw=localStorage.getItem(BOX_KEY);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return {gp:0,totalPts:0,totalMade:0,totalAttempts:0,totalMs:0,high:0,recent:[]};
+}
+function saveBoxData(d){try{localStorage.setItem(BOX_KEY,JSON.stringify(d))}catch(e){}}
+
+function recordGameToBoxScore(finalScore,made,attempts,avgMs){
+  var d=loadBoxData();
+  d.gp++;
+  d.totalPts+=finalScore;
+  d.totalMade+=made;
+  d.totalAttempts+=attempts;
+  d.totalMs+=avgMs;
+  if(finalScore>d.high)d.high=finalScore;
+  d.recent.unshift({pts:finalScore,made:made,attempts:attempts,ms:avgMs,date:new Date().toLocaleDateString()});
+  if(d.recent.length>8)d.recent=d.recent.slice(0,8);
+  saveBoxData(d);
+  return d;
+}
+
+function pct(made,attempts){return attempts>0?Math.round((made/attempts)*100)+'%':'--'}
+
+function renderBoxScore(lastGame){
+  var d=loadBoxData();
+
+  if(lastGame){
+    $('boxLastPts').textContent=lastGame.pts;
+    $('boxLastFg').textContent=lastGame.made+'-'+lastGame.attempts;
+    $('boxLastFgPct').textContent=pct(lastGame.made,lastGame.attempts);
+    $('boxLastMs').textContent=lastGame.ms>0?lastGame.ms+' ms':'--';
+  }else if(d.recent.length){
+    var l=d.recent[0];
+    $('boxLastPts').textContent=l.pts;
+    $('boxLastFg').textContent=l.made+'-'+l.attempts;
+    $('boxLastFgPct').textContent=pct(l.made,l.attempts);
+    $('boxLastMs').textContent=l.ms>0?l.ms+' ms':'--';
+  }else{
+    $('boxLastPts').textContent='--';$('boxLastFg').textContent='--';$('boxLastFgPct').textContent='--';$('boxLastMs').textContent='--';
+  }
+
+  $('boxGP').textContent=d.gp;
+  $('boxPPG').textContent=d.gp>0?(d.totalPts/d.gp).toFixed(1):'--';
+  $('boxCareerFgPct').textContent=pct(d.totalMade,d.totalAttempts);
+  $('boxHigh').textContent=d.high>0?d.high:'--';
+  $('boxCareerMs').textContent=d.gp>0?Math.round(d.totalMs/d.gp)+' ms':'--';
+
+  var listEl=$('boxRecentList');
+  if(!d.recent.length){
+    listEl.innerHTML='<div class="box-empty">No games played yet — play a round to start your box score.</div>';
+  }else{
+    listEl.innerHTML=d.recent.map(function(g){
+      return '<div class="box-recent-row"><span>'+g.date+'</span><span><b>'+g.pts+' PTS</b> · '+g.made+'-'+g.attempts+' ('+pct(g.made,g.attempts)+') · '+g.ms+'ms</span></div>';
+    }).join('');
+  }
+}
+
+var boxReturnScreen='screen-intro';
+$('openBoxBtn').onclick=function(){
+  boxReturnScreen='screen-intro';
+  renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);
+  $('screen-intro').style.display='none';
+  $('screen-box').style.display='flex';
+};
+$('openBoxBtnEnd').onclick=function(){
+  boxReturnScreen='screen-end';
+  renderBoxScore(window.__lastGameBox?window.__lastGameBox.recent[0]:null);
+  $('screen-end').style.display='none';
+  $('screen-box').style.display='flex';
+};
+$('closeBoxBtn').onclick=function(){
+  $('screen-box').style.display='none';
+  document.getElementById(boxReturnScreen).style.display='flex';
+};
+
+
+var fsb=$('fsBtn');
+if(fsb)fsb.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+var fsg=$('fsBtnGame');
+if(fsg)fsg.onclick=async function(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+(function(){
+  var c=$('stars'),ctx=c.getContext('2d'),stars=[];
+  function size(){c.width=innerWidth;c.height=innerHeight}
+  size();addEventListener('resize',size);
+  for(var i=0;i<150;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,o:Math.random()*.6+.1,s:Math.random()*.5+.2});
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);var t=Date.now()/1000;stars.forEach(function(s){var p=s.o+Math.sin(t*s.s)*.13;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,p))+')';ctx.fill()});requestAnimationFrame(draw)})();
+})();
+
+function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
+function clrT(){timers.forEach(clearTimeout);timers=[]}
+function bpmFromMs(v){return v?Math.round(60000/v):0}
+function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
+function flash(color){var f=$('flash');f.style.background=color;f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},100)}
+
+function startDrill(){
+  if(phase==='running')return;
+  try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
+  $('screen-intro').style.display='none';
+  $('countdown').style.display='flex';
+  var n=3;$('bigCount').textContent=n;
+  var iv=setInterval(function(){
+    n--;
+    if(n<=0){clearInterval(iv);$('countdown').style.display='none';runDrill()}
+    else{$('bigCount').textContent=n}
+  },800);
+}
+
+function runDrill(){
+  phase='running';idx=0;score=0;correctCount=0;totalRT=0;rtCount=0;
+  $('hScore').textContent='0';$('hLastMs').textContent='--';$('hLeft').textContent=TOTAL;
+  msg('GET READY...','go');
+  timers.push(setTimeout(function(){msg('','go');nextTrial()},900));
+}
+
+var wanderTimer=null;
+
+function randomStagePos(){
+  var stageRect=stage.getBoundingClientRect();
+  var pad=70;
+  var x=pad+Math.random()*(stageRect.width-pad*2);
+  var y=pad+Math.random()*(stageRect.height-pad*2);
+  return {x:x,y:y};
+}
+
+var ARROWS={left:'◀',right:'▶',up:'▲',down:'▼'};
+var DIRS=['left','right','up','down'];
+
+var noResponseTimer=null;
+
+function nextTrial(){
+  if(phase!=='running')return;
+  currentSide=DIRS[Math.floor(Math.random()*DIRS.length)];
+  stimulus.textContent=ARROWS[currentSide];
+  var pos=randomStagePos();
+  stimulus.style.left=pos.x+'px';
+  stimulus.style.top=pos.y+'px';
+  stimulus.classList.add('visible');
+  shownAt=performance.now();
+
+  // The dot wanders continuously while it waits — direction (the arrow)
+  // is what matters, not where it happens to be standing.
+  if(wanderTimer)clearInterval(wanderTimer);
+  wanderTimer=setInterval(function(){
+    if(!stimulus.classList.contains('visible'))return;
+    var p=randomStagePos();
+    stimulus.style.left=p.x+'px';
+    stimulus.style.top=p.y+'px';
+  },550);
+
+  // No hard per-tap deadline — the whole point of Flash is open,
+  // untimed play. But leaving that fully open let a player just stop
+  // responding and the drill would sit there forever waiting. 5
+  // seconds of real silence on a single target ends the drill outright
+  // — enough room that it's never a rushed feel, but not infinite.
+  stopNoResponseTimer();
+  noResponseTimer=setTimeout(handleNoResponse,5000);
+}
+function stopWander(){if(wanderTimer){clearInterval(wanderTimer);wanderTimer=null}}
+function stopNoResponseTimer(){if(noResponseTimer){clearTimeout(noResponseTimer);noResponseTimer=null}}
+
+function handleNoResponse(){
+  if(phase!=='running')return;
+  if(!stimulus.classList.contains('visible'))return;
+  stopWander();
+  stimulus.classList.remove('visible');
+  msg('✗ NO RESPONSE — 5 SECONDS','wrong');
+  timers.push(setTimeout(endDrill,600));
+}
+
+function advanceOrEnd(){
+  if(idx>=TOTAL){
+    timers.push(setTimeout(endDrill,500));
+  }else{
+    timers.push(setTimeout(function(){
+      if(phase==='running')msg('','go');
+      nextTrial();
+    },PACE_MS));
+  }
+}
+
+function handleChoice(side){
+  if(phase!=='running')return;
+  if(!stimulus.classList.contains('visible'))return;
+  if(tapLocked)return;
+  tapLocked=true;setTimeout(function(){tapLocked=false},40);
+
+  stopNoResponseTimer();
+  var rt=performance.now()-shownAt;
+  var isCorrect=(side===currentSide);
+  stopWander();
+  var dotRect=stimulus.getBoundingClientRect();
+  var rx=dotRect.left+dotRect.width/2, ry=dotRect.top+dotRect.height/2;
+  stimulus.classList.remove('visible');
+
+  idx++;
+  totalRT+=rt;rtCount++;
+
+  if(isCorrect){
+    correctCount++;
+    score+=2;
+    ripple(rx,ry);flash('rgba(124,58,237,.14)');
+    $('hLastMs').textContent=Math.round(rt);
+    msg('✓ 2PT SHOT! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','correct');
+  }else{
+    flash('rgba(255,20,147,.28)');
+    msg('✗ WRONG DIRECTION! ('+Math.round(rt)+' MS · '+bpmFromMs(rt)+' BPM)','wrong');
+  }
+
+  $('hScore').textContent=score;
+  $('hLeft').textContent=Math.max(0,TOTAL-idx);
+
+  advanceOrEnd();
+}
+
+$('btnUp').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('up')});
+$('btnDown').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('down')});
+$('btnLeft').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('left')});
+$('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('right')});
+
+function endDrill(){
+  if(phase==='done')return;
+  phase='done';clrT();stopWander();stopNoResponseTimer();stimulus.classList.remove('visible');
+  var finalScore=score;
+  var avgRT=rtCount?Math.round(totalRT/rtCount):0;
+  var accPct=idx>0?Math.round((correctCount/idx)*100):0;
+  var completed=(idx>=TOTAL);
+  var isNewPts=completed&&finalScore>best;
+  var isNewMs=completed&&avgRT>0&&(bestAvgMs===0||avgRT<bestAvgMs);
+  if(isNewPts){best=finalScore;saveBest()}
+  if(isNewMs){bestAvgMs=avgRT;saveBestMs()}
+
+  $('endNum').textContent=finalScore;
+  $('endBpm').textContent='Avg '+avgRT+' MS · '+bpmFromMs(avgRT)+' BPM';
+  // Accuracy % is a completed-game stat, same as the Box Score itself —
+  // showing "8/50 ... 100%" on a bailed session reads like a completion
+  // percentage when it's actually accuracy across only the rounds
+  // attempted. An incomplete drill just shows rounds played instead.
+  if(completed){
+    $('endAcc').textContent=correctCount+'/'+TOTAL+' correct · '+accPct+'% accuracy';
+  }else{
+    $('endAcc').textContent=idx+'/'+TOTAL+' rounds played';
+  }
+
+  if(!completed){
+    // An early end (no response for 5 seconds) doesn't post to the
+    // career box score — only a genuinely finished 50-round drill
+    // counts as a real game. This keeps the stat line honest instead
+    // of letting a bailed-on session pad the numbers.
+    $('endHead').textContent='Drill Ended Early';
+    $('endSub').textContent="Only a completed 50-round drill posts to your Box Score — this one didn't count. Give it another go!";
+  }else if(isNewPts&&finalScore>0){
+    $('endHead').textContent='🎉 New Best!';$('endSub').textContent='New high score — '+finalScore+' points, '+correctCount+'/'+TOTAL+' correct. Nothing but net!';
+  }else{
+    $('endHead').textContent='Drill Complete!';$('endSub').textContent='Great choices. Next player, beat this number!';
+  }
+
+  if(completed&&avgRT>0&&(sessionBest===0||avgRT<sessionBest)){
+    sessionBest=avgRT;
+  }
+  playersThisSession++;
+  $('sessionLine').textContent='Players this session: '+playersThisSession+(sessionBest>0?('  ·  Best: '+sessionBest+'ms · '+bpmFromMs(sessionBest)+' BPM'):'');
+
+  if(completed){
+    window.__lastGameBox=recordGameToBoxScore(finalScore,correctCount,idx,avgRT);
+  }
+
+  $('screen-end').style.display='flex';
+}
+
+function nextPlayer(){
+  $('screen-end').style.display='none';
+  startDrill();
+}
+$('nextPlayerBtn').onclick=nextPlayer;
+
+loadBest();
+</script>
+</body>
+</html>
