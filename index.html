@@ -15,9 +15,7 @@
   @keyframes beatDotFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}}
 
   #center{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
-  .kicker{font-size:1rem;font-weight:900;letter-spacing:.5em;text-transform:uppercase;color:#ff1e3c;margin-bottom:14px;text-shadow:0 0 30px rgba(255,30,60,.9);opacity:.95}
-  .brand{font-size:4.5rem;font-weight:900;font-style:italic;letter-spacing:.04em;text-transform:uppercase;line-height:.9;color:#fff;text-shadow:0 0 50px rgba(255,30,60,.8),0 0 100px rgba(255,30,60,.4);margin-bottom:8px}
-  .sub{font-size:1rem;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#ff6b7f;margin-bottom:44px}
+  .logoImg{width:100%;max-width:480px;height:auto;margin-bottom:36px;filter:drop-shadow(0 0 40px rgba(255,30,60,.35))}
 
   .code-panel{width:100%;max-width:360px}
   .code-label{font-size:.72rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#8892a0;margin-bottom:10px}
@@ -38,7 +36,7 @@
   #sound-toggle:hover{background:rgba(255,30,60,.18);border-color:#ff1e3c}
   #sound-toggle.muted{opacity:.55}
 
-  @media(max-width:480px){ .brand{font-size:3rem} }
+  @media(max-width:480px){ .logoImg{max-width:340px;margin-bottom:26px} }
 
   #site-footer{position:fixed;bottom:14px;left:0;right:0;z-index:5;text-align:center;pointer-events:none}
   .footer-copy{font-size:.62rem;font-weight:700;letter-spacing:.04em;color:#4a5058}
@@ -56,9 +54,7 @@
 <button id="sound-toggle" onclick="toggleSound()" aria-label="Toggle sound" title="Toggle beat sound">🔊</button>
 
 <div id="center">
-  <div class="kicker">⚡ Reaction Arena</div>
-  <div class="brand">RITNOME</div>
-  <div class="sub">Pure Reaction · To the Beat</div>
+  <img class="logoImg" src="ritnome.png" alt="Ritnome">
 
   <div class="code-panel">
     <div class="code-label">Access Code</div>
