@@ -25,6 +25,8 @@
   .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,30,60,.3)}
   .msg{text-align:center;font-size:.82rem;margin-top:12px;min-height:18px}
   .msg.bad{color:#ff8888}.msg.ok{color:#00d9a5}
+  #load-fail{display:none;background:rgba(255,60,60,.1);border:1px solid rgba(255,60,60,.35);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:.82rem;color:#ff9999;line-height:1.5}
+  #load-fail.show{display:block}
 
   /* dashboard */
   #dash{display:none}
@@ -81,6 +83,7 @@
 
   <!-- LOGIN -->
   <div id="login">
+    <div id="load-fail">⚠️ The login system didn't finish loading. This is usually a connection hiccup or a browser extension (ad-blocker / privacy blocker) blocking a required script. Try refreshing, or disabling extensions for this page and reloading.</div>
     <h2>🔒 Admin Login</h2>
     <div class="fld"><label>Email</label><input id="l-email" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')login()"></div>
     <div class="fld"><label>Password</label><input id="l-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')login()"></div>
@@ -125,6 +128,23 @@
 
 </div>
 
+<script>
+// The login/dashboard logic below depends on a module script that
+// pulls the Supabase client from a CDN at load time. If that import
+// ever fails — a connection hiccup, a privacy/ad-blocking extension,
+// or the CDN itself being briefly unreachable — the whole module
+// silently aborts before window.login ever gets defined, and the
+// Sign In button just does nothing with zero explanation. This check
+// runs independently of that module, so it fires regardless of
+// whether the import succeeds, and gives a real, visible explanation
+// instead of a page that quietly looks broken.
+setTimeout(function(){
+  if (typeof window.login !== 'function') {
+    var el = document.getElementById('load-fail');
+    if (el) el.className = 'show';
+  }
+}, 4000);
+</script>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
