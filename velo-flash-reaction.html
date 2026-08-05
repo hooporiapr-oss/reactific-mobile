@@ -51,10 +51,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 .choice-btn{border:3px solid rgba(124,58,237,.5);background:rgba(124,58,237,.08);border-radius:16px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .08s}
 .choice-btn .arrow-glyph{font-size:1.9rem;line-height:1}
 .choice-btn:active{background:rgba(124,58,237,.35);transform:scale(.94)}
-#btnUp{grid-column:2;grid-row:1}
-#btnLeft{grid-column:1;grid-row:2}
-#btnRight{grid-column:3;grid-row:2}
-#btnDown{grid-column:2;grid-row:3}
+#slot0{grid-column:2;grid-row:1}
+#slot1{grid-column:1;grid-row:2}
+#slot2{grid-column:3;grid-row:2}
+#slot3{grid-column:2;grid-row:3}
 
 #controls{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:8px 16px 10px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
 .ctrl-btn{height:40px;flex:0 1 170px;max-width:200px;border:2px solid rgba(124,58,237,.5);background:rgba(0,0,0,.4);border-radius:10px;color:#fff;font-size:.85rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
@@ -128,10 +128,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;co
 <div id="stage"><div id="stimulus"></div></div>
 
 <div id="choices">
-  <button class="choice-btn" id="btnUp" data-dir="up"><span class="arrow-glyph">▲</span></button>
-  <button class="choice-btn" id="btnLeft" data-dir="left"><span class="arrow-glyph">◀</span></button>
-  <button class="choice-btn" id="btnRight" data-dir="right"><span class="arrow-glyph">▶</span></button>
-  <button class="choice-btn" id="btnDown" data-dir="down"><span class="arrow-glyph">▼</span></button>
+  <button class="choice-btn" id="slot0"><span class="arrow-glyph"></span></button>
+  <button class="choice-btn" id="slot1"><span class="arrow-glyph"></span></button>
+  <button class="choice-btn" id="slot2"><span class="arrow-glyph"></span></button>
+  <button class="choice-btn" id="slot3"><span class="arrow-glyph"></span></button>
 </div>
 
 <div id="controls">
@@ -386,6 +386,7 @@ function nextTrial(){
   stimulus.classList.add('visible');
   shownAt=performance.now();
   awaitingResponse=true;
+  shuffleButtonLayout();
 
   // A single flash, one beat at 120 BPM, no wandering — then it's gone
   // and the screen goes blank while the response is still fully live.
@@ -402,6 +403,27 @@ function nextTrial(){
   noResponseTimer=setTimeout(handleNoResponse,5000);
 }
 function stopNoResponseTimer(){if(noResponseTimer){clearTimeout(noResponseTimer);noResponseTimer=null}}
+
+// Re-randomizes which direction lives in which of the four fixed
+// screen positions, every single round. The physical slots never
+// move — the cross stays a cross, predictable to reach — but which
+// arrow is IN each slot changes every time, so there's no "top button
+// = up" muscle memory to fall back on. Reading both the target and
+// the buttons is required on every single tap.
+var SLOT_IDS=['slot0','slot1','slot2','slot3'];
+function shuffleButtonLayout(){
+  var shuffled=DIRS.slice();
+  for(var i=shuffled.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=shuffled[i];shuffled[i]=shuffled[j];shuffled[j]=tmp;
+  }
+  SLOT_IDS.forEach(function(slotId,i){
+    var dir=shuffled[i];
+    var btn=$(slotId);
+    btn.dataset.dir=dir;
+    btn.querySelector('.arrow-glyph').textContent=ARROWS[dir];
+  });
+}
 
 function handleNoResponse(){
   if(phase!=='running')return;
@@ -459,10 +481,16 @@ function handleChoice(side){
   advanceOrEnd();
 }
 
-$('btnUp').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('up')});
-$('btnDown').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('down')});
-$('btnLeft').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('left')});
-$('btnRight').addEventListener('pointerdown',function(e){e.preventDefault();handleChoice('right')});
+// Each slot's own click handler reads whichever direction is CURRENTLY
+// assigned to it at the moment of the tap, rather than a fixed
+// direction baked into the button itself — since that assignment
+// changes every round.
+['slot0','slot1','slot2','slot3'].forEach(function(id){
+  $(id).addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    handleChoice(this.dataset.dir);
+  });
+});
 
 function endDrill(){
   if(phase==='done')return;
