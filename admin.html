@@ -25,8 +25,6 @@
   .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,30,60,.3)}
   .msg{text-align:center;font-size:.82rem;margin-top:12px;min-height:18px}
   .msg.bad{color:#ff8888}.msg.ok{color:#00d9a5}
-  #load-fail{display:none;background:rgba(255,60,60,.1);border:1px solid rgba(255,60,60,.35);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:.82rem;color:#ff9999;line-height:1.5}
-  #load-fail.show{display:block}
 
   /* dashboard */
   #dash{display:none}
@@ -83,7 +81,6 @@
 
   <!-- LOGIN -->
   <div id="login">
-    <div id="load-fail">⚠️ The login system didn't finish loading. This is usually a connection hiccup or a browser extension (ad-blocker / privacy blocker) blocking a required script. Try refreshing, or disabling extensions for this page and reloading.</div>
     <h2>🔒 Admin Login</h2>
     <div class="fld"><label>Email</label><input id="l-email" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')login()"></div>
     <div class="fld"><label>Password</label><input id="l-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')login()"></div>
@@ -129,32 +126,112 @@
 </div>
 
 <script>
-// The login/dashboard logic below depends on a module script that
-// pulls the Supabase client from a CDN at load time. If that import
-// ever fails — a connection hiccup, a privacy/ad-blocking extension,
-// or the CDN itself being briefly unreachable — the whole module
-// silently aborts before window.login ever gets defined, and the
-// Sign In button just does nothing with zero explanation. This check
-// runs independently of that module, so it fires regardless of
-// whether the import succeeds, and gives a real, visible explanation
-// instead of a page that quietly looks broken.
-setTimeout(function(){
-  if (typeof window.login !== 'function') {
-    var el = document.getElementById('load-fail');
-    if (el) el.className = 'show';
+// ══════════════════════════════════════════════════════
+//  This admin panel talks to Supabase directly over fetch(),
+//  the same proven approach the gate pages already use —
+//  deliberately NOT loading the Supabase JS client from a
+//  CDN. That earlier approach meant this page's login button
+//  depended on a third-party script finishing over the network
+//  on every single load; if that ever failed (a connection
+//  hiccup, a blocking extension, a slow CDN moment), the whole
+//  page silently broke with zero explanation. Removing that
+//  dependency makes that entire category of failure structurally
+//  impossible — there's nothing external left to fail to load.
+// ══════════════════════════════════════════════════════
+var SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+// ══════════════════════════════════════════════════════
+
+var $ = function(id){ return document.getElementById(id); };
+var currentProduct = 'ritnome';
+var accessToken = null, refreshToken = null;
+
+function saveSession(at, rt){
+  accessToken = at; refreshToken = rt;
+  try{ localStorage.setItem('admin-at', at); localStorage.setItem('admin-rt', rt); }catch(e){}
+}
+function clearSession(){
+  accessToken = null; refreshToken = null;
+  try{ localStorage.removeItem('admin-at'); localStorage.removeItem('admin-rt'); }catch(e){}
+}
+
+function authHeaders(){
+  return {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + (accessToken || SUPABASE_ANON_KEY),
+    'Content-Type': 'application/json'
+  };
+}
+
+// ── auth ──
+async function checkSession(){
+  try{ accessToken = localStorage.getItem('admin-at'); refreshToken = localStorage.getItem('admin-rt'); }catch(e){}
+  if (!accessToken){ showLogin(); return; }
+  // confirm the stored token still actually works before trusting it
+  var ok = await tryRequest(SUPABASE_URL + '/rest/v1/licenses?select=id&limit=1');
+  if (ok) { showDash(); return; }
+  // token may just be expired — try a refresh before giving up
+  if (refreshToken && await doRefresh()) { showDash(); return; }
+  clearSession();
+  showLogin();
+}
+
+async function tryRequest(url){
+  try{
+    var r = await fetch(url, { headers: authHeaders() });
+    return r.ok;
+  }catch(e){ return false; }
+}
+
+async function doRefresh(){
+  try{
+    var r = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (!r.ok) return false;
+    var data = await r.json();
+    if (!data.access_token) return false;
+    saveSession(data.access_token, data.refresh_token);
+    return true;
+  }catch(e){ return false; }
+}
+
+function showLogin(){ $('login').style.display='block'; $('dash').style.display='none'; $('signout-btn').style.display='none'; }
+function showDash(){ $('login').style.display='none'; $('dash').style.display='block'; $('signout-btn').style.display='inline-block'; switchProduct(currentProduct); }
+
+window.login = async function(){
+  var email = $('l-email').value.trim();
+  var password = $('l-pass').value;
+  if (!email || !password){ $('login-msg').className='msg bad'; $('login-msg').textContent='Enter your email and password'; return; }
+  $('login-msg').className='msg'; $('login-msg').textContent='Signing in…';
+  try{
+    var r = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password })
+    });
+    var data = await r.json();
+    if (!r.ok || !data.access_token){
+      $('login-msg').className='msg bad';
+      $('login-msg').textContent = data.error_description || data.msg || 'Invalid email or password';
+      return;
+    }
+    saveSession(data.access_token, data.refresh_token);
+    $('login-msg').textContent='';
+    showDash();
+  }catch(e){
+    $('login-msg').className='msg bad';
+    $('login-msg').textContent='Connection problem — please try again';
   }
-}, 4000);
-</script>
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+};
 
-const SUPABASE_URL = 'https://sdaphocueugzfvjovuxd.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
-
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const $ = (id) => document.getElementById(id);
-
-let currentProduct = 'ritnome';
+window.signOut = async function(){
+  try{ await fetch(SUPABASE_URL + '/auth/v1/logout', { method:'POST', headers: authHeaders() }); }catch(e){}
+  clearSession();
+  showLogin();
+};
 
 window.switchProduct = function(product){
   currentProduct = product;
@@ -162,72 +239,50 @@ window.switchProduct = function(product){
   $('tab-hooporia').className = 'prod-tab' + (product==='hooporia' ? ' active' : '');
   $('tab-mobile').className = 'prod-tab' + (product==='mobile' ? ' active' : '');
   $('mobile-note').className = 'mobile-note' + (product==='mobile' ? ' show' : '');
-  const label = product==='ritnome' ? '(Ritnome)' : product==='hooporia' ? '(Hooporia)' : '(Mobile)';
+  var label = product==='ritnome' ? '(Ritnome)' : product==='hooporia' ? '(Hooporia)' : '(Mobile)';
   $('add-product-label').textContent = label;
   $('list-product-label').textContent = label;
   loadLicenses();
 };
 
-
-// ── auth ──
-async function checkSession(){
-  const { data } = await sb.auth.getSession();
-  if (data.session) showDash(); else showLogin();
-}
-
-// Reliably react to login/logout — fires loadLicenses whenever signed in
-sb.auth.onAuthStateChange(function(event, session){
-  if (session) showDash(); else showLogin();
-});
-
-function showLogin(){ $('login').style.display='block'; $('dash').style.display='none'; $('signout-btn').style.display='none'; }
-function showDash(){ $('login').style.display='none'; $('dash').style.display='block'; $('signout-btn').style.display='inline-block'; switchProduct(currentProduct); }
-
-window.login = async function(){
-  const email = $('l-email').value.trim();
-  const password = $('l-pass').value;
-  $('login-msg').className='msg'; $('login-msg').textContent='Signing in…';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error){ $('login-msg').className='msg bad'; $('login-msg').textContent = error.message; }
-  else { $('login-msg').textContent=''; showDash(); }
-};
-
-window.signOut = async function(){ await sb.auth.signOut(); showLogin(); };
-
 // ── licenses ──
 window.loadLicenses = async function(){
-  const tbody = $('rows');
+  var tbody = $('rows');
   tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
-  try {
-    const { data, error } = await sb.from('licenses').select('*').eq('product', currentProduct);
-    if (error){ console.error('loadLicenses error:', error); tbody.innerHTML = '<tr><td colspan="6" class="empty">Error: '+error.message+'</td></tr>'; return; }
-    const rows = (data || []).slice().sort(function(a,b){
-      // sort by expires_at ascending, nulls last
+  try{
+    var url = SUPABASE_URL + '/rest/v1/licenses?select=*&product=eq.' + encodeURIComponent(currentProduct);
+    var r = await fetch(url, { headers: authHeaders() });
+    if (!r.ok){
+      var errBody = await r.json().catch(function(){ return {}; });
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">Error: '+esc(errBody.message||r.statusText)+'</td></tr>';
+      return;
+    }
+    var data = await r.json();
+    var rows = (data || []).slice().sort(function(a,b){
       if (!a.expires_at && !b.expires_at) return 0;
       if (!a.expires_at) return 1;
       if (!b.expires_at) return -1;
       return a.expires_at < b.expires_at ? -1 : 1;
     });
-    if (!rows.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No '+currentProduct+' licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
+    if (!rows.length){ tbody.innerHTML='<tr><td colspan="6" class="empty">No '+esc(currentProduct)+' licenses yet. Add your first school above.</td></tr>'; $('count').textContent=''; return; }
     $('count').textContent = '('+rows.length+')';
     renderRows(rows, tbody);
-  } catch(e){
-    console.error('loadLicenses exception:', e);
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Load failed: '+e.message+'</td></tr>';
+  }catch(e){
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Load failed: '+esc(e.message)+'</td></tr>';
   }
 };
 
 function renderRows(data, tbody){
-  const today = new Date();
+  var today = new Date();
   tbody.innerHTML = data.map(function(r){
-    let statusPill, expText='';
-    const expired = r.expires_at && new Date(r.expires_at+'T23:59:59') < today;
+    var statusPill, expText='';
+    var expired = r.expires_at && new Date(r.expires_at+'T23:59:59') < today;
     if (!r.active) statusPill = '<span class="pill inactive">Revoked</span>';
     else if (expired) statusPill = '<span class="pill expired">Expired</span>';
     else statusPill = '<span class="pill active">Active</span>';
 
     if (r.expires_at){
-      const days = Math.ceil((new Date(r.expires_at+'T23:59:59') - today)/86400000);
+      var days = Math.ceil((new Date(r.expires_at+'T23:59:59') - today)/86400000);
       if (days < 0) expText = r.expires_at;
       else if (days <= 30) expText = '<span class="exp-soon">'+r.expires_at+' ('+days+'d)</span>';
       else expText = r.expires_at;
@@ -249,36 +304,68 @@ function renderRows(data, tbody){
 }
 
 window.addLicense = async function(){
-  const code = $('a-code').value.trim().toUpperCase();
-  const school = $('a-school').value.trim();
-  const expires = $('a-expires').value || null;
-  const notes = $('a-notes').value.trim() || null;
+  var code = $('a-code').value.trim().toUpperCase();
+  var school = $('a-school').value.trim();
+  var expires = $('a-expires').value || null;
+  var notes = $('a-notes').value.trim() || null;
   if (!code){ setAddMsg('Enter a code','bad'); return; }
   if (!school){ setAddMsg('Enter a school name','bad'); return; }
-  const { error } = await sb.from('licenses').insert({ code, school_name: school, expires_at: expires, notes, active: true, product: currentProduct });
-  if (error){ setAddMsg(error.code==='23505' ? 'That code already exists' : error.message, 'bad'); return; }
-  $('a-code').value=''; $('a-school').value=''; $('a-expires').value=''; $('a-notes').value='';
-  setAddMsg('✓ License added to '+currentProduct,'ok');
-  loadLicenses();
+  try{
+    var r = await fetch(SUPABASE_URL + '/rest/v1/licenses', {
+      method: 'POST',
+      headers: Object.assign({}, authHeaders(), { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ code: code, school_name: school, expires_at: expires, notes: notes, active: true, product: currentProduct })
+    });
+    if (!r.ok){
+      var errBody = await r.json().catch(function(){ return {}; });
+      setAddMsg(errBody.code==='23505' ? 'That code already exists' : (errBody.message || 'Could not add license'), 'bad');
+      return;
+    }
+    $('a-code').value=''; $('a-school').value=''; $('a-expires').value=''; $('a-notes').value='';
+    setAddMsg('✓ License added to '+currentProduct,'ok');
+    loadLicenses();
+  }catch(e){
+    setAddMsg('Connection problem — please try again','bad');
+  }
 };
 function setAddMsg(m,c){ $('add-msg').className='msg '+c; $('add-msg').textContent=m; setTimeout(function(){ if($('add-msg').textContent===m) $('add-msg').textContent=''; }, 4000); }
 
 window.renew = async function(id){
-  const d = new Date(); d.setFullYear(d.getFullYear()+1);
-  const newDate = d.toISOString().slice(0,10);
-  const { error } = await sb.from('licenses').update({ expires_at: newDate, active: true }).eq('id', id);
-  if (error) alert('Error: '+error.message); else loadLicenses();
+  var d = new Date(); d.setFullYear(d.getFullYear()+1);
+  var newDate = d.toISOString().slice(0,10);
+  try{
+    var r = await fetch(SUPABASE_URL + '/rest/v1/licenses?id=eq.' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: Object.assign({}, authHeaders(), { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ expires_at: newDate, active: true })
+    });
+    if (!r.ok){ alert('Error renewing license'); return; }
+    loadLicenses();
+  }catch(e){ alert('Connection problem — please try again'); }
 };
 
 window.toggle = async function(id, makeActive){
-  const { error } = await sb.from('licenses').update({ active: makeActive }).eq('id', id);
-  if (error) alert('Error: '+error.message); else loadLicenses();
+  try{
+    var r = await fetch(SUPABASE_URL + '/rest/v1/licenses?id=eq.' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: Object.assign({}, authHeaders(), { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ active: makeActive })
+    });
+    if (!r.ok){ alert('Error updating license'); return; }
+    loadLicenses();
+  }catch(e){ alert('Connection problem — please try again'); }
 };
 
 window.del = async function(id, code){
   if (!confirm('Delete license "'+code+'"? This permanently removes it and locks out that school.')) return;
-  const { error } = await sb.from('licenses').delete().eq('id', id);
-  if (error) alert('Error: '+error.message); else loadLicenses();
+  try{
+    var r = await fetch(SUPABASE_URL + '/rest/v1/licenses?id=eq.' + encodeURIComponent(id), {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    if (!r.ok){ alert('Error deleting license'); return; }
+    loadLicenses();
+  }catch(e){ alert('Connection problem — please try again'); }
 };
 
 function esc(s){ return String(s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]}); }
